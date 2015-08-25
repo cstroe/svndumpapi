@@ -1,0 +1,48 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(SvnDumpFileParser)
+  import java.io.PrintStream;
+
+  class SvnDumpFileParser {
+    public static void main(String[] args)
+    throws ParseException, TokenMgrError {
+      SvnDumpFileParser parser = new SvnDumpFileParser(System.in);
+      parser.Start(System.out);
+    }
+  }
+PARSER_END(SvnDumpFileParser)
+
+//  Lexer
+
+SKIP: { " " }
+TOKEN: { <EOL: "\n" | "\r" | "\r\n"> }
+TOKEN: { <NUMBER: (["0"-"9"])+> }
+TOKEN: { <COLON>: ":" }
+TOKEN: { <VERSION_KEY: "SVN-fs-dump-format-version"> }
+TOKEN: { <UUID_KEY: "UUID" }
+
+// Parser
+
+void Start(PrintStream out):
+{
+  Token t;
+}
+{
+  (
+    <VERSION_KEY>
+    <COLON>
+    t = <NUMBER>
+    <EOL>
+    <EOL>
+    <UUID_KEY>
+    <COLON>
+
+    { 
+      out.print("Svn Dump Version: ");
+      out.println(t.image);
+    }
+  )
+  <EOF>
+}
