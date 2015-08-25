@@ -2,3 +2,4 @@ svndumpgui.ipr
 svndumpgui.iml
 svndumpgui.iws
 target/
+.idea/
