@@ -42,7 +42,7 @@
                             <javadocFriendlyComments>true</javadocFriendlyComments>
                             <packageName>com.github.cstroe.svndumpgui.generated</packageName>
                             <sourceDirectory>src/main/javacc</sourceDirectory>
-                            <outputDirectory>${project.build.target}/generated-sources/svndumpgui</outputDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources/svndumpgui</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
