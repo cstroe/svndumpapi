@@ -9,11 +9,11 @@ import java.io.*;
 public class SvnDumpParserImpl implements SvnDumpParser {
 
     private SvnRevision currentRevision;
-    private SvnDump svnDump;
+    private SvnDumpImpl svnDump;
 
     @Override
     public SvnDump parse(InputStream is) throws IOException {
-        SvnDump dump = new SvnDumpImpl();
+        SvnDumpImpl dump = new SvnDumpImpl();
 
         InputStreamReader reader = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(reader);

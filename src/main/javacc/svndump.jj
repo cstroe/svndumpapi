@@ -19,9 +19,9 @@ PARSER_END(SvnDumpFileParser)
 SKIP: { " " }
 TOKEN: { <EOL: "\n" | "\r" | "\r\n"> }
 TOKEN: { <NUMBER: (["0"-"9"])+> }
-TOKEN: { <COLON>: ":" }
+TOKEN: { <COLON: ":"> }
 TOKEN: { <VERSION_KEY: "SVN-fs-dump-format-version"> }
-TOKEN: { <UUID_KEY: "UUID" }
+TOKEN: { <UUID_KEY: "UUID"> }
 
 // Parser
 

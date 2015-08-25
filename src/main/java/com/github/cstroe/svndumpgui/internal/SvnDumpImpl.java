@@ -10,7 +10,6 @@ public class SvnDumpImpl implements SvnDump {
 
     private List<SvnRevision> revisions = new ArrayList<>();
 
-    @Override
     public void addRevision(SvnRevision revision) {
         revisions.add(revision);
     }
