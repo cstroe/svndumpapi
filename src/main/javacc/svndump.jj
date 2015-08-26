@@ -3,9 +3,11 @@ options {
 }
 
 PARSER_BEGIN(SvnDumpFileParser)
+  package com.github.cstroe.svndumpgui.generated;
+
   import java.io.PrintStream;
 
-  class SvnDumpFileParser {
+  public class SvnDumpFileParser {
     public static void main(String[] args)
     throws ParseException, TokenMgrError {
       SvnDumpFileParser parser = new SvnDumpFileParser(System.in);
