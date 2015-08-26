@@ -16,8 +16,6 @@ public class SvnDumpImpl implements SvnDump {
 
     @Override
     public List<SvnRevision> getRevisions() {
-        List<SvnRevision> revisionList = new ArrayList<>();
-        revisionList.add(new SvnRevisionImpl(0));
-        return revisionList;
+        return revisions;
     }
 }
