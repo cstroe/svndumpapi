@@ -6,6 +6,7 @@ PARSER_BEGIN(SvnDumpFileParser)
   package com.github.cstroe.svndumpgui.generated;
 
   import java.io.PrintStream;
+  import java.io.IOException;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
@@ -13,6 +14,16 @@ PARSER_BEGIN(SvnDumpFileParser)
       SvnDumpFileParser parser = new SvnDumpFileParser(System.in);
       parser.Start(System.out);
     }
+
+    private void skipCharacters(int number) {
+      for(int i = 0; i < number; i++) {
+          try {
+            token_source.input_stream.readChar();
+          }
+          catch(IOException ex) {}
+      }
+    }
+
   }
 PARSER_END(SvnDumpFileParser)
 
@@ -24,12 +35,17 @@ TOKEN: { <NUMBER: (["0"-"9"])+> }
 TOKEN: { <COLON: ":"> }
 TOKEN: { <VERSION_KEY: "SVN-fs-dump-format-version"> }
 TOKEN: { <UUID_KEY: "UUID"> }
+TOKEN: { <UUID_VALUE: (["0"-"9","a"-"z","-"])+> }
+TOKEN: { <REVISION_NUMBER_KEY: "Revision-number"> }
+TOKEN: { <PROP_CONTENT_LENGTH_KEY: "Prop-content-length"> }
+TOKEN: { <CONTENT_LENGTH_KEY: "Content-length"> }
 
 // Parser
 
 void Start(PrintStream out):
 {
   Token t;
+  Token contentLength;
 }
 {
   (
@@ -38,13 +54,25 @@ void Start(PrintStream out):
     t = <NUMBER>
     <EOL>
     <EOL>
-    <UUID_KEY>
-    <COLON>
 
-    { 
+    {
       out.print("Svn Dump Version: ");
       out.println(t.image);
     }
+
+    <UUID_KEY>
+    <COLON>
+    <UUID_VALUE>
+    <EOL>
+    <EOL>
+    <REVISION_NUMBER_KEY> <COLON> <NUMBER> <EOL>
+    <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL>
+    <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
+    <EOL>
+
+    { skipCharacters( Integer.parseInt(contentLength.image) ); }
+    <EOL>
+
   )
   <EOF>
 }
