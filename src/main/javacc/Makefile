@@ -1,7 +1,9 @@
-all: clean adder
+all: clean generate
 
-svndump: svndump.jj
+generate: svndump.jj
 	javacc svndump.jj
+
+compile:
 	javac *.java
 
 clean:
