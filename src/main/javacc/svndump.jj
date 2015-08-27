@@ -20,13 +20,15 @@ PARSER_BEGIN(SvnDumpFileParser)
       parser.Start(System.out);
     }
 
-    private void skipCharacters(int number) {
+    private String readCharacters(int number) {
+      StringBuilder sb = new StringBuilder();
       for(int i = 0; i < number; i++) {
           try {
-            token_source.input_stream.readChar();
+            sb.append(token_source.input_stream.readChar());
           }
           catch(IOException ex) {}
       }
+      return sb.toString();
     }
 
   }
@@ -87,11 +89,31 @@ public SvnRevision Revision():
     <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
     <EOL>
 
-    {
-      revision = new SvnRevisionImpl(Integer.parseInt(revisionNumber.image));
-      skipCharacters( Integer.parseInt(contentLength.image) );
-    }
+    { revision = new SvnRevisionImpl(Integer.parseInt(revisionNumber.image)); }
+
+    ( Property(revision) ) *
+
+    <"PROPS-END"> <EOL>
     <EOL>
 
     { return revision; }
+}
+
+public void Property(SvnRevisionImpl revision):
+{
+    String key, value;
+    Token keyLength, valueLength;
+}
+{
+    <"K"> keyLength = <NUMBER> <EOL>
+    { key = readCharacters(Integer.parseInt(keyLength.image)); }
+    <EOL>
+
+    <"V"> valueLength = <NUMBER> <EOL>
+    { value = readCharacters(Integer.parseInt(valueLength.image)); }
+    <EOL>
+
+    {
+        revision.setProperty(key, value);
+    }
 }
