@@ -1,5 +1,24 @@
 # How to create the test SVN Dump Files
 
+## PREAMBLE
+
+Most of these commits use the same <SETUP CODE>, shown below:
+
+    mkdir -p svn-test/repos/testrepo
+    mkdir -p svn-test/checkout
+    cd svn-test/repos
+    svnadmin create testrepo
+    cd ../checkout
+    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo" testrepo'
+    cd testrepo
+    
+They also use the same <EXPORT CODE>, shown below:
+
+    cd ../../repos
+    svnadmin dump testrepo > output.dump
+
+Replace `output.dump` with the name of the dump file you're creating.
+
 ## empty.dump
 
     mkdir -p svn-test/repos/testrepo
@@ -9,32 +28,19 @@
     
 ## firstcommit.dump
 
-    mkdir -p svn-test/repos/testrepo
-    mkdir -p svn-test/checkout
-    cd svn-test/repos
-    svnadmin create testrepo
-    cd ../checkout
-    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo" testrepo'
-    cd testrepo
+    <SETUP CODE>
     touch firstFile.txt
     svn add firstFile.txt
     svn commit -m "Added a first file."
-    cd ../../repos
-    svnadmin dump testrepo > firstcommit.dump
-    
+    <EXPORT CODE>
+
 ## add_file.dump
 
-    mkdir -p svn-test/repos/testrepo
-    mkdir -p svn-test/checkout
-    cd svn-test/repos
-    svnadmin create testrepo
-    cd ../checkout
-    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo" testrepo'
-    cd testrepo
+    <SETUP CODE>
     echo "this is a test file" > README.txt
     svn add README.txt
     svn commit -m "Committed README.txt"
-    svnadmin dump testrepo > add_file.dump
+    <EXPORT CODE>
 
 ## different_node_order.dump
 
@@ -46,3 +52,13 @@ are different than `add_file.dump` ("Node-kind" is before "Node-path").
 
 This is a hand-hack of `different_node_order.dump` to add `Text-content-sha1` before all
 of the other node headers.  Moral of the story, the order of the headers should not matter.
+
+## binary_commit.dump
+
+    <SETUP CODE>
+    dd if=/dev/urandom of=file.bin bs=1K count=12
+    svn add file.bin
+    svn commit -m "Adding binary file."
+    <EXPORT CODE>
+
+    
