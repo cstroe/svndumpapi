@@ -35,3 +35,9 @@
     svn add README.txt
     svn commit -m "Committed README.txt"
     svnadmin dump testrepo > add_file.dump
+
+## different_node_order.dump
+
+This file was created from a bigger dump of the AgreementMaker SVN repo.
+The main difference here is that the order of the "Node-kind" and "Node-path"
+are different than `add_file.dump` ("Node-kind" is before "Node-path").

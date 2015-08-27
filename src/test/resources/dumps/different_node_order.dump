@@ -1,0 +1,40 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 7382cb04-bbc8-4b6b-befe-3e25d6a70fed
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2011-05-16T17:38:59.348336Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 139
+Content-length: 139
+
+K 10
+svn:author
+V 12
+Cosmin Stroe
+K 8
+svn:date
+V 27
+2011-05-16T17:40:19.200741Z
+K 7
+svn:log
+V 31
+The core AgreementMaker System.
+PROPS-END
+
+Node-kind: dir
+Node-path: AM-Core
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+

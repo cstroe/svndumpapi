@@ -165,13 +165,17 @@ public SvnNode Node():
     Token nodeSha1 = null;
     Token contentLength = null;
     Token textContentLength = null;
-    String fileContent;
+    String fileContent = null;
     Map properties;
 }
 {
-    <NODE_PATH_KEY> nodePath = <NODE_PATH_VALUE> <EOL>
-    ( <NODE_KIND_KEY> <COLON> nodeKind = <NODE_KIND_VALUE> <EOL> )?
-    <NODE_ACTION_KEY> <COLON> nodeAction = <NODE_ACTION_VALUE> <EOL>
+    (
+        <NODE_PATH_KEY> nodePath = <NODE_PATH_VALUE> <EOL>
+        |
+        <NODE_KIND_KEY> <COLON> nodeKind = <NODE_KIND_VALUE> <EOL>
+        |
+        <NODE_ACTION_KEY> <COLON> nodeAction = <NODE_ACTION_VALUE> <EOL>
+    )+
 
     ( <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL> )?
     ( <TEXT_CONTENT_LENGTH_KEY> <COLON> textContentLength = <NUMBER> <EOL> )?
@@ -183,15 +187,26 @@ public SvnNode Node():
     properties = Property()
 
     {
-        fileContent = readCharacters(Integer.parseInt(textContentLength.image));
-
         svnNode = new SvnNodeImpl();
+
+        // required
         svnNode.setPath(nodePath.image);
-        svnNode.setKind(nodeKind.image);
         svnNode.setAction(nodeAction.image);
-        svnNode.setMd5(nodeMd5.image);
-        svnNode.setSha1(nodeSha1.image);
-        svnNode.setContent(fileContent);
+
+        // optional
+        if(nodeKind != null) {
+            svnNode.setKind(nodeKind.image);
+        }
+        if(nodeMd5 != null) {
+            svnNode.setMd5(nodeMd5.image);
+        }
+        if(nodeSha1 != null) {
+            svnNode.setSha1(nodeSha1.image);
+        }
+        if(textContentLength != null) {
+            fileContent = readCharacters(Integer.parseInt(textContentLength.image));
+            svnNode.setContent(fileContent);
+        }
     }
 
     { return svnNode; }

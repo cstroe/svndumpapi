@@ -149,4 +149,26 @@ public class SvnDumpFileParserTest {
 
         return hashText;
     }
+
+    /**
+     * We should be flexible with the order of the Node headers.
+     *
+     * For example, sometimes "Node-path" come before "Node-kind", other
+     * times it's the reverse.  We should parse both correctly.
+     */
+    @Test
+    public void should_parse_nodes_with_different_ordering_of_headers() throws ParseException, NoSuchAlgorithmException {
+        final InputStream s = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/different_node_order.dump");
+
+        SvnDumpFileParser parser = new SvnDumpFileParser(s);
+        SvnDump dump = parser.Start();
+
+        assertThat(dump.getRevisions().size(), is(2));
+
+        assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
+        assertThat(dump.getRevisions().get(1).getNodes().get(0).getPath(), is("AM-Core"));
+        assertThat(dump.getRevisions().get(1).getNodes().get(0).getKind(), is("dir"));
+        assertThat(dump.getRevisions().get(1).getNodes().get(0).getAction(), is("add"));
+    }
 }
