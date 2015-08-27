@@ -41,3 +41,8 @@
 This file was created from a bigger dump of the AgreementMaker SVN repo.
 The main difference here is that the order of the "Node-kind" and "Node-path"
 are different than `add_file.dump` ("Node-kind" is before "Node-path").
+
+## different_node_order2.dump
+
+This is a hand-hack of `different_node_order.dump` to add `Text-content-sha1` before all
+of the other node headers.  Moral of the story, the order of the headers should not matter.
