@@ -6,5 +6,5 @@ public interface SvnNode {
     String getAction();
     String getMd5();
     String getSha1();
-    String getContent();
+    byte[] getContent();
 }

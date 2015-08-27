@@ -1,5 +1,7 @@
 options {
-  STATIC = false;
+    STATIC = false;
+    UNICODE = false;
+    JAVA_UNICODE_ESCAPE = false;
 }
 
 PARSER_BEGIN(SvnDumpFileParser)
@@ -7,6 +9,7 @@ PARSER_BEGIN(SvnDumpFileParser)
 
   import java.io.PrintStream;
   import java.io.IOException;
+  import java.io.ByteArrayOutputStream;
   import java.util.Map;
   import java.util.HashMap;
 
@@ -37,6 +40,20 @@ PARSER_BEGIN(SvnDumpFileParser)
           catch(IOException ex) {}
       }
       return sb.toString();
+    }
+
+    private byte[] readByteArray(Integer length) {
+        if(length == null) {
+            return null;
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for(int i = 0; i < length; i++) {
+            try {
+              baos.write((int)token_source.input_stream.readChar());
+            }
+            catch(IOException ex) {}
+        }
+        return baos.toByteArray();
     }
 
   }
@@ -165,7 +182,7 @@ public SvnNode Node():
     Token nodeSha1 = null;
     Token contentLength = null;
     Token textContentLength = null;
-    String fileContent = null;
+    byte[] fileContent = null;
     Map properties;
 }
 {
@@ -209,7 +226,7 @@ public SvnNode Node():
             svnNode.setSha1(nodeSha1.image);
         }
         if(textContentLength != null) {
-            fileContent = readCharacters(Integer.parseInt(textContentLength.image));
+            fileContent = readByteArray(Integer.parseInt(textContentLength.image));
             svnNode.setContent(fileContent);
         }
     }

@@ -112,15 +112,15 @@ public class SvnDumpFileParserTest {
         assertThat(readmeTxt.getAction(), is(equalTo("add")));
         assertThat(readmeTxt.getMd5(), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
         assertThat(readmeTxt.getSha1(), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
-        assertThat(readmeTxt.getContent(), is(equalTo("this is a test file\n")));
+        assertThat(new String(readmeTxt.getContent()), is(equalTo("this is a test file\n")));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(readmeTxt.getContent().getBytes());
+        byte[] md5raw = md5.digest(readmeTxt.getContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(readmeTxt.getContent().getBytes());
+        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
     }
@@ -190,16 +190,16 @@ public class SvnDumpFileParserTest {
 
         SvnNode fileBin = dump.getRevisions().get(1).getNodes().get(0);
 
-        assertThat(fileBin.getContent().length(), is(1024));
+        assertThat(fileBin.getContent().length, is(1024));
         assertThat(fileBin.getPath(), is("file.bin"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(fileBin.getContent().getBytes());
+        byte[] md5raw = md5.digest(fileBin.getContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(fileBin.getMd5())));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(fileBin.getContent().getBytes());
+        byte[] sha1raw = sha1.digest(fileBin.getContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(fileBin.getSha1())));
     }
