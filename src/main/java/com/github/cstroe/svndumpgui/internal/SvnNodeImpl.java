@@ -8,6 +8,7 @@ public class SvnNodeImpl implements SvnNode {
     private String Action;
     private String md5;
     private String sha1;
+    private String content;
 
     @Override
     public String getPath() {
@@ -52,5 +53,14 @@ public class SvnNodeImpl implements SvnNode {
 
     public void setSha1(String sha1) {
         this.sha1 = sha1;
+    }
+
+    @Override
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }
