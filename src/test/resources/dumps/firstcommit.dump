@@ -1,0 +1,44 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 82d1e642-4e01-4f5e-95bf-40d872957143
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-08-27T02:50:19.465543Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 120
+Content-length: 120
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-27T05:38:16.553074Z
+K 7
+svn:log
+V 19
+Added a first file.
+PROPS-END
+
+Node-path: firstFile.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 0
+Text-content-md5: d41d8cd98f00b204e9800998ecf8427e
+Text-content-sha1: da39a3ee5e6b4b0d3255bfef95601890afd80709
+Content-length: 10
+
+PROPS-END
+
+
