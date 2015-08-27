@@ -7,6 +7,9 @@ PARSER_BEGIN(SvnDumpFileParser)
 
   import java.io.PrintStream;
   import java.io.IOException;
+  import com.github.cstroe.svndumpgui.api.SvnDump;
+  import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
+  import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
@@ -42,37 +45,36 @@ TOKEN: { <CONTENT_LENGTH_KEY: "Content-length"> }
 
 // Parser
 
-void Start(PrintStream out):
+SvnDump Start(PrintStream out):
 {
-  Token t;
+  SvnDumpImpl dump = new SvnDumpImpl();
+  Token dumpVersion;
+  Token revisionNumber;
   Token contentLength;
 }
 {
-  (
-    <VERSION_KEY>
-    <COLON>
-    t = <NUMBER>
-    <EOL>
+    <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
     <EOL>
 
     {
       out.print("Svn Dump Version: ");
-      out.println(t.image);
+      out.println(dumpVersion.image);
     }
 
-    <UUID_KEY>
-    <COLON>
-    <UUID_VALUE>
+    <UUID_KEY> <COLON> <UUID_VALUE> <EOL>
     <EOL>
-    <EOL>
-    <REVISION_NUMBER_KEY> <COLON> <NUMBER> <EOL>
+    <REVISION_NUMBER_KEY> <COLON> revisionNumber = <NUMBER> <EOL>
     <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL>
     <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
     <EOL>
 
-    { skipCharacters( Integer.parseInt(contentLength.image) ); }
+    {
+      skipCharacters( Integer.parseInt(contentLength.image) );
+      dump.addRevision(new SvnRevisionImpl(Integer.parseInt(revisionNumber.image)));
+    }
     <EOL>
 
-  )
   <EOF>
+
+  { return dump; }
 }

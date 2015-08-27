@@ -1,11 +1,18 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class SvnDumpParserImplTest {
 
@@ -15,20 +22,20 @@ public class SvnDumpParserImplTest {
             .getResourceAsStream("dumps/empty.dump");
 
         SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        parser.Start(System.out);
+        SvnDump dump =  parser.Start(System.out);
 
-//        assertNotNull(dump);
+        assertNotNull(dump);
 
-//        List<SvnRevision> revisionList = dump.getRevisions();
+        List<SvnRevision> revisionList = dump.getRevisions();
 
-//        assertThat("There should be a revision present", revisionList.size(), is(1));
+        assertThat("There should be a revision present", revisionList.size(), is(1));
 
-//        SvnRevision firstRevision = revisionList.get(0);
+        SvnRevision firstRevision = revisionList.get(0);
 //        Calendar cal = new GregorianCalendar();
 //        cal.clear();
 //        cal.set(2015, Calendar.AUGUST, 7, 13, 52, 20);
 
-//        assertThat(firstRevision.getNumber(), is(0));
+        assertThat(firstRevision.getNumber(), is(0));
 //        assertNotNull(firstRevision.getDate());
 //        assertThat(firstRevision.getDate(), is(equalTo(cal.getTime())));
     }
