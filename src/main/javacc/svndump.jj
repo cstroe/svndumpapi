@@ -8,6 +8,8 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.io.PrintStream;
   import java.io.IOException;
   import com.github.cstroe.svndumpgui.api.SvnDump;
+  import com.github.cstroe.svndumpgui.api.SvnRevision;
+  import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 
@@ -45,12 +47,11 @@ TOKEN: { <CONTENT_LENGTH_KEY: "Content-length"> }
 
 // Parser
 
-SvnDump Start(PrintStream out):
+public SvnDump Start(PrintStream out):
 {
   SvnDumpImpl dump = new SvnDumpImpl();
   Token dumpVersion;
-  Token revisionNumber;
-  Token contentLength;
+  SvnRevision revision;
 }
 {
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
@@ -63,18 +64,34 @@ SvnDump Start(PrintStream out):
 
     <UUID_KEY> <COLON> <UUID_VALUE> <EOL>
     <EOL>
+
+    revision = Revision()
+    { dump.addRevision(revision); }
+
+    <EOF>
+
+    { return dump; }
+}
+
+public SvnRevision Revision():
+{
+    SvnRevisionImpl revision;
+    Token revisionNumber;
+    Token contentLength;
+}
+{
     <REVISION_NUMBER_KEY> <COLON> revisionNumber = <NUMBER> <EOL>
-    <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL>
+
+    ( <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL> )?
+
     <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
     <EOL>
 
     {
+      revision = new SvnRevisionImpl(Integer.parseInt(revisionNumber.image));
       skipCharacters( Integer.parseInt(contentLength.image) );
-      dump.addRevision(new SvnRevisionImpl(Integer.parseInt(revisionNumber.image)));
     }
     <EOL>
 
-  <EOF>
-
-  { return dump; }
+    { return revision; }
 }

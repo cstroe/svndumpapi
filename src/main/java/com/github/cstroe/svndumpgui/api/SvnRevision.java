@@ -1,8 +1,6 @@
 package com.github.cstroe.svndumpgui.api;
 
-import java.util.Date;
-
-public interface SvnRevision {
+public interface SvnRevision extends SvnProperties {
     int getNumber();
-    Date getDate();
+    String getProperty(String name);
 }

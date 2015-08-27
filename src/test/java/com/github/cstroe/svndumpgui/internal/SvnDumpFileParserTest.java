@@ -14,7 +14,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class SvnDumpParserImplTest {
+public class SvnDumpFileParserTest {
 
     @Test
     public void should_parse_empty_dump() throws IOException, ParseException {
@@ -31,13 +31,10 @@ public class SvnDumpParserImplTest {
         assertThat("There should be a revision present", revisionList.size(), is(1));
 
         SvnRevision firstRevision = revisionList.get(0);
-//        Calendar cal = new GregorianCalendar();
-//        cal.clear();
-//        cal.set(2015, Calendar.AUGUST, 7, 13, 52, 20);
 
         assertThat(firstRevision.getNumber(), is(0));
-//        assertNotNull(firstRevision.getDate());
-//        assertThat(firstRevision.getDate(), is(equalTo(cal.getTime())));
+//        assertNotNull(firstRevision.getProperty(SvnProperties.DATE));
+//        assertThat(firstRevision.getProperty(SvnProperties.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
     }
 
 }

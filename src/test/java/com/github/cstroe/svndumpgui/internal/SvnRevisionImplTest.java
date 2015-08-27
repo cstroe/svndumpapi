@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import com.github.cstroe.svndumpgui.api.SvnProperties;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
@@ -15,7 +16,7 @@ public class SvnRevisionImplTest {
     public void revision_number() {
         SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
         assertThat(svnRevision.getNumber(), is(1));
-        assertNull(svnRevision.getDate());
+        assertNull(svnRevision.getProperty(SvnProperties.DATE));
     }
 
     @Test
@@ -24,9 +25,9 @@ public class SvnRevisionImplTest {
         cal.clear();
         cal.set(2015, Calendar.AUGUST, 26);
 
-        SvnRevisionImpl svnRevision = new SvnRevisionImpl(1, cal.getTime());
+        SvnRevisionImpl svnRevision = new SvnRevisionImpl(1, cal.getTime().toString());
         assertThat(svnRevision.getNumber(), is(1));
-        assertThat(svnRevision.getDate(), is(equalTo(cal.getTime())));
+        assertThat(svnRevision.getProperty(SvnProperties.DATE), is(equalTo(cal.getTime().toString())));
     }
 
 }
