@@ -7,11 +7,16 @@ PARSER_BEGIN(SvnDumpFileParser)
 
   import java.io.PrintStream;
   import java.io.IOException;
+  import java.util.Map;
+  import java.util.HashMap;
+
   import com.github.cstroe.svndumpgui.api.SvnDump;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
+  import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
@@ -42,10 +47,28 @@ TOKEN: { <NUMBER: (["0"-"9"])+> }
 TOKEN: { <COLON: ":"> }
 TOKEN: { <VERSION_KEY: "SVN-fs-dump-format-version"> }
 TOKEN: { <UUID_KEY: "UUID"> }
-TOKEN: { <UUID_VALUE: (["0"-"9","a"-"z","-"])+> }
+TOKEN: { <UUID_VALUE: (["0"-"9","a"-"z"]){8} "-" (["0"-"9","a"-"z"]){4} "-" (["0"-"9","a"-"z"]){4} "-" (["0"-"9","a"-"z"]){4} "-" (["0"-"9","a"-"z"]){12}> }
 TOKEN: { <REVISION_NUMBER_KEY: "Revision-number"> }
 TOKEN: { <PROP_CONTENT_LENGTH_KEY: "Prop-content-length"> }
 TOKEN: { <CONTENT_LENGTH_KEY: "Content-length"> }
+
+TOKEN: { <KEY: "K"> }
+TOKEN: { <VAL: "V"> }
+TOKEN: { <PROPS_END: "PROPS-END"> }
+
+TOKEN: { <NODE_PATH_KEY: "Node-path: "> : READ_PATH }
+TOKEN: { <NODE_KIND_KEY: "Node-kind"> }
+TOKEN: { <NODE_KIND_VALUE: ("file"|"dir")> }
+TOKEN: { <NODE_ACTION_KEY: "Node-action"> }
+TOKEN: { <NODE_ACTION_VALUE: ("change" | "add" | "delete" | "replace")> }
+
+TOKEN: { <TEXT_CONTENT_LENGTH_KEY: "Text-content-length"> }
+TOKEN: { <TEXT_CONTENT_MD5_KEY: "Text-content-md5"> }
+TOKEN: { <TEXT_CONTENT_MD5_VALUE: (["0"-"9","a"-"z"]){32}> }
+TOKEN: { <TEXT_CONTENT_SHA1_KEY: "Text-content-sha1"> }
+TOKEN: { <TEXT_CONTENT_SHA1_VALUE: (["0"-"9","a"-"z"]){40}> }
+
+<READ_PATH> TOKEN: { <NODE_PATH_VALUE: (~["\n","\r"])+> : DEFAULT }
 
 // Parser
 
@@ -62,8 +85,10 @@ public SvnDump Start():
     <UUID_KEY> <COLON> <UUID_VALUE> <EOL>
     <EOL>
 
-    revision = Revision()
-    { dump.addRevision(revision); }
+    (
+        revision = Revision()
+        { dump.addRevision(revision); }
+    )*
 
     <EOF>
 
@@ -75,6 +100,8 @@ public SvnRevision Revision():
     SvnRevisionImpl revision;
     Token revisionNumber;
     Token contentLength;
+    Map properties;
+    SvnNode node;
 }
 {
     <REVISION_NUMBER_KEY> <COLON> revisionNumber = <NUMBER> <EOL>
@@ -86,29 +113,78 @@ public SvnRevision Revision():
 
     { revision = new SvnRevisionImpl(Integer.parseInt(revisionNumber.image)); }
 
-    ( Property(revision) ) *
+    properties = Property()
+    { revision.setProperties(properties); }
 
-    <"PROPS-END"> <EOL>
-    <EOL>
+    (
+        node = Node()
+        { revision.addNode(node); }
+        |
+        <EOL>
+    )*
 
     { return revision; }
 }
 
-public void Property(SvnRevisionImpl revision):
+public Map Property():
 {
+    Map properties = new HashMap();
     String key, value;
     Token keyLength, valueLength;
 }
 {
-    <"K"> keyLength = <NUMBER> <EOL>
-    { key = readCharacters(Integer.parseInt(keyLength.image)); }
+    (
+        <KEY> keyLength = <NUMBER> <EOL>
+        { key = readCharacters(Integer.parseInt(keyLength.image)); }
+        <EOL>
+
+        <VAL> valueLength = <NUMBER> <EOL>
+        { value = readCharacters(Integer.parseInt(valueLength.image)); }
+        <EOL>
+
+        {
+            properties.put(key, value);
+        }
+    )*
+
+    <PROPS_END> <EOL>
+
+    { return properties; }
+}
+
+public SvnNode Node():
+{
+    SvnNodeImpl svnNode;
+    Token nodePath = null;
+    Token nodeKind = null;
+    Token nodeAction = null;
+    Token nodeMd5 = null;
+    Token nodeSha1 = null;
+    Token contentLength = null;
+    Map properties;
+}
+{
+    <NODE_PATH_KEY> nodePath = <NODE_PATH_VALUE> <EOL>
+    ( <NODE_KIND_KEY> <COLON> nodeKind = <NODE_KIND_VALUE> <EOL> )?
+    <NODE_ACTION_KEY> <COLON> nodeAction = <NODE_ACTION_VALUE> <EOL>
+
+    ( <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL> )?
+    ( <TEXT_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL> )?
+    ( <TEXT_CONTENT_MD5_KEY> <COLON> nodeMd5 = <TEXT_CONTENT_MD5_VALUE> <EOL> )?
+    ( <TEXT_CONTENT_SHA1_KEY> <COLON> nodeSha1 = <TEXT_CONTENT_SHA1_VALUE> <EOL> )?
+    ( <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL> )?
     <EOL>
 
-    <"V"> valueLength = <NUMBER> <EOL>
-    { value = readCharacters(Integer.parseInt(valueLength.image)); }
-    <EOL>
+    properties = Property()
 
     {
-        revision.setProperty(key, value);
+        svnNode = new SvnNodeImpl();
+        svnNode.setPath(nodePath.image);
+        svnNode.setKind(nodeKind.image);
+        svnNode.setAction(nodeAction.image);
+        svnNode.setMd5(nodeMd5.image);
+        svnNode.setSha1(nodeSha1.image);
     }
+
+    { return svnNode; }
 }

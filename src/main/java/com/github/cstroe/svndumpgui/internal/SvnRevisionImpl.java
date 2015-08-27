@@ -1,14 +1,18 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SvnRevisionImpl implements SvnRevision {
 
     private final int number;
-    private final Map<String, String> properties;
+    private final Map<String, String> properties = new HashMap<>();
+    private final List<SvnNode> nodes = new ArrayList<>();
 
     public SvnRevisionImpl(int number) {
         this(number, null);
@@ -16,8 +20,7 @@ public class SvnRevisionImpl implements SvnRevision {
 
     public SvnRevisionImpl(int number, String date) {
         this.number = number;
-        properties = new HashMap<>();
-        this.setProperty(DATE, date);
+        this.properties.put(DATE, date);
     }
 
     @Override
@@ -30,7 +33,22 @@ public class SvnRevisionImpl implements SvnRevision {
         return properties.get(name);
     }
 
-    public void setProperty(String name, String value) {
-        properties.put(name, value);
+    public void setProperties(Map<String, String> properties) {
+        if(properties == null) {
+            throw new NullPointerException("Cannot set null properties on SvnRevision.");
+        }
+        this.properties.putAll(properties);
+    }
+
+    @Override
+    public List<SvnNode> getNodes() {
+        return nodes;
+    }
+
+    public void addNode(SvnNode node) {
+        if(node == null) {
+            throw new NullPointerException("Cannot add null node to SvnRevision.");
+        }
+        nodes.add(node);
     }
 }

@@ -30,4 +30,15 @@ public class SvnRevisionImplTest {
         assertThat(svnRevision.getProperty(SvnProperties.DATE), is(equalTo(cal.getTime().toString())));
     }
 
+    @Test(expected = NullPointerException.class)
+    public void set_null_properties() {
+        SvnRevisionImpl  svnRevision = new SvnRevisionImpl(0);
+        svnRevision.setProperties(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void add_null_node() {
+        SvnRevisionImpl  svnRevision = new SvnRevisionImpl(0);
+        svnRevision.addNode(null);
+    }
 }
