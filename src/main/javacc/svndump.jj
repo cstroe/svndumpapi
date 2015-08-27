@@ -17,7 +17,7 @@ PARSER_BEGIN(SvnDumpFileParser)
     public static void main(String[] args)
     throws ParseException, TokenMgrError {
       SvnDumpFileParser parser = new SvnDumpFileParser(System.in);
-      parser.Start(System.out);
+      parser.Start();
     }
 
     private String readCharacters(int number) {
@@ -49,7 +49,7 @@ TOKEN: { <CONTENT_LENGTH_KEY: "Content-length"> }
 
 // Parser
 
-public SvnDump Start(PrintStream out):
+public SvnDump Start():
 {
   SvnDumpImpl dump = new SvnDumpImpl();
   Token dumpVersion;
@@ -58,11 +58,6 @@ public SvnDump Start(PrintStream out):
 {
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
     <EOL>
-
-    {
-      out.print("Svn Dump Version: ");
-      out.println(dumpVersion.image);
-    }
 
     <UUID_KEY> <COLON> <UUID_VALUE> <EOL>
     <EOL>

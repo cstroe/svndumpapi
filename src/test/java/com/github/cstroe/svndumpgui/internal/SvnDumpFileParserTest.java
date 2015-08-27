@@ -51,7 +51,7 @@ public class SvnDumpFileParserTest {
             .getResourceAsStream("dumps/empty.dump");
 
         SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        SvnDump dump =  parser.Start(System.out);
+        SvnDump dump = parser.Start();
 
         assertNotNull(dump);
 
