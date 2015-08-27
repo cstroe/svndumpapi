@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.SvnNode;
 public class SvnNodeImpl implements SvnNode {
     private String path;
     private String kind;
-    private String Action;
+    private String action;
     private String md5;
     private String sha1;
     private String content;
@@ -30,11 +30,11 @@ public class SvnNodeImpl implements SvnNode {
 
     @Override
     public String getAction() {
-        return Action;
+        return action;
     }
 
     public void setAction(String action) {
-        Action = action;
+        this.action = action;
     }
 
     @Override
@@ -62,5 +62,10 @@ public class SvnNodeImpl implements SvnNode {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(action) + " " + String.valueOf(kind) + " " + String.valueOf(path);
     }
 }
