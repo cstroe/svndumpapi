@@ -23,6 +23,13 @@ import static org.junit.Assert.assertThat;
 
 public class SvnDumpFileParserTest {
 
+    public SvnDump parse(String dumpFile) throws ParseException {
+        final InputStream s = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream(dumpFile);
+        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+        return parser.Start();
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void simple_property_is_parsed() throws ParseException {
@@ -54,11 +61,7 @@ public class SvnDumpFileParserTest {
 
     @Test
     public void should_parse_empty_dump() throws IOException, ParseException {
-        final InputStream s = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("dumps/empty.dump");
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        SvnDump dump = parser.Start();
+        SvnDump dump = parse("dumps/empty.dump");
 
         assertNotNull(dump);
 
@@ -75,11 +78,7 @@ public class SvnDumpFileParserTest {
 
     @Test
     public void should_parse_one_commit() throws ParseException {
-        final InputStream s = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("dumps/firstcommit.dump");
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        SvnDump dump = parser.Start();
+        SvnDump dump = parse("dumps/firstcommit.dump");
 
         assertThat("The repository dump contains two revisions.", dump.getRevisions().size(), is(2));
 
@@ -101,11 +100,7 @@ public class SvnDumpFileParserTest {
 
     @Test
     public void should_parse_file_content() throws ParseException, NoSuchAlgorithmException {
-        final InputStream s = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("dumps/add_file.dump");
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        SvnDump dump = parser.Start();
+        SvnDump dump = parse("dumps/add_file.dump");
 
         assertThat(dump.getRevisions().size(), is(2));
         assertThat(dump.getRevisions().get(1).getNumber(), is(1));
@@ -158,11 +153,7 @@ public class SvnDumpFileParserTest {
      */
     @Test
     public void should_parse_nodes_with_different_ordering_of_headers() throws ParseException, NoSuchAlgorithmException {
-        final InputStream s = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("dumps/different_node_order.dump");
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        SvnDump dump = parser.Start();
+        SvnDump dump = parse("dumps/different_node_order.dump");
 
         assertThat(dump.getRevisions().size(), is(2));
 
@@ -177,11 +168,7 @@ public class SvnDumpFileParserTest {
      */
     @Test
     public void should_parse_nodes_with_different_ordering_of_headers2() throws ParseException, NoSuchAlgorithmException {
-        final InputStream s = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("dumps/different_node_order2.dump");
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
-        SvnDump dump = parser.Start();
+        SvnDump dump = parse("dumps/different_node_order2.dump");
 
         assertThat(dump.getRevisions().size(), is(2));
 
@@ -190,5 +177,30 @@ public class SvnDumpFileParserTest {
         assertThat(dump.getRevisions().get(1).getNodes().get(0).getKind(), is("dir"));
         assertThat(dump.getRevisions().get(1).getNodes().get(0).getAction(), is("add"));
         assertThat(dump.getRevisions().get(1).getNodes().get(0).getSha1(), is("53ff16933cc0ec0077ea0d5f848ef0fd61440c27"));
+    }
+
+    @Test
+    public void should_parse_binary_file() throws ParseException, NoSuchAlgorithmException {
+        SvnDump dump = parse("dumps/binary_commit.dump");
+
+        assertThat(dump.getRevisions().size(), is(2));
+        assertThat(dump.getRevisions().get(1).getNumber(), is(1));
+        assertThat(dump.getRevisions().get(1).getProperty(SvnProperties.LOG), is("Adding binary file."));
+        assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
+
+        SvnNode fileBin = dump.getRevisions().get(1).getNodes().get(0);
+
+        assertThat(fileBin.getContent().length(), is(1024));
+        assertThat(fileBin.getPath(), is("file.bin"));
+
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] md5raw = md5.digest(fileBin.getContent().getBytes());
+        String md5sum = md5sum(md5raw);
+        assertThat(md5sum, is(equalTo(fileBin.getMd5())));
+
+        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+        byte[] sha1raw = sha1.digest(fileBin.getContent().getBytes());
+        String sha1sum = sha1sum(sha1raw);
+        assertThat(sha1sum, is(equalTo(fileBin.getSha1())));
     }
 }
