@@ -25,6 +25,11 @@ public class SvnDumpWriterImplTest {
         recreateDumpFile("dumps/firstcommit.dump");
     }
 
+    @Test
+    public void write_dump_with_file_content() throws ParseException, IOException {
+        recreateDumpFile("dumps/add_file.dump");
+    }
+
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);

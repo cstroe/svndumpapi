@@ -6,19 +6,20 @@ import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Map;
 
 public class SvnDumpWriterImpl implements SvnDumpWriter {
     @Override
-    public void write(OutputStream os, SvnDump dump) {
+    public void write(OutputStream os, SvnDump dump) throws IOException {
         try(PrintStream ps = new PrintStream(os)) {
             writeDump(ps, dump);
         }
     }
 
-    public void writeDump(PrintStream ps, SvnDump dump) {
+    public void writeDump(PrintStream ps, SvnDump dump) throws IOException {
         ps.println("SVN-fs-dump-format-version: 2\n");
         ps.print("UUID: ");
         ps.println(dump.getUUID());
@@ -29,7 +30,7 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
         }
     }
 
-    public void writeRevision(PrintStream ps, SvnRevision revision) {
+    public void writeRevision(PrintStream ps, SvnRevision revision) throws IOException {
         ps.print("Revision-number: ");
         ps.println(revision.getNumber());
 
@@ -70,7 +71,7 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
         ps.println("PROPS-END");
     }
 
-    private void writeNodes(PrintStream ps, SvnRevision revision) {
+    private void writeNodes(PrintStream ps, SvnRevision revision) throws IOException {
         for(SvnNode node : revision.getNodes()) {
             ps.print("Node-path: ");
             ps.println(node.getPath());
@@ -109,6 +110,12 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
             ps.println();
 
             ps.print(properties.toString());
+
+            if(node.getContent() != null && node.getContent().length != 0) {
+                ps.write(node.getContent());
+                ps.println();
+            }
+
             ps.println();
         }
     }
