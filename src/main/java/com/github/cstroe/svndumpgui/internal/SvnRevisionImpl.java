@@ -3,10 +3,7 @@ package com.github.cstroe.svndumpgui.internal;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SvnRevisionImpl implements SvnRevision {
 
@@ -31,6 +28,11 @@ public class SvnRevisionImpl implements SvnRevision {
     @Override
     public String getProperty(String name) {
         return properties.get(name);
+    }
+
+    @Override
+    public Set<String> getDefinedProperties() {
+        return properties.keySet();
     }
 
     public void setProperties(Map<String, String> properties) {
