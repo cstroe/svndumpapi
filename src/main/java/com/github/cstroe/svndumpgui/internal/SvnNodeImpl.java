@@ -106,6 +106,10 @@ public class SvnNodeImpl implements SvnNode {
 
     @Override
     public String toString() {
-        return String.valueOf(action) + " " + String.valueOf(kind) + " " + String.valueOf(path);
+        if(kind != null) {
+            return String.valueOf(action) + " " + String.valueOf(kind) + " " + String.valueOf(path);
+        } else {
+            return String.valueOf(action) + " " + String.valueOf(path);
+        }
     }
 }
