@@ -2,7 +2,7 @@
 
 ## PREAMBLE
 
-Most of these commits use the same <SETUP CODE>, shown below:
+Most of these commits use the same `SETUP CODE`, shown below:
 
     mkdir -p svn-test/repos/testrepo
     mkdir -p svn-test/checkout
@@ -12,7 +12,7 @@ Most of these commits use the same <SETUP CODE>, shown below:
     bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo" testrepo'
     cd testrepo
     
-They also use the same <EXPORT CODE>, shown below:
+They also use the same `EXPORT CODE`, shown below:
 
     cd ../../repos
     svnadmin dump testrepo > output.dump
