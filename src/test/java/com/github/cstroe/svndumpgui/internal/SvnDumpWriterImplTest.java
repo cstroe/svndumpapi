@@ -6,7 +6,12 @@ import com.github.cstroe.svndumpgui.generated.ParseException;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class SvnDumpWriterImplTest {
 

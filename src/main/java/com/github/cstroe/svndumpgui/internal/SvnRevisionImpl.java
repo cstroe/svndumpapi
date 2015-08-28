@@ -3,7 +3,11 @@ package com.github.cstroe.svndumpgui.internal;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class SvnRevisionImpl implements SvnRevision {
 
