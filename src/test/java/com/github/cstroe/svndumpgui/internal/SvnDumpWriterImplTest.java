@@ -31,6 +31,11 @@ public class SvnDumpWriterImplTest {
     }
 
     @Test
+    public void write_dump_with_different_node_order() throws ParseException, IOException {
+        recreateDumpFile("dumps/different_node_order.dump");
+    }
+
+    @Test
     public void write_dump_with_optional_node_properties() throws ParseException, IOException {
         recreateDumpFile("dumps/add_file_no_node_properties.dump");
     }
