@@ -2,6 +2,8 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnNode;
 
+import java.util.Map;
+
 public class SvnNodeImpl implements SvnNode {
     private String path;
     private String kind;
@@ -13,6 +15,7 @@ public class SvnNodeImpl implements SvnNode {
     private String copiedFromPath;
     private String copiedFromMd5;
     private String copiedFromSha1;
+    private Map<String, String> properties;
 
     @Override
     public String getPath() {
@@ -102,6 +105,15 @@ public class SvnNodeImpl implements SvnNode {
 
     public void setCopiedFromSha1(String copiedFromSha1) {
         this.copiedFromSha1 = copiedFromSha1;
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
     }
 
     @Override

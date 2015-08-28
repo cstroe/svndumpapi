@@ -231,11 +231,12 @@ public SvnNode Node():
     <EOL>
 
     {
+        svnNode = new SvnNodeImpl();
+
         if(propContentLength != null) {
             properties = Property();
+            svnNode.setProperties(properties);
         }
-
-        svnNode = new SvnNodeImpl();
 
         // required
         svnNode.setPath(nodePath.image);

@@ -1,5 +1,7 @@
 package com.github.cstroe.svndumpgui.api;
 
+import java.util.Map;
+
 public interface SvnNode {
     String getPath();
     String getKind();
@@ -11,4 +13,5 @@ public interface SvnNode {
     String getCopiedFromMd5();
     String getCopiedFromSha1();
     byte[] getContent();
+    Map<String, String> getProperties();
 }

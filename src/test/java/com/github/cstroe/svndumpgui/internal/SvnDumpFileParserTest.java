@@ -226,6 +226,8 @@ public class SvnDumpFileParserTest {
 
         SvnNode fileBin = dump.getRevisions().get(1).getNodes().get(0);
 
+        assertThat(fileBin.getProperties().get(SvnProperties.MIMETYPE), is(equalTo("application/octet-stream")));
+
         assertThat(fileBin.getContent().length, is(1024));
         assertThat(fileBin.getPath(), is("file.bin"));
 
