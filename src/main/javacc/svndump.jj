@@ -100,14 +100,21 @@ public SvnDump Start():
 {
   SvnDumpImpl dump = new SvnDumpImpl();
   Token dumpVersion;
+  Token uuid;
   SvnRevision revision;
 }
 {
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
     <EOL>
 
-    <UUID_KEY> <COLON> <UUID_VALUE> <EOL>
+    <UUID_KEY> <COLON> uuid = <UUID_VALUE> <EOL>
     <EOL>
+
+    {
+        if(uuid != null) {
+            dump.setUUID(uuid.image);
+        }
+    }
 
     (
         revision = Revision()

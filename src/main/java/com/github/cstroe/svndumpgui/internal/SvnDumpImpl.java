@@ -8,7 +8,17 @@ import java.util.List;
 
 public class SvnDumpImpl implements SvnDump {
 
+    private String uuid;
     private List<SvnRevision> revisions = new ArrayList<>();
+
+    @Override
+    public String getUUID() {
+        return uuid;
+    }
+
+    public void setUUID(String uuid) {
+        this.uuid = uuid;
+    }
 
     public void addRevision(SvnRevision revision) {
         revisions.add(revision);

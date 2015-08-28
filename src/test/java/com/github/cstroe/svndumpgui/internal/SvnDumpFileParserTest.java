@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThat;
 
 public class SvnDumpFileParserTest {
 
-    public SvnDump parse(String dumpFile) throws ParseException {
+    public static SvnDump parse(String dumpFile) throws ParseException {
         final InputStream s = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(dumpFile);
         SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
@@ -58,6 +58,14 @@ public class SvnDumpFileParserTest {
         assertNotNull(revision);
         assertThat(revision.getNumber(), is(0));
         assertThat(revision.getProperty(SvnProperties.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
+    }
+
+    @Test
+    public void should_parse_uuid() throws IOException, ParseException {
+        SvnDump dump = parse("dumps/empty.dump");
+
+        assertNotNull(dump);
+        assertThat(dump.getUUID(), is(equalTo("0c9743f5-f757-4bed-a5b3-acbcba4d645b")));
     }
 
     @Test
