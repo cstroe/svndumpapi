@@ -4,15 +4,14 @@ import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class SvnRevisionImpl implements SvnRevision {
 
     private final int number;
-    private final Map<String, String> properties = new HashMap<>();
+    private Map<String, String> properties = new LinkedHashMap<>();
     private final List<SvnNode> nodes = new ArrayList<>();
 
     public SvnRevisionImpl(int number) {
@@ -35,15 +34,15 @@ public class SvnRevisionImpl implements SvnRevision {
     }
 
     @Override
-    public Set<String> getDefinedProperties() {
-        return properties.keySet();
+    public Map<String, String> getProperties() {
+        return properties;
     }
 
     public void setProperties(Map<String, String> properties) {
         if(properties == null) {
             throw new NullPointerException("Cannot set null properties on SvnRevision.");
         }
-        this.properties.putAll(properties);
+        this.properties = new LinkedHashMap<>(properties);
     }
 
     @Override

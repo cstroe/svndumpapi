@@ -11,7 +11,7 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.io.IOException;
   import java.io.ByteArrayOutputStream;
   import java.util.Map;
-  import java.util.HashMap;
+  import java.util.LinkedHashMap;
 
   import com.github.cstroe.svndumpgui.api.SvnDump;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -159,7 +159,7 @@ public SvnRevision Revision():
 
 public Map Property():
 {
-    Map properties = new HashMap();
+    Map properties = new LinkedHashMap();
     String key, value;
     Token keyLength, valueLength;
 }
