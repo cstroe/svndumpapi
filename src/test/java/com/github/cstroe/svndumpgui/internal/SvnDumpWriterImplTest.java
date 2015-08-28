@@ -20,6 +20,12 @@ public class SvnDumpWriterImplTest {
         recreateDumpFile("dumps/empty.dump");
     }
 
+    @Test
+    public void write_dump_with_one_commit() throws ParseException, IOException {
+        recreateDumpFile("dumps/firstcommit.dump");
+    }
+
+
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
 
@@ -53,8 +59,10 @@ public class SvnDumpWriterImplTest {
                         throw new ComparisonFailure("Streams differ.", new String(buf1), new String(buf2));
                     }
             }
-            if(!(d2.read() < 0)) { // is the end of the second file also?
-                throw new AssertionError("Actual stream is shorter than expected.");
+            int d2r = d2.read();
+            if(!(d2r < 0)) { // is the end of the second file also?
+                throw new ComparisonFailure("Actual stream is shorter than expected. (The extra character is tacked on at the end)",
+                        new String(buf1), new String(buf2) + String.valueOf((char)d2r));
             }
         } catch(EOFException ioe) {
             if(!readingD2) {
