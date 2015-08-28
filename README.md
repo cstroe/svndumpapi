@@ -5,7 +5,7 @@ Attempt to create a user interface for editing SVN dump files.
 ## SVNDumpFileParser
 
 The `SvnDumpFileParser` is an auto-generated parser for SVN dump files 
-[files created with `svnadmin dump`](src/test/resources/dumps).  It will
+(files [created with `svnadmin dump`](src/test/resources/dumps)).  It will
 parse SVN dump files into an [`SvnDump`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDump.java) object.  The `SvnDump` representation is
 meant to be very light-weight and does minimal validation.
 
