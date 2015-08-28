@@ -1,5 +1,7 @@
 # How to create the test SVN Dump Files
 
+The `SVNDumpFileParser` unit tests are based on the files in this directory.
+
 ## PREAMBLE
 
 ### SETUP CODE
