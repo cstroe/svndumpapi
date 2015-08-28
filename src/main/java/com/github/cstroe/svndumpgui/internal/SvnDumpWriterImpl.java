@@ -85,8 +85,10 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
             writeProperties(new PrintStream(properties), node.getProperties());
             int propertiesLength = properties.size();
 
-            ps.print("Prop-content-length: ");
-            ps.println(propertiesLength);
+            if(propertiesLength > 0) {
+                ps.print("Prop-content-length: ");
+                ps.println(propertiesLength);
+            }
 
             ps.print("Text-content-length: ");
             int textContentLength = 0;
@@ -109,7 +111,9 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
             ps.println(propertiesLength + textContentLength);
             ps.println();
 
-            ps.print(properties.toString());
+            if(propertiesLength > 0) {
+                ps.print(properties.toString());
+            }
 
             if(node.getContent() != null && node.getContent().length != 0) {
                 ps.write(node.getContent());

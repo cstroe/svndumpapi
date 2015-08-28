@@ -30,6 +30,11 @@ public class SvnDumpWriterImplTest {
         recreateDumpFile("dumps/add_file.dump");
     }
 
+    @Test
+    public void write_dump_with_optional_node_properties() throws ParseException, IOException {
+        recreateDumpFile("dumps/add_file_no_node_properties.dump");
+    }
+
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
