@@ -10,8 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -50,6 +48,16 @@ public class SvnDumpWriterImplTest {
     @Test
     public void write_dump_with_binary_file_commit() throws ParseException, IOException {
         recreateDumpFile("dumps/binary_commit.dump");
+    }
+
+    @Test
+    public void write_dump_rename() throws ParseException, IOException {
+        recreateDumpFile("dumps/svn_rename.dump");
+    }
+
+    @Test
+    public void write_no_copy_hashes() throws ParseException, IOException {
+        recreateDumpFile("dumps/svn_rename_no_copy_hashes.dump");
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
