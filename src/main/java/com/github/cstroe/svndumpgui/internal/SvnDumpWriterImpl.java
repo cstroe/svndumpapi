@@ -13,6 +13,12 @@ import java.io.PrintStream;
 import java.util.Map;
 
 public class SvnDumpWriterImpl implements SvnDumpWriter {
+    private boolean writeExtraNewLineAfterEachRevision = false;
+
+    public void setWriteExtraNewLineAfterEachRevision(boolean val) {
+        this.writeExtraNewLineAfterEachRevision = val;
+    }
+
     @Override
     public void write(OutputStream os, SvnDump dump) throws IOException {
         try(PrintStream ps = new PrintStream(os, true)) {
@@ -28,6 +34,9 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
 
         for(SvnRevision revision : dump.getRevisions()) {
             writeRevision(ps, revision);
+            if(writeExtraNewLineAfterEachRevision) {
+                ps.println();
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package com.github.cstroe.svndumpgui.internal;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
@@ -10,6 +11,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -58,6 +62,16 @@ public class SvnDumpWriterImplTest {
     @Test
     public void write_no_copy_hashes() throws ParseException, IOException {
         recreateDumpFile("dumps/svn_rename_no_copy_hashes.dump");
+    }
+
+    @Test
+    public void rewrite_AM_file() throws ParseException, IOException {
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FileInputStream("/home/cosmin/onestep.dump"), "ISO-8859-1");
+        SvnDump dump = parser.Start();
+
+        SvnDumpWriterImpl writer = new SvnDumpWriterImpl();
+        writer.setWriteExtraNewLineAfterEachRevision(true);
+        writer.write(new FileOutputStream("/tmp/am.dump"), dump);
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
