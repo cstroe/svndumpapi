@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,10 +38,19 @@ public class SvnDumpWriterImplTest {
     }
 
     @Test
+    public void write_dump_with_different_node_order2() throws ParseException, IOException {
+        recreateDumpFile("dumps/different_node_order2.dump");
+    }
+
+    @Test
     public void write_dump_with_optional_node_properties() throws ParseException, IOException {
         recreateDumpFile("dumps/add_file_no_node_properties.dump");
     }
 
+    @Test
+    public void write_dump_with_binary_file_commit() throws ParseException, IOException {
+        recreateDumpFile("dumps/binary_commit.dump");
+    }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
@@ -71,7 +82,7 @@ public class SvnDumpWriterImplTest {
                 readingD2 = false;
                 for(int i=0;i<len;i++, filePosition++)
                     if(buf1[i] != buf2[i]) {
-                        throw new ComparisonFailure("Streams differ.", new String(buf1), new String(buf2));
+                        throw new ComparisonFailure("Streams differ." + buf1[i] + " != " + buf2[i], new String(buf1), new String(buf2));
                     }
             }
             int d2r = d2.read();

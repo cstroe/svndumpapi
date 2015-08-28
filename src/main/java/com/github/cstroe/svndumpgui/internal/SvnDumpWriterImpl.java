@@ -15,7 +15,7 @@ import java.util.Map;
 public class SvnDumpWriterImpl implements SvnDumpWriter {
     @Override
     public void write(OutputStream os, SvnDump dump) throws IOException {
-        try(PrintStream ps = new PrintStream(os)) {
+        try(PrintStream ps = new PrintStream(os, true)) {
             writeDump(ps, dump);
         }
     }
@@ -37,7 +37,7 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
 
         // properties
         ByteArrayOutputStream properties = new ByteArrayOutputStream();
-        writeProperties(new PrintStream(properties), revision.getProperties());
+        writeProperties(new PrintStream(properties, true), revision.getProperties());
         int propertiesLength = properties.size();
 
         ps.print("Prop-content-length: ");
@@ -52,9 +52,9 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
 
         // nodes
         ByteArrayOutputStream nodes = new ByteArrayOutputStream();
-        writeNodes(new PrintStream(nodes), revision);
+        writeNodes(new PrintStream(nodes, true), revision);
 
-        ps.print(nodes.toString());
+        ps.write(nodes.toByteArray());
     }
 
     public void writeProperties(PrintStream ps, Map<String, String> properties) {
