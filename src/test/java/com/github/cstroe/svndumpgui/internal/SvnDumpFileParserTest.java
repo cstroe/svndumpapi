@@ -19,6 +19,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class SvnDumpFileParserTest {
@@ -229,5 +230,52 @@ public class SvnDumpFileParserTest {
         byte[] sha1raw = sha1.digest(fileBin.getContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(fileBin.getSha1())));
+    }
+
+    @Test
+    public void should_parse_svn_mv_operations() throws ParseException, NoSuchAlgorithmException {
+        SvnDump dump = parse("dumps/svn_rename.dump");
+
+        assertThat(dump.getRevisions().size(), is(3));
+
+        // validate the revision in which we create the file
+        SvnRevision createFileRevision = dump.getRevisions().get(1);
+        assertThat(createFileRevision.getNumber(), is(1));
+        assertThat(createFileRevision.getProperty(SvnProperties.LOG), is(equalTo("Committed README.txt")));
+        assertThat(createFileRevision.getNodes().size(), is(1));
+
+        SvnNode readmeTxt = createFileRevision.getNodes().get(0);
+
+        assertThat(readmeTxt.getContent().length, is(20));
+        assertThat(readmeTxt.getPath(), is("README.txt"));
+
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] md5raw = md5.digest(readmeTxt.getContent());
+        String md5sum = md5sum(md5raw);
+        assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
+
+        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
+        String sha1sum = sha1sum(sha1raw);
+        assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
+
+        // validate the revision in which we rename the file
+        SvnRevision moveFileRevision = dump.getRevisions().get(2);
+        assertThat(moveFileRevision.getProperty(SvnProperties.LOG), is(equalTo("Renamed README.txt to README-new.txt")));
+        assertThat(moveFileRevision.getNodes().size(), is(2));
+
+        SvnNode newFileNode = moveFileRevision.getNodes().get(0);
+        assertThat(newFileNode.getPath(), is(equalTo("README-new.txt")));
+        assertThat(newFileNode.getKind(), is(equalTo("file")));
+        assertThat(newFileNode.getAction(), is(equalTo("add")));
+        assertNull(newFileNode.getContent());
+        assertThat(newFileNode.getCopiedFromRevision(), is(1));
+        assertThat(newFileNode.getCopiedFromPath(), is(equalTo("README.txt")));
+        assertThat(newFileNode.getCopiedFromMd5(), is(equalTo(readmeTxt.getMd5())));
+        assertThat(newFileNode.getCopiedFromSha1(), is(equalTo(readmeTxt.getSha1())));
+
+        SvnNode oldFileNode  = moveFileRevision.getNodes().get(1);
+        assertThat(oldFileNode.getPath(), is(equalTo("README.txt")));
+        assertThat(oldFileNode.getAction(), is(equalTo("delete")));
     }
 }

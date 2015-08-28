@@ -81,12 +81,16 @@ TOKEN: { <NODE_KIND_KEY: "Node-kind"> }
 TOKEN: { <NODE_KIND_VALUE: ("file"|"dir")> }
 TOKEN: { <NODE_ACTION_KEY: "Node-action"> }
 TOKEN: { <NODE_ACTION_VALUE: ("change" | "add" | "delete" | "replace")> }
+TOKEN: { <NODE_COPYFROM_REV_KEY: "Node-copyfrom-rev"> }
+TOKEN: { <NODE_COPYFROM_PATH_KEY: "Node-copyfrom-path: "> : READ_PATH }
 
 TOKEN: { <TEXT_CONTENT_LENGTH_KEY: "Text-content-length"> }
 TOKEN: { <TEXT_CONTENT_MD5_KEY: "Text-content-md5"> }
-TOKEN: { <TEXT_CONTENT_MD5_VALUE: (["0"-"9","a"-"z"]){32}> }
+TOKEN: { <MD5_VALUE: (["0"-"9","a"-"z"]){32}> }
 TOKEN: { <TEXT_CONTENT_SHA1_KEY: "Text-content-sha1"> }
-TOKEN: { <TEXT_CONTENT_SHA1_VALUE: (["0"-"9","a"-"z"]){40}> }
+TOKEN: { <SHA1_VALUE: (["0"-"9","a"-"z"]){40}> }
+TOKEN: { <TEXT_COPYSOURCE_MD5_KEY: "Text-copy-source-md5"> }
+TOKEN: { <TEXT_COPYSOURCE_SHA1_KEY: "Text-copy-source-sha1"> }
 
 <READ_PATH> TOKEN: { <NODE_PATH_VALUE: (~["\n","\r"])+> : DEFAULT }
 
@@ -183,6 +187,10 @@ public SvnNode Node():
     Token contentLength = null;
     Token textContentLength = null;
     Token propContentLength = null;
+    Token copiedFromRevision = null;
+    Token copiedFromPath = null;
+    Token copiedFromMd5 = null;
+    Token copiedFromSha1 = null;
     byte[] fileContent = null;
     Map properties;
 }
@@ -198,11 +206,19 @@ public SvnNode Node():
         |
         <TEXT_CONTENT_LENGTH_KEY> <COLON> textContentLength = <NUMBER> <EOL>
         |
-        <TEXT_CONTENT_MD5_KEY> <COLON> nodeMd5 = <TEXT_CONTENT_MD5_VALUE> <EOL>
+        <TEXT_CONTENT_MD5_KEY> <COLON> nodeMd5 = <MD5_VALUE> <EOL>
         |
-        <TEXT_CONTENT_SHA1_KEY> <COLON> nodeSha1 = <TEXT_CONTENT_SHA1_VALUE> <EOL>
+        <TEXT_CONTENT_SHA1_KEY> <COLON> nodeSha1 = <SHA1_VALUE> <EOL>
         |
         <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
+        |
+        <NODE_COPYFROM_REV_KEY> <COLON> copiedFromRevision = <NUMBER> <EOL>
+        |
+        <NODE_COPYFROM_PATH_KEY> copiedFromPath = <NODE_PATH_VALUE> <EOL>
+        |
+        <TEXT_COPYSOURCE_MD5_KEY> <COLON> copiedFromMd5 =  <MD5_VALUE> <EOL>
+        |
+        <TEXT_COPYSOURCE_SHA1_KEY> <COLON> copiedFromSha1 =  <SHA1_VALUE> <EOL>
     )+
 
     <EOL>
@@ -231,6 +247,15 @@ public SvnNode Node():
         if(textContentLength != null) {
             fileContent = readByteArray(Integer.parseInt(textContentLength.image));
             svnNode.setContent(fileContent);
+        }
+        if(copiedFromRevision != null) {
+            svnNode.setCopiedFromRevision(Integer.parseInt(copiedFromRevision.image));
+            if(copiedFromPath == null) {
+                throw new ParseException("Cannot have null copiedFromPath when a copiedFromRevision is present.");
+            }
+            svnNode.setCopiedFromPath(copiedFromPath.image);
+            svnNode.setCopiedFromMd5(copiedFromMd5.image);
+            svnNode.setCopiedFromSha1(copiedFromSha1.image);
         }
     }
 
