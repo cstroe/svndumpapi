@@ -1,66 +1,15 @@
 package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SvnNodeImpl implements SvnNode {
-    private String path;
-    private String kind;
-    private String action;
-    private String md5;
-    private String sha1;
-    private byte[] content;
-    private Integer copiedFromRevision;
-    private String copiedFromPath;
-    private String copiedFromMd5;
-    private String copiedFromSha1;
+    private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
     private Map<String, String> properties;
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    @Override
-    public String getKind() {
-        return kind;
-    }
-
-    public void setKind(String kind) {
-        this.kind = kind;
-    }
-
-    @Override
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    @Override
-    public String getMd5() {
-        return md5;
-    }
-
-    public void setMd5(String md5) {
-        this.md5 = md5;
-    }
-
-    @Override
-    public String getSha1() {
-        return sha1;
-    }
-
-    public void setSha1(String sha1) {
-        this.sha1 = sha1;
-    }
+    private byte[] content;
 
     @Override
     public byte[] getContent() {
@@ -72,42 +21,6 @@ public class SvnNodeImpl implements SvnNode {
     }
 
     @Override
-    public Integer getCopiedFromRevision() {
-        return copiedFromRevision;
-    }
-
-    public void setCopiedFromRevision(Integer copiedFromRevision) {
-        this.copiedFromRevision = copiedFromRevision;
-    }
-
-    @Override
-    public String getCopiedFromPath() {
-        return copiedFromPath;
-    }
-
-    public void setCopiedFromPath(String copiedFromPath) {
-        this.copiedFromPath = copiedFromPath;
-    }
-
-    @Override
-    public String getCopiedFromMd5() {
-        return copiedFromMd5;
-    }
-
-    public void setCopiedFromMd5(String copiedFromMd5) {
-        this.copiedFromMd5 = copiedFromMd5;
-    }
-
-    @Override
-    public String getCopiedFromSha1() {
-        return copiedFromSha1;
-    }
-
-    public void setCopiedFromSha1(String copiedFromSha1) {
-        this.copiedFromSha1 = copiedFromSha1;
-    }
-
-    @Override
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -116,12 +29,29 @@ public class SvnNodeImpl implements SvnNode {
         this.properties = properties;
     }
 
+    public void setHeaders(Map<SvnNodeHeader, String> headers) {
+        this.headers = headers;
+    }
+
+    @Override
+    public Map<SvnNodeHeader, String> getHeaders() {
+        return headers;
+    }
+
+    @Override
+    public String get(SvnNodeHeader header) {
+        return headers.get(header);
+    }
+
     @Override
     public String toString() {
-        if(kind != null) {
-            return String.valueOf(action) + " " + String.valueOf(kind) + " " + String.valueOf(path);
+        if(headers.containsKey(SvnNodeHeader.KIND)) {
+            return  headers.get(SvnNodeHeader.ACTION) + " " +
+                    headers.get(SvnNodeHeader.KIND) + " " +
+                    headers.get(SvnNodeHeader.PATH);
         } else {
-            return String.valueOf(action) + " " + String.valueOf(path);
+            return  headers.get(SvnNodeHeader.ACTION) + " " +
+                    headers.get(SvnNodeHeader.PATH);
         }
     }
 }

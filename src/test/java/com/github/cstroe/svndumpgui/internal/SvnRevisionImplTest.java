@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import com.github.cstroe.svndumpgui.api.SvnProperties;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
@@ -16,7 +16,7 @@ public class SvnRevisionImplTest {
     public void revision_number() {
         SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
         assertThat(svnRevision.getNumber(), is(1));
-        assertNull(svnRevision.getProperty(SvnProperties.DATE));
+        assertNull(svnRevision.get(SvnProperty.DATE));
     }
 
     @Test
@@ -27,7 +27,7 @@ public class SvnRevisionImplTest {
 
         SvnRevisionImpl svnRevision = new SvnRevisionImpl(1, cal.getTime().toString());
         assertThat(svnRevision.getNumber(), is(1));
-        assertThat(svnRevision.getProperty(SvnProperties.DATE), is(equalTo(cal.getTime().toString())));
+        assertThat(svnRevision.get(SvnProperty.DATE), is(equalTo(cal.getTime().toString())));
     }
 
     @Test(expected = NullPointerException.class)

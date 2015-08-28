@@ -3,6 +3,7 @@ package com.github.cstroe.svndumpgui.internal;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.io.ByteArrayOutputStream;
@@ -73,48 +74,19 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
 
     private void writeNodes(PrintStream ps, SvnRevision revision) throws IOException {
         for(SvnNode node : revision.getNodes()) {
-            ps.print("Node-path: ");
-            ps.println(node.getPath());
-            ps.print("Node-kind: ");
-            ps.println(node.getKind());
-            ps.print("Node-action: ");
-            ps.println(node.getAction());
-
-            // properties
-            ByteArrayOutputStream properties = new ByteArrayOutputStream();
-            writeProperties(new PrintStream(properties), node.getProperties());
-            int propertiesLength = properties.size();
-
-            if(propertiesLength > 0) {
-                ps.print("Prop-content-length: ");
-                ps.println(propertiesLength);
+            // headers
+            for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
+                ps.print(headerEntry.getKey().toString());
+                ps.println(headerEntry.getValue());
             }
-
-            ps.print("Text-content-length: ");
-            int textContentLength = 0;
-            if(node.getContent() != null) {
-                textContentLength = node.getContent().length;
-            }
-            ps.println(textContentLength);
-
-            if(node.getMd5() != null) {
-                ps.print("Text-content-md5: ");
-                ps.println(node.getMd5());
-            }
-
-            if(node.getSha1() != null) {
-                ps.print("Text-content-sha1: ");
-                ps.println(node.getSha1());
-            }
-
-            ps.print("Content-length: ");
-            ps.println(propertiesLength + textContentLength);
             ps.println();
 
-            if(propertiesLength > 0) {
-                ps.print(properties.toString());
+            // properties
+            if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
+                writeProperties(ps, node.getProperties());
             }
 
+            // file content
             if(node.getContent() != null && node.getContent().length != 0) {
                 ps.write(node.getContent());
                 ps.println();

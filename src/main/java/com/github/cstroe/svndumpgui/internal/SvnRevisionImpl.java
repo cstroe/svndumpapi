@@ -29,7 +29,7 @@ public class SvnRevisionImpl implements SvnRevision {
     }
 
     @Override
-    public String getProperty(String name) {
+    public String get(String name) {
         return properties.get(name);
     }
 

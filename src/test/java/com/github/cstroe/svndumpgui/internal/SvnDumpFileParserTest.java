@@ -2,7 +2,8 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnProperties;
+import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
@@ -43,8 +44,8 @@ public class SvnDumpFileParserTest {
         Map properties = parser.Property();
         revision.setProperties(properties);
 
-        assertNotNull(revision.getProperty(SvnProperties.DATE));
-        assertThat(revision.getProperty(SvnProperties.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
+        assertNotNull(revision.get(SvnProperty.DATE));
+        assertThat(revision.get(SvnProperty.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
     }
 
     @Test
@@ -57,7 +58,7 @@ public class SvnDumpFileParserTest {
 
         assertNotNull(revision);
         assertThat(revision.getNumber(), is(0));
-        assertThat(revision.getProperty(SvnProperties.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
+        assertThat(revision.get(SvnProperty.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
     }
 
     @Test
@@ -81,8 +82,8 @@ public class SvnDumpFileParserTest {
         SvnRevision firstRevision = revisionList.get(0);
 
         assertThat(firstRevision.getNumber(), is(0));
-        assertNotNull(firstRevision.getProperty(SvnProperties.DATE));
-        assertThat(firstRevision.getProperty(SvnProperties.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
+        assertNotNull(firstRevision.get(SvnProperty.DATE));
+        assertThat(firstRevision.get(SvnProperty.DATE), is(equalTo("2015-08-07T13:52:20.465543Z")));
     }
 
     @Test
@@ -92,19 +93,21 @@ public class SvnDumpFileParserTest {
         assertThat("The repository dump contains two revisions.", dump.getRevisions().size(), is(2));
 
         assertThat(dump.getRevisions().get(0).getNumber(), is(0));
-        assertThat(dump.getRevisions().get(0).getProperty(SvnProperties.DATE), is(equalTo("2015-08-27T02:50:19.465543Z")));
+        assertThat(dump.getRevisions().get(0).get(SvnProperty.DATE), is(equalTo("2015-08-27T02:50:19.465543Z")));
 
         assertThat(dump.getRevisions().get(1).getNumber(), is(1));
-        assertThat(dump.getRevisions().get(1).getProperty(SvnProperties.DATE), is(equalTo("2015-08-27T05:38:16.553074Z")));
-        assertThat(dump.getRevisions().get(1).getProperty(SvnProperties.AUTHOR), is(equalTo("cosmin")));
-        assertThat(dump.getRevisions().get(1).getProperty(SvnProperties.LOG), is(equalTo("Added a first file.")));
+        assertThat(dump.getRevisions().get(1).get(SvnProperty.DATE), is(equalTo("2015-08-27T05:38:16.553074Z")));
+        assertThat(dump.getRevisions().get(1).get(SvnProperty.AUTHOR), is(equalTo("cosmin")));
+        assertThat(dump.getRevisions().get(1).get(SvnProperty.LOG), is(equalTo("Added a first file.")));
 
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getPath(), is(equalTo("firstFile.txt")));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getKind(), is(equalTo("file")));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getAction(), is(equalTo("add")));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getMd5(), is(equalTo("d41d8cd98f00b204e9800998ecf8427e")));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getSha1(), is(equalTo("da39a3ee5e6b4b0d3255bfef95601890afd80709")));
+
+        SvnNode fileNode = dump.getRevisions().get(1).getNodes().get(0);
+        assertThat(fileNode.get(SvnNodeHeader.PATH), is(equalTo("firstFile.txt")));
+        assertThat(fileNode.get(SvnNodeHeader.KIND), is(equalTo("file")));
+        assertThat(fileNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+        assertThat(fileNode.get(SvnNodeHeader.MD5), is(equalTo("d41d8cd98f00b204e9800998ecf8427e")));
+        assertThat(fileNode.get(SvnNodeHeader.SHA1), is(equalTo("da39a3ee5e6b4b0d3255bfef95601890afd80709")));
     }
 
     @Test
@@ -116,22 +119,22 @@ public class SvnDumpFileParserTest {
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
 
         SvnNode readmeTxt = dump.getRevisions().get(1).getNodes().get(0);
-        assertThat(readmeTxt.getPath(), is(equalTo("README.txt")));
-        assertThat(readmeTxt.getKind(), is(equalTo("file")));
-        assertThat(readmeTxt.getAction(), is(equalTo("add")));
-        assertThat(readmeTxt.getMd5(), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
-        assertThat(readmeTxt.getSha1(), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
+        assertThat(readmeTxt.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
+        assertThat(readmeTxt.get(SvnNodeHeader.KIND), is(equalTo("file")));
+        assertThat(readmeTxt.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+        assertThat(readmeTxt.get(SvnNodeHeader.MD5), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
+        assertThat(readmeTxt.get(SvnNodeHeader.SHA1), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
         assertThat(new String(readmeTxt.getContent()), is(equalTo("this is a test file\n")));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] md5raw = md5.digest(readmeTxt.getContent());
         String md5sum = md5sum(md5raw);
-        assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
+        assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
         byte[] sha1raw = sha1.digest(readmeTxt.getContent());
         String sha1sum = sha1sum(sha1raw);
-        assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
+        assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
     }
 
     @Test
@@ -143,22 +146,22 @@ public class SvnDumpFileParserTest {
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
 
         SvnNode readmeTxt = dump.getRevisions().get(1).getNodes().get(0);
-        assertThat(readmeTxt.getPath(), is(equalTo("README.txt")));
-        assertThat(readmeTxt.getKind(), is(equalTo("file")));
-        assertThat(readmeTxt.getAction(), is(equalTo("add")));
-        assertThat(readmeTxt.getMd5(), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
-        assertThat(readmeTxt.getSha1(), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
+        assertThat(readmeTxt.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
+        assertThat(readmeTxt.get(SvnNodeHeader.KIND), is(equalTo("file")));
+        assertThat(readmeTxt.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+        assertThat(readmeTxt.get(SvnNodeHeader.MD5), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
+        assertThat(readmeTxt.get(SvnNodeHeader.SHA1), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
         assertThat(new String(readmeTxt.getContent()), is(equalTo("this is a test file\n")));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] md5raw = md5.digest(readmeTxt.getContent());
         String md5sum = md5sum(md5raw);
-        assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
+        assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
         byte[] sha1raw = sha1.digest(readmeTxt.getContent());
         String sha1sum = sha1sum(sha1raw);
-        assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
+        assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
     }
 
     private String md5sum(byte[] digest) {
@@ -194,9 +197,9 @@ public class SvnDumpFileParserTest {
         assertThat(dump.getRevisions().size(), is(2));
 
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getPath(), is("AM-Core"));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getKind(), is("dir"));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getAction(), is("add"));
+        assertThat(dump.getRevisions().get(1).getNodes().get(0).get(SvnNodeHeader.PATH), is("AM-Core"));
+        assertThat(dump.getRevisions().get(1).getNodes().get(0).get(SvnNodeHeader.KIND), is("dir"));
+        assertThat(dump.getRevisions().get(1).getNodes().get(0).get(SvnNodeHeader.ACTION), is("add"));
     }
 
     /**
@@ -207,12 +210,13 @@ public class SvnDumpFileParserTest {
         SvnDump dump = parse("dumps/different_node_order2.dump");
 
         assertThat(dump.getRevisions().size(), is(2));
-
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getPath(), is("AM-Core"));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getKind(), is("dir"));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getAction(), is("add"));
-        assertThat(dump.getRevisions().get(1).getNodes().get(0).getSha1(), is("53ff16933cc0ec0077ea0d5f848ef0fd61440c27"));
+
+        SvnNode svnNode = dump.getRevisions().get(1).getNodes().get(0);
+        assertThat(svnNode.get(SvnNodeHeader.PATH), is("AM-Core"));
+        assertThat(svnNode.get(SvnNodeHeader.KIND), is("dir"));
+        assertThat(svnNode.get(SvnNodeHeader.ACTION), is("add"));
+        assertThat(svnNode.get(SvnNodeHeader.SHA1), is("53ff16933cc0ec0077ea0d5f848ef0fd61440c27"));
     }
 
     @Test
@@ -221,25 +225,25 @@ public class SvnDumpFileParserTest {
 
         assertThat(dump.getRevisions().size(), is(2));
         assertThat(dump.getRevisions().get(1).getNumber(), is(1));
-        assertThat(dump.getRevisions().get(1).getProperty(SvnProperties.LOG), is("Adding binary file."));
+        assertThat(dump.getRevisions().get(1).get(SvnProperty.LOG), is("Adding binary file."));
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
 
         SvnNode fileBin = dump.getRevisions().get(1).getNodes().get(0);
 
-        assertThat(fileBin.getProperties().get(SvnProperties.MIMETYPE), is(equalTo("application/octet-stream")));
+        assertThat(fileBin.getProperties().get(SvnProperty.MIMETYPE), is(equalTo("application/octet-stream")));
 
         assertThat(fileBin.getContent().length, is(1024));
-        assertThat(fileBin.getPath(), is("file.bin"));
+        assertThat(fileBin.get(SvnNodeHeader.PATH), is("file.bin"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] md5raw = md5.digest(fileBin.getContent());
         String md5sum = md5sum(md5raw);
-        assertThat(md5sum, is(equalTo(fileBin.getMd5())));
+        assertThat(md5sum, is(equalTo(fileBin.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
         byte[] sha1raw = sha1.digest(fileBin.getContent());
         String sha1sum = sha1sum(sha1raw);
-        assertThat(sha1sum, is(equalTo(fileBin.getSha1())));
+        assertThat(sha1sum, is(equalTo(fileBin.get(SvnNodeHeader.SHA1))));
     }
 
     @Test
@@ -251,42 +255,42 @@ public class SvnDumpFileParserTest {
         // validate the revision in which we create the file
         SvnRevision createFileRevision = dump.getRevisions().get(1);
         assertThat(createFileRevision.getNumber(), is(1));
-        assertThat(createFileRevision.getProperty(SvnProperties.LOG), is(equalTo("Committed README.txt")));
+        assertThat(createFileRevision.get(SvnProperty.LOG), is(equalTo("Committed README.txt")));
         assertThat(createFileRevision.getNodes().size(), is(1));
 
         SvnNode readmeTxt = createFileRevision.getNodes().get(0);
 
         assertThat(readmeTxt.getContent().length, is(20));
-        assertThat(readmeTxt.getPath(), is("README.txt"));
+        assertThat(readmeTxt.get(SvnNodeHeader.PATH), is("README.txt"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] md5raw = md5.digest(readmeTxt.getContent());
         String md5sum = md5sum(md5raw);
-        assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
+        assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
         byte[] sha1raw = sha1.digest(readmeTxt.getContent());
         String sha1sum = sha1sum(sha1raw);
-        assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
+        assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
 
         // validate the revision in which we rename the file
         SvnRevision moveFileRevision = dump.getRevisions().get(2);
-        assertThat(moveFileRevision.getProperty(SvnProperties.LOG), is(equalTo("Renamed README.txt to README-new.txt")));
+        assertThat(moveFileRevision.get(SvnProperty.LOG), is(equalTo("Renamed README.txt to README-new.txt")));
         assertThat(moveFileRevision.getNodes().size(), is(2));
 
         SvnNode newFileNode = moveFileRevision.getNodes().get(0);
-        assertThat(newFileNode.getPath(), is(equalTo("README-new.txt")));
-        assertThat(newFileNode.getKind(), is(equalTo("file")));
-        assertThat(newFileNode.getAction(), is(equalTo("add")));
+        assertThat(newFileNode.get(SvnNodeHeader.PATH), is(equalTo("README-new.txt")));
+        assertThat(newFileNode.get(SvnNodeHeader.KIND), is(equalTo("file")));
+        assertThat(newFileNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
         assertNull(newFileNode.getContent());
-        assertThat(newFileNode.getCopiedFromRevision(), is(1));
-        assertThat(newFileNode.getCopiedFromPath(), is(equalTo("README.txt")));
-        assertThat(newFileNode.getCopiedFromMd5(), is(equalTo(readmeTxt.getMd5())));
-        assertThat(newFileNode.getCopiedFromSha1(), is(equalTo(readmeTxt.getSha1())));
+        assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_REV), is(equalTo("1")));
+        assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_PATH), is(equalTo("README.txt")));
+        assertThat(newFileNode.get(SvnNodeHeader.SOURCE_MD5), is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
+        assertThat(newFileNode.get(SvnNodeHeader.SOURCE_SHA1), is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
 
         SvnNode oldFileNode  = moveFileRevision.getNodes().get(1);
-        assertThat(oldFileNode.getPath(), is(equalTo("README.txt")));
-        assertThat(oldFileNode.getAction(), is(equalTo("delete")));
+        assertThat(oldFileNode.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
+        assertThat(oldFileNode.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
     }
 
     @Test
@@ -298,39 +302,39 @@ public class SvnDumpFileParserTest {
         // validate the revision in which we create the file
         SvnRevision createFileRevision = dump.getRevisions().get(1);
         assertThat(createFileRevision.getNumber(), is(1));
-        assertThat(createFileRevision.getProperty(SvnProperties.LOG), is(equalTo("Committed README.txt")));
+        assertThat(createFileRevision.get(SvnProperty.LOG), is(equalTo("Committed README.txt")));
         assertThat(createFileRevision.getNodes().size(), is(1));
 
         SvnNode readmeTxt = createFileRevision.getNodes().get(0);
 
         assertThat(readmeTxt.getContent().length, is(20));
-        assertThat(readmeTxt.getPath(), is("README.txt"));
+        assertThat(readmeTxt.get(SvnNodeHeader.PATH), is("README.txt"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] md5raw = md5.digest(readmeTxt.getContent());
         String md5sum = md5sum(md5raw);
-        assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
+        assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
         byte[] sha1raw = sha1.digest(readmeTxt.getContent());
         String sha1sum = sha1sum(sha1raw);
-        assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
+        assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
 
         // validate the revision in which we rename the file
         SvnRevision moveFileRevision = dump.getRevisions().get(2);
-        assertThat(moveFileRevision.getProperty(SvnProperties.LOG), is(equalTo("Renamed README.txt to README-new.txt")));
+        assertThat(moveFileRevision.get(SvnProperty.LOG), is(equalTo("Renamed README.txt to README-new.txt")));
         assertThat(moveFileRevision.getNodes().size(), is(2));
 
         SvnNode newFileNode = moveFileRevision.getNodes().get(0);
-        assertThat(newFileNode.getPath(), is(equalTo("README-new.txt")));
-        assertThat(newFileNode.getKind(), is(equalTo("file")));
-        assertThat(newFileNode.getAction(), is(equalTo("add")));
+        assertThat(newFileNode.get(SvnNodeHeader.PATH), is(equalTo("README-new.txt")));
+        assertThat(newFileNode.get(SvnNodeHeader.KIND), is(equalTo("file")));
+        assertThat(newFileNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
         assertNull(newFileNode.getContent());
-        assertThat(newFileNode.getCopiedFromRevision(), is(1));
-        assertThat(newFileNode.getCopiedFromPath(), is(equalTo("README.txt")));
+        assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_REV), is(equalTo("1")));
+        assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_PATH), is(equalTo("README.txt")));
 
         SvnNode oldFileNode  = moveFileRevision.getNodes().get(1);
-        assertThat(oldFileNode.getPath(), is(equalTo("README.txt")));
-        assertThat(oldFileNode.getAction(), is(equalTo("delete")));
+        assertThat(oldFileNode.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
+        assertThat(oldFileNode.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
     }
 }
