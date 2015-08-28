@@ -254,8 +254,12 @@ public SvnNode Node():
                 throw new ParseException("Cannot have null copiedFromPath when a copiedFromRevision is present.");
             }
             svnNode.setCopiedFromPath(copiedFromPath.image);
-            svnNode.setCopiedFromMd5(copiedFromMd5.image);
-            svnNode.setCopiedFromSha1(copiedFromSha1.image);
+            if(copiedFromMd5 != null) {
+                svnNode.setCopiedFromMd5(copiedFromMd5.image);
+            }
+            if(copiedFromSha1 != null) {
+                svnNode.setCopiedFromSha1(copiedFromSha1.image);
+            }
         }
     }
 

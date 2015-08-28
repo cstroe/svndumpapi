@@ -75,3 +75,6 @@ of the other node headers.  Moral of the story, the order of the headers should 
     svn commit -m "Renamed README.txt to README-new.txt"
     <EXPORT CODE>
 
+## svn_rename_no_copy_hashes.dump
+
+Same as `svn_rename.dump` but without the copy hashes.
