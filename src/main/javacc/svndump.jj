@@ -182,6 +182,7 @@ public SvnNode Node():
     Token nodeSha1 = null;
     Token contentLength = null;
     Token textContentLength = null;
+    Token propContentLength = null;
     byte[] fileContent = null;
     Map properties;
 }
@@ -193,7 +194,7 @@ public SvnNode Node():
         |
         <NODE_ACTION_KEY> <COLON> nodeAction = <NODE_ACTION_VALUE> <EOL>
         |
-        <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL>
+        <PROP_CONTENT_LENGTH_KEY> <COLON> propContentLength = <NUMBER> <EOL>
         |
         <TEXT_CONTENT_LENGTH_KEY> <COLON> textContentLength = <NUMBER> <EOL>
         |
@@ -206,9 +207,11 @@ public SvnNode Node():
 
     <EOL>
 
-    properties = Property()
-
     {
+        if(propContentLength != null) {
+            properties = Property();
+        }
+
         svnNode = new SvnNodeImpl();
 
         // required

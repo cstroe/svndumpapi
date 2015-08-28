@@ -125,6 +125,33 @@ public class SvnDumpFileParserTest {
         assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
     }
 
+    @Test
+    public void should_allow_for_optional_properties_on_nodes() throws ParseException, NoSuchAlgorithmException {
+        SvnDump dump = parse("dumps/add_file_no_node_properties.dump");
+
+        assertThat(dump.getRevisions().size(), is(2));
+        assertThat(dump.getRevisions().get(1).getNumber(), is(1));
+        assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
+
+        SvnNode readmeTxt = dump.getRevisions().get(1).getNodes().get(0);
+        assertThat(readmeTxt.getPath(), is(equalTo("README.txt")));
+        assertThat(readmeTxt.getKind(), is(equalTo("file")));
+        assertThat(readmeTxt.getAction(), is(equalTo("add")));
+        assertThat(readmeTxt.getMd5(), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
+        assertThat(readmeTxt.getSha1(), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
+        assertThat(new String(readmeTxt.getContent()), is(equalTo("this is a test file\n")));
+
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] md5raw = md5.digest(readmeTxt.getContent());
+        String md5sum = md5sum(md5raw);
+        assertThat(md5sum, is(equalTo(readmeTxt.getMd5())));
+
+        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
+        String sha1sum = sha1sum(sha1raw);
+        assertThat(sha1sum, is(equalTo(readmeTxt.getSha1())));
+    }
+
     private String md5sum(byte[] digest) {
         return toHex(digest, 32);
     }

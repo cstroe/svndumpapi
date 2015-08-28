@@ -42,6 +42,10 @@ Replace `output.dump` with the name of the dump file you're creating.
     svn commit -m "Committed README.txt"
     <EXPORT CODE>
 
+## add_file_no_node_properties.dump
+
+Same as `add_file.dump` but without properties on the node.
+
 ## different_node_order.dump
 
 This file was created from a bigger dump of the AgreementMaker SVN repo.
