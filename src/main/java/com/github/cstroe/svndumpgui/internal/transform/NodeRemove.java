@@ -29,7 +29,8 @@ public class NodeRemove implements SvnDumpMutator {
                         return;
                     }
                 }
-                throw new IllegalArgumentException("The node was not found at revision " + targetRevision);
+                throw new IllegalArgumentException("The node \"" + action + " " + path +
+                        "\" was not found at revision " + targetRevision);
             }
         }
         throw new IllegalArgumentException("Revision " + targetRevision + " was not found.");
