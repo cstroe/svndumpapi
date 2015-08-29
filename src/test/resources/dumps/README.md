@@ -108,3 +108,48 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn add README.txt
     svn commit -m "Added it again."
     <EXPORT CODE>
+    
+## svn_delete_with_add.dump
+
+    <SETUP CODE>
+    svn mkdir testdir
+    svn commit -m "Added a directory."
+    echo "this is a test file" > README.txt
+    svn rm testdir
+    svn add README.txt
+    svn commit -m "Added and deleted."
+    <EXPORT CODE>
+    
+## svn_multiple_dir_delete.dump
+
+    <SETUP CODE>
+    svn mkdir testdir1
+    svn mkdir testdir2
+    svn mkdir testdir3
+    svn commit -m "Added 3 dirs."
+    svn rm testdir1
+    svn rm testdir2
+    svn rm testdir3
+    svn commit -m "Deleted 3 dirs."
+    
+## svn_multiple_file_delete.dump
+
+    <SETUP CODE>
+    echo "this is a test file" > README.txt
+    echo "this is a test file" > README2.txt
+    echo "this is a test file" > README3.txt
+    svn add README.txt README2.txt README3.txt 
+    svn commit -m "Added 3 files."
+    svn rm README.txt README2.txt README3.txt 
+    svn commit -m "Deleted 3 files."
+    <EXPORT CODE>
+    
+##  svn_copy_file.dump
+
+    <SETUP CODE>
+    echo "this is a test file" > README.txt
+    svn add README.txt
+    svn commit -m "Added readme."
+    svn cp README.txt OTHER.txt
+    svn commit -m "Copied readme."
+    <EXPORT CODE>

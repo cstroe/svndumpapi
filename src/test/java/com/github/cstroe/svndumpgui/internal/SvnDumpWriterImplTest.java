@@ -70,6 +70,15 @@ public class SvnDumpWriterImplTest {
         recreateDumpFile("dumps/svn_delete_file.dump");
     }
 
+    @Test
+    public void other_tests() throws ParseException, IOException {
+        // these already pass, but thought they might be useful
+        recreateDumpFile("dumps/svn_delete_with_add.dump");
+        recreateDumpFile("dumps/svn_copy_file.dump");
+        recreateDumpFile("dumps/svn_multi_dir_delete.dump");
+        recreateDumpFile("dumps/svn_multi_file_delete.dump");
+    }
+
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
 

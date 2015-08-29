@@ -1,0 +1,89 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 152fcf79-dc30-4072-83ce-104e164bd5ad
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-08-29T04:13:41.440323Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-29T04:14:49.309814Z
+K 7
+svn:log
+V 13
+Added 3 dirs.
+PROPS-END
+
+Node-path: testdir1
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: testdir2
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: testdir3
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Revision-number: 2
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-29T04:15:34.531648Z
+K 7
+svn:log
+V 15
+Deleted 3 dirs.
+PROPS-END
+
+Node-path: testdir1
+Node-action: delete
+
+
+Node-path: testdir2
+Node-action: delete
+
+
+Node-path: testdir3
+Node-action: delete
+
+
