@@ -84,3 +84,15 @@ of the other node headers.  Moral of the story, the order of the headers should 
 ## svn_rename_no_copy_hashes.dump
 
 Same as `svn_rename.dump` but without the copy hashes.
+
+## svn_add_directory.dump
+
+    <SETUP CODE>
+    svn mkdir testdir
+    svn commit -m "Added a test directory."
+    cd testdir
+    echo "this is a test file" > README.txt
+    svn add README.txt
+    svn commit -m "Added a sample file."
+    cd ..
+    <EXPORT CODE>

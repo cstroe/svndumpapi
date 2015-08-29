@@ -337,4 +337,31 @@ public class SvnDumpFileParserTest {
         assertThat(oldFileNode.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
         assertThat(oldFileNode.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
     }
+
+    @Test
+    public void should_parse_directory() throws ParseException {
+        SvnDump dump = parse("dumps/svn_add_directory.dump");
+
+        assertThat(dump.getRevisions().size(), is(3));
+
+        SvnRevision r1 = dump.getRevisions().get(1);
+
+        assertThat(r1.getNumber(), is(1));
+        assertThat(r1.getNodes().size(), is(1));
+
+        SvnNode dir = r1.getNodes().get(0);
+        assertThat(dir.get(SvnNodeHeader.KIND), is(equalTo("dir")));
+        assertThat(dir.get(SvnNodeHeader.PATH), is(equalTo("testdir")));
+        assertThat(dir.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+
+        SvnRevision r2 = dump.getRevisions().get(2);
+
+        assertThat(r2.getNumber(), is(2));
+        assertThat(r2.getNodes().size(), is(1));
+
+        SvnNode file = r2.getNodes().get(0);
+        assertThat(file.get(SvnNodeHeader.KIND), is(equalTo("file")));
+        assertThat(file.get(SvnNodeHeader.PATH), is(equalTo("testdir/README.txt")));
+        assertThat(file.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+    }
 }
