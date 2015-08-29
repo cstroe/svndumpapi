@@ -21,7 +21,7 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
         }
     }
 
-    public void writeDump(PrintStream ps, SvnDump dump) throws IOException {
+    private void writeDump(PrintStream ps, SvnDump dump) throws IOException {
         ps.println("SVN-fs-dump-format-version: 2\n");
         ps.print("UUID: ");
         ps.println(dump.getUUID());
@@ -32,7 +32,7 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
         }
     }
 
-    public void writeRevision(PrintStream ps, SvnRevision revision) throws IOException {
+    private void writeRevision(PrintStream ps, SvnRevision revision) throws IOException {
         ps.print("Revision-number: ");
         ps.println(revision.getNumber());
 
@@ -57,7 +57,7 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
         ps.write(nodes.toByteArray());
     }
 
-    public void writeProperties(PrintStream ps, Map<String, String> properties) {
+    private void writeProperties(PrintStream ps, Map<String, String> properties) {
         if(properties == null) {
             return;
         }
