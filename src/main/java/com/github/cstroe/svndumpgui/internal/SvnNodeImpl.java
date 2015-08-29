@@ -45,13 +45,17 @@ public class SvnNodeImpl implements SvnNode {
 
     @Override
     public String toString() {
+        String copyInfo = "";
+        if(headers.containsKey(SvnNodeHeader.COPY_FROM_PATH)) {
+            copyInfo = " -- copied from: " + headers.get(SvnNodeHeader.COPY_FROM_PATH);
+        }
         if(headers.containsKey(SvnNodeHeader.KIND)) {
             return  headers.get(SvnNodeHeader.ACTION) + " " +
                     headers.get(SvnNodeHeader.KIND) + " " +
-                    headers.get(SvnNodeHeader.PATH);
+                    headers.get(SvnNodeHeader.PATH) + copyInfo;
         } else {
             return  headers.get(SvnNodeHeader.ACTION) + " " +
-                    headers.get(SvnNodeHeader.PATH);
+                    headers.get(SvnNodeHeader.PATH) + copyInfo;
         }
     }
 }
