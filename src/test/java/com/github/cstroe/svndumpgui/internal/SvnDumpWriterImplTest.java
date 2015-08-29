@@ -65,6 +65,11 @@ public class SvnDumpWriterImplTest {
         recreateDumpFile("dumps/svn_add_directory.dump");
     }
 
+    @Test
+    public void write_delete_nodes() throws ParseException, IOException {
+        recreateDumpFile("dumps/svn_delete_file.dump");
+    }
+
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
 
