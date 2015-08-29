@@ -9,7 +9,7 @@ import org.junit.Test;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-public class NodeClearTest {
+public class ClearRevisionTest {
 
     @Test
     public void clear_revision() throws ParseException {
@@ -20,7 +20,7 @@ public class NodeClearTest {
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
         assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
 
-        SvnDumpMutator clear = new NodeClear(2);
+        SvnDumpMutator clear = new ClearRevision(2);
         clear.mutate(dump);
 
         assertThat(dump.getRevisions().size(), is(3));
@@ -38,7 +38,7 @@ public class NodeClearTest {
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
         assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
 
-        SvnDumpMutator clear = new NodeClear(1,2);
+        SvnDumpMutator clear = new ClearRevision(1,2);
         clear.mutate(dump);
 
         assertThat(dump.getRevisions().size(), is(3));
@@ -49,27 +49,27 @@ public class NodeClearTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void negative_revision_numbers_not_allowed() {
-        new NodeClear(-1);
+        new ClearRevision(-1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void negative_revision_numbers_not_allowed_again() {
-        new NodeClear(-1,1);
+        new ClearRevision(-1,1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void exception_with_same_numbers() {
-        new NodeClear(1,1);
+        new ClearRevision(1,1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void exception_with_descending_range() {
-        new NodeClear(2,1);
+        new ClearRevision(2,1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void cant_change_non_existent_revision() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
-        new NodeClear(3).mutate(dump);
+        new ClearRevision(3).mutate(dump);
     }
 }
