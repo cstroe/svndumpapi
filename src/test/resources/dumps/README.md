@@ -96,3 +96,15 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn commit -m "Added a sample file."
     cd ..
     <EXPORT CODE>
+
+## svn_delete_file.dump
+
+    <SETUP CODE>
+    echo "this is a test file" > README.txt
+    svn add README.txt
+    svn commit -m "Added a sample file."
+    svn delete README.txt
+    echo "this is a test file again" > README.txt
+    svn add README.txt
+    svn commit -m "Added it again."
+    <EXPORT CODE>

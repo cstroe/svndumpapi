@@ -364,4 +364,21 @@ public class SvnDumpFileParserTest {
         assertThat(file.get(SvnNodeHeader.PATH), is(equalTo("testdir/README.txt")));
         assertThat(file.get(SvnNodeHeader.ACTION), is(equalTo("add")));
     }
+
+    @Test
+    public void should_parse_file_deletion() throws ParseException {
+        SvnDump dump = parse("dumps/svn_delete_file.dump");
+
+        assertThat(dump.getRevisions().size(), is(4));
+
+        SvnRevision r2 = dump.getRevisions().get(2);
+
+        assertThat(r2.getNumber(), is(2));
+        assertThat(r2.getNodes().size(), is(1));
+
+        SvnNode fileDelete = r2.getNodes().get(0);
+        assertNull(fileDelete.get(SvnNodeHeader.KIND));
+        assertThat(fileDelete.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
+        assertThat(fileDelete.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
+    }
 }
