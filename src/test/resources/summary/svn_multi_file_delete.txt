@@ -1,0 +1,14 @@
+r0: **empty**
+
+r1: Added 3 files. - cosmin 2015-08-29
+
+	add file README.txt
+	add file README2.txt
+	add file README3.txt
+
+r2: Deleted 3 files. - cosmin 2015-08-29
+
+	delete README.txt
+	delete README2.txt
+	delete README3.txt
+

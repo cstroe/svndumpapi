@@ -91,11 +91,11 @@ public class SvnDumpWriterImplTest {
         InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(dumpFile);
 
-        assertEqual(s, bais);
+        assertEqualStreams(s, bais);
     }
 
     // adapted from: http://stackoverflow.com/questions/4245863
-    private void assertEqual(InputStream expectedStream, InputStream actualStream) throws IOException {
+    public static void assertEqualStreams(InputStream expectedStream, InputStream actualStream) throws IOException {
         byte[] buf1 = new byte[64 *1024];
         byte[] buf2 = new byte[64 *1024];
         boolean readingD2 = false;
