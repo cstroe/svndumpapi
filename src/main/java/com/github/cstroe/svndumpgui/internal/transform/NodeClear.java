@@ -31,12 +31,26 @@ public class NodeClear implements SvnDumpMutator {
 
     @Override
     public void mutate(SvnDump dump) {
+        boolean changedSomething = false;
         for(SvnRevision revision : dump.getRevisions()) {
             if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
                 revision.getNodes().clear();
+                changedSomething = true;
             } else if(revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision) {
                 revision.getNodes().clear();
+                changedSomething = true;
             }
         }
+        if(!changedSomething) {
+            throw new IllegalArgumentException("No revisions matched: " + toString());
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "NodeClear{" +
+                "fromRevision=" + fromRevision +
+                ", toRevision=" + toRevision +
+                '}';
     }
 }

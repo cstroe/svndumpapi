@@ -67,4 +67,9 @@ public class NodeClearTest {
         new NodeClear(2,1);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void cant_change_non_existent_revision() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        new NodeClear(3).mutate(dump);
+    }
 }
