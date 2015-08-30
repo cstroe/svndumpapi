@@ -59,7 +59,7 @@ Some useful validators:
 # Usage
 
 To see how all these pieces fit together to allow you to edit SVN history,
-you can look at a SVN repository that I did for the AgreementMaker project.
+you can look at a SVN repository cleanup that I did for the AgreementMaker project.
 All the operations to the SVN dump file are detailed in [this test](com/github/cstroe/svndumpgui/internal/AMDump.java).
 
 ## Reading an SVN dump file
