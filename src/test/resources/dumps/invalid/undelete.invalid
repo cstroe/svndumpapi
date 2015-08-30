@@ -1,0 +1,93 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 2e1e0f80-491d-4dce-a993-7c052c43af58
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-08-30T08:42:03.328682Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-30T08:42:28.598521Z
+K 7
+svn:log
+V 15
+Initial commit.
+PROPS-END
+
+Node-path: file1.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 0
+Text-content-md5: d41d8cd98f00b204e9800998ecf8427e
+Text-content-sha1: da39a3ee5e6b4b0d3255bfef95601890afd80709
+Content-length: 10
+
+PROPS-END
+
+
+Revision-number: 2
+Prop-content-length: 115
+Content-length: 115
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-30T08:43:57.571227Z
+K 7
+svn:log
+V 14
+Deleted file1.
+PROPS-END
+
+Node-path: file1.txt
+Node-action: delete
+
+
+Revision-number: 3
+Prop-content-length: 117
+Content-length: 117
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-30T08:45:58.074396Z
+K 7
+svn:log
+V 16
+Brought it back!
+PROPS-END
+
+Node-path: file2.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 2
+Node-copyfrom-path: file1.txt
+Text-copy-source-md5: d41d8cd98f00b204e9800998ecf8427e
+Text-copy-source-sha1: da39a3ee5e6b4b0d3255bfef95601890afd80709
+
+

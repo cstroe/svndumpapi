@@ -197,3 +197,21 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn cp d1/d2/d3@2 d1-copy/d2
     svn commit -m "Composite commit."
     <EXPORT CODE>
+    
+## undelete.dump
+
+    <SETUP CODE>
+    touch file1.txt
+    svn add file1.txt
+    svn commit -m "Initial commit."
+    svn rm file1.txt
+    svn commit -m "Deleted file1."
+    bash -c 'svn cp file:///$(dirname $(dirname $(pwd)))/repos/testrepo/file1.txt@1 file3.txt'
+    svn commit -m "Brought it back."
+    <EXPORT CODE>
+    
+## undelete.invalid
+
+A variation on `undelete.dump` but instead of undeleting the file 
+from revision 1 we undelete it from revision 2, where it doesn't exist.
+It's an invalid svn dump, meant to verify that the validator throws an error.

@@ -83,4 +83,26 @@ public class PathCollisionTest {
             falsePositive(validator);
         }
     }
+
+    @Test
+    public void validate_undelete() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/undelete.dump");
+        SvnDumpValidator validator = new PathCollision();
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
+    }
+
+    @Test
+    public void detect_invalid_copy() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/invalid/undelete.invalid");
+        SvnDumpValidator validator = new PathCollision();
+        assertFalse("The validator should detect when copying files from nonexisting location",
+            validator.isValid(dump));
+
+        SvnDumpError error = validator.getError();
+        assertNotNull(error.getMessage());
+        assertThat(error.getRevision().getNumber(), is(3));
+        assertThat(error.getNode().get(SvnNodeHeader.PATH), is(equalTo("file2.txt")));
+    }
 }

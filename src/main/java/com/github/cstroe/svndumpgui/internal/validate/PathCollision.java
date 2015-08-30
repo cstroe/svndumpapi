@@ -39,6 +39,18 @@ public class PathCollision implements SvnDumpValidator {
                         return false;
                     }
 
+                    if(copyFromRevision != null) {
+                        Map sourceSnapshot = revisionSnapshots.get(Integer.parseInt(copyFromRevision));
+                        if(!sourceSnapshot.containsKey(copyFromPath)) {
+                            String message = "Error at revision " + revision.getNumber() + "\n" +
+                                    "adding " + path + "\n" +
+                                    "from " + copyFromPath + "@" + copyFromRevision + "\n" +
+                                    "but it doesn't exist in revision " + copyFromRevision;
+                            error = new SvnDumpErrorImpl(message, revision, node);
+                            return false;
+                        }
+                    }
+
                     currentRevisionPaths.put(path, Pair.of(revision.getNumber(), node));
 
                     if ("dir".equals(kind) && copyFromRevision != null) {
