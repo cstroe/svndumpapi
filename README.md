@@ -5,7 +5,7 @@ Attempt to create a user interface for editing SVN dump files.
 ## Background
 
 SVN dump files are created via the `svnadmin dump` command, and contain all the 
-history of and SVN repository.  An SVN dump file contains a list of revisions 
+history of an SVN repository.  An SVN dump file contains a list of revisions 
 (see [`SvnRevision`](com.github.cstroe.svndumpgui.api.SvnRevision)), and each
 revision contains a list of nodes (see [`SvnNode`](com.github.cstroe.svndumpgui.api.SvnNode)).
 
