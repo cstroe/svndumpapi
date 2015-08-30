@@ -13,7 +13,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-public class NodeActionChangeTest {
+public class NodeHeaderChangeTest {
 
     @Test
     public void change_action() throws ParseException {
@@ -28,7 +28,7 @@ public class NodeActionChangeTest {
         assertNull(node.get(SvnNodeHeader.KIND));
         assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("README2.txt")));
 
-        SvnDumpMutator actionChange = new NodeActionChange(2, "delete", "README2.txt", "add");
+        SvnDumpMutator actionChange = new NodeHeaderChange(2, "delete", "README2.txt", SvnNodeHeader.ACTION, "delete", "add");
         actionChange.mutate(dump);
 
         assertThat(dump.getRevisions().size(), is(3));
