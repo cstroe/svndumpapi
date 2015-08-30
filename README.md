@@ -58,7 +58,7 @@ Some useful validators:
 
 # Usage
 
-## Case study: AgreementMaker
+## Example: AgreementMaker
 
 To see how all these pieces fit together to allow you to edit SVN history,
 you can look at a SVN repository cleanup that I did for the AgreementMaker project.
