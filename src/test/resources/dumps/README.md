@@ -120,7 +120,7 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn commit -m "Added and deleted."
     <EXPORT CODE>
     
-## svn_multiple_dir_delete.dump
+## svn_multi_dir_delete.dump
 
     <SETUP CODE>
     svn mkdir testdir1
@@ -132,7 +132,7 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn rm testdir3
     svn commit -m "Deleted 3 dirs."
     
-## svn_multiple_file_delete.dump
+## svn_multi_file_delete.dump
 
     <SETUP CODE>
     echo "this is a test file" > README.txt
@@ -165,5 +165,20 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn commit -m "Changed dir name."
     svn rm test-renamed/innerdir/file3.txt
     svn commit -m "Go away inner file."
+    <EXPORT CODE>
+    
+## add_edit_delete_add.dump
+
+    <SETUP CODE>
+    echo "this is a test file" > README.txt
+    svn add README.txt
+    svn commit -m "Initial commit."
+    echo "this is a test file edited" > README.txt
+    svn commit -m "Edited file."
+    svn rm README.txt
+    svn commit -m "Deleted file."
+    echo "this is a test file second try" > README.txt
+    svn add README.txt
+    svn commit -m "Added again."
     <EXPORT CODE>
     

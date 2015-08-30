@@ -49,6 +49,8 @@ public class PathCollision implements SvnDumpValidator {
                         return false;
                     }
 
+                    pathByRevision.remove(path);
+
                     // remove any subpaths that may exist
                     Set<String> subPaths = getSubPaths(pathByRevision.keySet(), path);
                     for (String subPath : subPaths) {

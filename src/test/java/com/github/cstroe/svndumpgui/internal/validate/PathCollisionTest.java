@@ -34,10 +34,30 @@ public class PathCollisionTest {
     }
 
     @Test
-    public void detect_inner_dir_rm() throws ParseException {
+    public void validate_inner_dir_rm() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/inner_dir.dump");
         SvnDumpValidator validator = new PathCollision();
         assertTrue(validator.isValid(dump));
     }
 
+    @Test
+    public void validate_file_deletes() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        SvnDumpValidator validator = new PathCollision();
+        assertTrue(validator.isValid(dump));
+    }
+
+    @Test
+    public void validate_dir_deletes() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_dir_delete.dump");
+        SvnDumpValidator validator = new PathCollision();
+        assertTrue(validator.isValid(dump));
+    }
+
+    @Test
+    public void validate_file_add_delete_add() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/add_edit_delete_add.dump");
+        SvnDumpValidator validator = new PathCollision();
+        assertTrue(validator.isValid(dump));
+    }
 }
