@@ -48,7 +48,7 @@ To apply multiple mutators in sequence, you can add them to a
 When you start messing with your SVN history via the mutators, you can be left
 with an SVN dump file that cannot be imported back into an SVN repository.  To
  make changing SVN history easier the API has the concept of an 
- [`SvnDumpValidator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpMutator.java).
+ [`SvnDumpValidator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpValidator.java).
  
 Validation is done while the data is in memory, which is much faster
 than running it through `svnadmin load`.
