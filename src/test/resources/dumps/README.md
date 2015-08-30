@@ -153,3 +153,17 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn cp README.txt OTHER.txt
     svn commit -m "Copied readme."
     <EXPORT CODE>
+
+## inner_dir.dump
+
+    <SETUP CODE>
+    mkdir -p test/innerdir
+    touch test/file1.txt test/file2.txt test/innerdir/file3.txt
+    svn add test
+    svn commit -m "Initial commit."
+    svn mv test test-renamed
+    svn commit -m "Changed dir name."
+    svn rm test-renamed/innerdir/file3.txt
+    svn commit -m "Go away inner file."
+    <EXPORT CODE>
+    
