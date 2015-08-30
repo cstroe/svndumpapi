@@ -14,11 +14,17 @@ import static org.junit.Assert.*;
 
 public class PathCollisionTest {
 
+    private void falsePositive(SvnDumpValidator validator) {
+        throw new AssertionError("False positive. This is what the validator says, but it's not correct:\n\n" + validator.getError().getMessage() + "\n\n");
+    }
+
     @Test
     public void detect_valid_dump() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_copy_file.dump");
         SvnDumpValidator validator = new PathCollision();
-        assertTrue(validator.isValid(dump));
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
     }
 
     @Test
@@ -37,27 +43,44 @@ public class PathCollisionTest {
     public void validate_inner_dir_rm() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/inner_dir.dump");
         SvnDumpValidator validator = new PathCollision();
-        assertTrue(validator.isValid(dump));
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
     }
 
     @Test
     public void validate_file_deletes() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
         SvnDumpValidator validator = new PathCollision();
-        assertTrue(validator.isValid(dump));
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
     }
 
     @Test
     public void validate_dir_deletes() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_dir_delete.dump");
         SvnDumpValidator validator = new PathCollision();
-        assertTrue(validator.isValid(dump));
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
     }
 
     @Test
     public void validate_file_add_delete_add() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/add_edit_delete_add.dump");
         SvnDumpValidator validator = new PathCollision();
-        assertTrue(validator.isValid(dump));
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
+    }
+
+    @Test
+    public void validate_composite_commit() throws ParseException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/composite_commit.dump");
+        SvnDumpValidator validator = new PathCollision();
+        if(!validator.isValid(dump)) {
+            falsePositive(validator);
+        }
     }
 }

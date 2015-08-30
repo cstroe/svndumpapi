@@ -182,3 +182,18 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn commit -m "Added again."
     <EXPORT CODE>
     
+## composite_commit.dump
+
+    <SETUP CODE>
+    mkdir -p d1/d2
+    echo "test" > d1/d2/readme2.txt
+    svn add d1
+    svn commit -m "Initial commit."
+    mkdir -p d1/d2/d3/d4
+    echo "test" > d1/d2/d3/d4/readme4.txt
+    svn add d1/d2/d3
+    svn commit -m "Additional sub directory."
+    svn cp d1@1 d1-copy
+    svn cp d1/d2/d3@2 d1-copy/d2
+    svn commit -m "Composite commit."
+    <EXPORT CODE>

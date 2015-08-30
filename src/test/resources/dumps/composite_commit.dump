@@ -1,0 +1,144 @@
+SVN-fs-dump-format-version: 2
+
+UUID: d78b13fa-bc7a-4323-ace5-135af7a12584
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-08-30T07:23:07.042627Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-30T07:24:53.555086Z
+K 7
+svn:log
+V 15
+Initial commit.
+PROPS-END
+
+Node-path: d1
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: d1/d2
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: d1/d2/readme2.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 5
+Text-content-md5: d8e8fca2dc0f896fd7cb4cb0031ba249
+Text-content-sha1: 4e1243bd22c66e76c2ba9eddc1f91394e57f9f83
+Content-length: 15
+
+PROPS-END
+test
+
+
+Revision-number: 2
+Prop-content-length: 126
+Content-length: 126
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-30T07:25:26.348450Z
+K 7
+svn:log
+V 25
+Additional sub directory.
+PROPS-END
+
+Node-path: d1/d2/d3
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: d1/d2/d3/d4
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: d1/d2/d3/d4/readme4.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 5
+Text-content-md5: d8e8fca2dc0f896fd7cb4cb0031ba249
+Text-content-sha1: 4e1243bd22c66e76c2ba9eddc1f91394e57f9f83
+Content-length: 15
+
+PROPS-END
+test
+
+
+Revision-number: 3
+Prop-content-length: 118
+Content-length: 118
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-08-30T07:28:36.356216Z
+K 7
+svn:log
+V 17
+Composite commit.
+PROPS-END
+
+Node-path: d1-copy
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 1
+Node-copyfrom-path: d1
+
+
+Node-path: d1-copy/d2/d3
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 2
+Node-copyfrom-path: d1/d2/d3
+
+
