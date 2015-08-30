@@ -23,16 +23,6 @@ The parser is auto-generated using JavaCC from the [`svndump.jj`](src/main/javac
 This grammar generates a parser that is dependenent on the Java interfaces and 
 classes in this project.
 
-### Usage
-
-Parsing an SVN dump file is straight forward:
-
-    InputStream s = new FileInputStream("svn_dump_file");
-    SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
-    SvnDump dump = parser.Start();
-
-See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpFileParserTest.java) for usage patterns of the parser.
-
 ## Svn dump summary
 
 To get an `svn log`-like summary of your dump file, you can use the 
@@ -65,3 +55,19 @@ than running it through `svnadmin load`.
 
 Some useful validators:
 * [`PathCollision`](src/main/java/com/github/cstroe/svndumpgui/internal/validate/PathCollision.java) - checks that file operations are valid (don't delete non-existent files, don't double add files, check that files exist when making copies)
+
+# Usage
+
+To see how all these pieces fit together to allow you to edit SVN history,
+you can look at a SVN repository that I did for the AgreementMaker project.
+All the operations to the SVN dump file are detailed in [this test](com/github/cstroe/svndumpgui/internal/AMDump.java).
+
+## Reading an SVN dump file
+
+Parsing an SVN dump file is straight forward:
+
+    InputStream s = new FileInputStream("svn_dump_file");
+    SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+    SvnDump dump = parser.Start();
+
+See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpFileParserTest.java) for usage patterns of the parser.
