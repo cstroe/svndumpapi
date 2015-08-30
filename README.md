@@ -36,7 +36,7 @@ See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/interna
 ## Svn dump summary
 
 To get an `svn log`-like summary of your dump file, you can use the 
-[`SvnDumpSummary`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpSummary.java).
+[`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/utility/SvnDumpSummary.java).
 
 ## Mutators
 
