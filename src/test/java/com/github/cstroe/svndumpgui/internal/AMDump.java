@@ -19,6 +19,18 @@ public class AMDump {
 
     /**
      * This is a cleanup that I did for the AgreementMaker repository.
+     *
+     * The original repository was exported to full.dump.
+     * Then I filtered large files out with svndumpfilter to get onestep.dump:
+     *
+     *     cat initial_filter_list.txt > onestep.txt
+     *     svndumpfilter exclude --targets initial_filter_list.txt < full.dump > onestep.dump
+     *     grep -Poa "Node-path: \K.*\.rdf$" onestep.dump >> onestep.txt
+     *     grep -Poa "Node-path: \K.*\.jar$" onestep.dump  >> onestep.txt
+     *     grep -Poa "Node-path: \K.*\.zip$" onestep.dump >> onestep.txt
+     *     svndumpfilter exclude --targets onestep.txt < full.dump > onestep.dump
+     *
+     * The code below operates on onestep.dump.
      */
 
     @Test
