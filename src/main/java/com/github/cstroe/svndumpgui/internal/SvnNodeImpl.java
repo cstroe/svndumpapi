@@ -51,7 +51,8 @@ public class SvnNodeImpl implements SvnNode {
         }
         String copyInfo = md5hash;
         if(headers.containsKey(SvnNodeHeader.COPY_FROM_PATH)) {
-            copyInfo += " -- copied from: " + headers.get(SvnNodeHeader.COPY_FROM_PATH);
+            String copyFromRevision = headers.get(SvnNodeHeader.COPY_FROM_REV);
+            copyInfo += " -- copied from: " + headers.get(SvnNodeHeader.COPY_FROM_PATH) + "@" + copyFromRevision;
             if(headers.containsKey(SvnNodeHeader.SOURCE_MD5)) {
                 copyInfo += " " + headers.containsKey(SvnNodeHeader.SOURCE_MD5);
             }
