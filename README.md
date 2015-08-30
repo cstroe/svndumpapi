@@ -6,8 +6,8 @@ Attempt to create a user interface for editing SVN dump files.
 
 SVN dump files are created via the `svnadmin dump` command, and contain all the 
 history of an SVN repository.  An SVN dump file contains a list of revisions 
-(see [`SvnRevision`](com.github.cstroe.svndumpgui.api.SvnRevision)), and each
-revision contains a list of nodes (see [`SvnNode`](com.github.cstroe.svndumpgui.api.SvnNode)).
+(see [`SvnRevision`](src/main/java/com/github/cstroe/svndumpgui/api/SvnRevision.java)), and each
+revision contains a list of nodes (see [`SvnNode`](src/main/java/com/github/cstroe/svndumpgui/api/SvnNode.java)).
 
 Revisions can have properties such as author, date, and commit message.  Nodes 
 can have properties too, which are maintained on a node by node basis.
