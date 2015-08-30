@@ -2,9 +2,9 @@ r0: **empty**
 
 r1: Added 3 files. - cosmin 2015-08-29
 
-	add file README.txt
-	add file README2.txt
-	add file README3.txt
+	add file README.txt 4221d002ceb5d3c9e9137e495ceaa647
+	add file README2.txt 4221d002ceb5d3c9e9137e495ceaa647
+	add file README3.txt 4221d002ceb5d3c9e9137e495ceaa647
 
 r2: Deleted 3 files. - cosmin 2015-08-29
 
