@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.*;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.transform.*;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpAuthors;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpSummary;
 import com.github.cstroe.svndumpgui.internal.validate.PathCollision;
 import org.junit.Ignore;
@@ -101,6 +102,11 @@ public class AMDump {
         chain.add(new ClearRevision(1199));
         chain.add(new ClearRevision(1567));
 
+        // remove accidental deletion
+        // (this was discovered after the release to GitHub, so those commits are still there)
+        chain.add(new ClearRevision(2835));
+        chain.add(new ClearRevision(2837));
+
         chain.add(new NodeRemove(440, "add", "trunk/AgreementMaker"));
         chain.add(new NodeRemove(440, "add", "trunk/AgreementMaker/images"));
         chain.add(new NodeRemove(440, "add", "trunk/AgreementMaker/images/aboutImage.gif"));
@@ -135,6 +141,8 @@ public class AMDump {
 
         chain.add(new NodeHeaderChange(2875, "add", "trunk/AgreementMaker-OSGi/AM_ROOT", SvnNodeHeader.COPY_FROM_REV, "2874", "2814"));
 
+        chain.add(new UpdateAuthorForEmptyRevisions("cosmin"));
+
         chain.mutate(dump);
 
         System.out.println("Mutated dump.");
@@ -157,5 +165,20 @@ public class AMDump {
         summaryWriter.write(summaryOs, dump);
         summaryOs.close();
 
+    }
+
+    /**
+     * I used this method to get a list of authors in the SVN dump file,
+     * in order to pass the list to svn2git.
+     */
+    @Test
+    @Ignore
+    public void list_authors() throws IOException, ParseException {
+        final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/finished.dump");
+        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+        SvnDump dump = parser.Start();
+
+        SvnDumpWriter authorsWriter = new SvnDumpAuthors();
+        authorsWriter.write(System.out, dump);
     }
 }
