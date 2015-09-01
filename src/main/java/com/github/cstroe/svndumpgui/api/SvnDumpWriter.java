@@ -9,7 +9,7 @@ public interface SvnDumpWriter {
     void writeRevision(OutputStream os, SvnRevision revision) throws IOException;
     void finish(OutputStream os);
 
-    default public void write(OutputStream os, SvnDump dump) throws IOException {
+    default void write(OutputStream os, SvnDump dump) throws IOException {
         writePreamble(os, dump);
         Iterator<SvnRevision> revisionIter = dump.revisions();
         while(revisionIter.hasNext()) {

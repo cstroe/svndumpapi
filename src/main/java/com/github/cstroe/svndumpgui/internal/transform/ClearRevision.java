@@ -1,8 +1,9 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class ClearRevision extends AbstractSvnDumpMutator {
+public class ClearRevision implements SvnDumpMutator {
 
     private final int NOT_SET = -1;
     private final int fromRevision;
@@ -30,7 +31,7 @@ public class ClearRevision extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void mutate(SvnRevision revision) {
+    public void mutateRevision(SvnRevision revision) {
         if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
             revision.getNodes().clear();
             changedSomething = true;

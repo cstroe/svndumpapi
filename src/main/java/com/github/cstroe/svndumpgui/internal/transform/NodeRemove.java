@@ -1,8 +1,11 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.*;
+import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeRemove extends AbstractSvnDumpMutator {
+public class NodeRemove implements SvnDumpMutator {
 
     private final int targetRevision;
     private final String action;
@@ -18,7 +21,7 @@ public class NodeRemove extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void mutate(SvnRevision revision) {
+    public void mutateRevision(SvnRevision revision) {
         if(foundTargetRevision) {
             if(!removedNode) {
                 throw new IllegalArgumentException("The node \"" + action + " " + path +

@@ -6,7 +6,7 @@ import com.github.cstroe.svndumpgui.api.SvnRevision;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MutatorChain extends AbstractSvnDumpMutator {
+public class MutatorChain implements SvnDumpMutator {
 
     private List<SvnDumpMutator> mutators = new ArrayList<>();
 
@@ -15,9 +15,9 @@ public class MutatorChain extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void mutate(SvnRevision revision) {
+    public void mutateRevision(SvnRevision revision) {
         for(SvnDumpMutator mutator : mutators) {
-            mutator.mutate(revision);
+            mutator.mutateRevision(revision);
         }
     }
 
