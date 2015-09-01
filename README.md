@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cstroe/svndumpgui.svg?branch=master)](https://travis-ci.org/cstroe/svndumpgui)
+
 # SVN Dump GUI
 
 Attempt to create a user interface for editing SVN dump files.
