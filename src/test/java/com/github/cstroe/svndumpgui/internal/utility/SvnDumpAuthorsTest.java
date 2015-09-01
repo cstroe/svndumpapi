@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;

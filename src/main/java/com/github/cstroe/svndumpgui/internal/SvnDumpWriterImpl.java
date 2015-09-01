@@ -1,10 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
-import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,21 +11,23 @@ import java.util.Map;
 public class SvnDumpWriterImpl implements SvnDumpWriter {
 
     @Override
-    public void write(OutputStream os, SvnDump dump) throws IOException {
-        try(PrintStream ps = new PrintStream(os, true)) {
-            writeDump(ps, dump);
-        }
+    public void writePreamble(OutputStream os, SvnDump dump) throws IOException {
+        writeDump(new PrintStream(os), dump);
     }
+
+    @Override
+    public void writeRevision(OutputStream os, SvnRevision revision) throws IOException {
+        writeRevision(new PrintStream(os), revision);
+    }
+
+    @Override
+    public void finish(OutputStream os) {}
 
     private void writeDump(PrintStream ps, SvnDump dump) throws IOException {
         ps.println("SVN-fs-dump-format-version: 2\n");
         ps.print("UUID: ");
         ps.println(dump.getUUID());
         ps.println();
-
-        for(SvnRevision revision : dump.getRevisions()) {
-            writeRevision(ps, revision);
-        }
     }
 
     private void writeRevision(PrintStream ps, SvnRevision revision) throws IOException {

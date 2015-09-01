@@ -1,4 +1,4 @@
-package com.github.cstroe.svndumpgui.internal.utility;
+package com.github.cstroe.svndumpgui.internal.writer;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
@@ -12,18 +12,24 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class SvnDumpAuthors implements SvnDumpWriter {
-    @Override
-    public void write(OutputStream os, SvnDump dump) throws IOException {
-        SortedSet<String> authors = new TreeSet<>();
-        for(SvnRevision revision : dump.getRevisions()) {
-            if(revision.getProperties().containsKey(SvnProperty.AUTHOR)) {
-                authors.add(revision.get(SvnProperty.AUTHOR));
-            }
-        }
+    private SortedSet<String> authors = new TreeSet<>();
 
+    @Override
+    public void writePreamble(OutputStream os, SvnDump dump) throws IOException {}
+
+    @Override
+    public void writeRevision(OutputStream os, SvnRevision revision) throws IOException {
+        if(revision.getProperties().containsKey(SvnProperty.AUTHOR)) {
+            authors.add(revision.get(SvnProperty.AUTHOR));
+        }
+    }
+
+    @Override
+    public void finish(OutputStream os) {
         PrintStream ps = new PrintStream(os);
         for(String author : authors) {
             ps.println(author);
         }
+        authors = new TreeSet<>();
     }
 }
