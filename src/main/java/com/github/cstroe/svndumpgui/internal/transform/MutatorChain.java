@@ -15,9 +15,9 @@ public class MutatorChain implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         for(SvnDumpMutator mutator : mutators) {
-            mutator.mutateRevision(revision);
+            mutator.consumeRevision(revision);
         }
     }
 

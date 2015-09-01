@@ -31,7 +31,7 @@ public class ClearRevision implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
             revision.getNodes().clear();
             changedSomething = true;

@@ -16,7 +16,7 @@ public class NodeAdd implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         if(revision.getNumber() == targetRevision && !nodeAdded) {
             revision.getNodes().add(node);
             nodeAdded = true;

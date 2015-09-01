@@ -12,7 +12,7 @@ public class UpdateAuthorForEmptyRevisions implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         if(revision.getProperties().containsKey(SvnProperty.AUTHOR) && revision.getNodes().isEmpty() ) {
             revision.getProperties().put(SvnProperty.AUTHOR, newAuthor);
         }

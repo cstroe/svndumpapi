@@ -27,7 +27,7 @@ public class NodeHeaderChange implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         if(foundTargetRevision) {
             if(!updatedNode) {
                 throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);

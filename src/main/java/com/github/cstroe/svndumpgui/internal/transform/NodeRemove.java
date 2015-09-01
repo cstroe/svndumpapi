@@ -21,7 +21,7 @@ public class NodeRemove implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         if(foundTargetRevision) {
             if(!removedNode) {
                 throw new IllegalArgumentException("The node \"" + action + " " + path +

@@ -17,7 +17,7 @@ public class PathChange implements SvnDumpMutator {
     }
 
     @Override
-    public void mutateRevision(SvnRevision revision) {
+    public void consumeRevision(SvnRevision revision) {
         if(revision.getProperties().containsKey(SvnProperty.MERGEINFO)) {
             final String mergeInfo = revision.get(SvnProperty.MERGEINFO);
             if(mergeInfo.startsWith(oldPath)) {
