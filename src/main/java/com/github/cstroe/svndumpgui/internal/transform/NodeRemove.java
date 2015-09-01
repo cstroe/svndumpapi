@@ -2,13 +2,15 @@ package com.github.cstroe.svndumpgui.internal.transform;
 
 import com.github.cstroe.svndumpgui.api.*;
 
-import java.util.Iterator;
-
-public class NodeRemove implements SvnDumpMutator {
+public class NodeRemove extends AbstractSvnDumpMutator {
 
     private final int targetRevision;
     private final String action;
     private final String path;
+
+    private SvnRevision currentRevision = null;
+    private boolean foundTargetRevision;
+    private boolean removedNode;
 
     public NodeRemove(int targetRevision, String action, String nodePath) {
         this.targetRevision = targetRevision;
@@ -17,22 +19,38 @@ public class NodeRemove implements SvnDumpMutator {
     }
 
     @Override
-    public void mutate(SvnDump dump) {
-        for(SvnRevision revision : dump.getRevisions()) {
-            if(revision.getNumber() == targetRevision) {
-                Iterator<SvnNode> iterator = revision.getNodes().iterator();
-                while(iterator.hasNext()) {
-                    SvnNode node = iterator.next();
-                    if(action.equals(node.get(SvnNodeHeader.ACTION)) &&
-                       path.equals(node.get(SvnNodeHeader.PATH))) {
-                        iterator.remove();
-                        return;
-                    }
-                }
+    public void mutate(SvnRevision revision) {
+        if(foundTargetRevision) {
+            if(!removedNode) {
                 throw new IllegalArgumentException("The node \"" + action + " " + path +
                         "\" was not found at revision " + targetRevision);
             }
+            return;
         }
-        throw new IllegalArgumentException("Revision " + targetRevision + " was not found.");
+
+        if(revision.getNumber() == targetRevision) {
+            currentRevision = revision;
+            foundTargetRevision = true;
+        }
+    }
+
+    @Override
+    public void mutate(SvnNode node) {
+        if(!removedNode &&
+                action.equals(node.get(SvnNodeHeader.ACTION)) &&
+                path.equals(node.get(SvnNodeHeader.PATH))) {
+            currentRevision.getNodes().remove(node);
+        }
+    }
+
+    @Override
+    public void finish() {
+        if(!foundTargetRevision) {
+            throw new IllegalArgumentException("Revision " + targetRevision + " was not found.");
+        }
+
+        currentRevision = null;
+        foundTargetRevision = false;
+        removedNode = false;
     }
 }

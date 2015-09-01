@@ -1,14 +1,11 @@
 package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.mutable.MutableSvnRevision;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class SvnRevisionImpl implements MutableSvnRevision {
+public class SvnRevisionImpl implements SvnRevision {
 
     private int number;
     private Map<String, String> properties = new LinkedHashMap<>();
@@ -66,5 +63,10 @@ public class SvnRevisionImpl implements MutableSvnRevision {
     @Override
     public void setNodes(List<SvnNode> nodes) {
         this.nodes = nodes;
+    }
+
+    @Override
+    public Iterator<SvnNode> nodes() {
+        return nodes.iterator();
     }
 }

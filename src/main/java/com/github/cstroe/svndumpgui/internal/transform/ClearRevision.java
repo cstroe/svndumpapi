@@ -1,14 +1,14 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class ClearRevision implements SvnDumpMutator {
+public class ClearRevision extends AbstractSvnDumpMutator {
 
     private final int NOT_SET = -1;
     private final int fromRevision;
     private final int toRevision;
+
+    private boolean changedSomething = false;
 
     public ClearRevision(int revision) {
         if(revision < 0 ) {
@@ -30,17 +30,18 @@ public class ClearRevision implements SvnDumpMutator {
     }
 
     @Override
-    public void mutate(SvnDump dump) {
-        boolean changedSomething = false;
-        for(SvnRevision revision : dump.getRevisions()) {
-            if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
-                revision.getNodes().clear();
-                changedSomething = true;
-            } else if(revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision) {
-                revision.getNodes().clear();
-                changedSomething = true;
-            }
+    public void mutate(SvnRevision revision) {
+        if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
+            revision.getNodes().clear();
+            changedSomething = true;
+        } else if(revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision) {
+            revision.getNodes().clear();
+            changedSomething = true;
         }
+    }
+
+    @Override
+    public void finish() {
         if(!changedSomething) {
             throw new IllegalArgumentException("No revisions matched: " + toString());
         }

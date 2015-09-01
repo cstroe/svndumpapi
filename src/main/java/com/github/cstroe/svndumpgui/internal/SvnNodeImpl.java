@@ -1,12 +1,12 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-import com.github.cstroe.svndumpgui.api.mutable.MutableSvnNode;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SvnNodeImpl implements MutableSvnNode {
+public class SvnNodeImpl implements SvnNode {
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
     private Map<String, String> properties;
     private byte[] content;
