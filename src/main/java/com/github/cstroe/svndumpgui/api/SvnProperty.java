@@ -5,4 +5,5 @@ public interface SvnProperty {
     String AUTHOR = "svn:author";
     String LOG = "svn:log";
     String MIMETYPE = "svn:mime-type";
+    String MERGEINFO = "svn:mergeinfo";
 }
