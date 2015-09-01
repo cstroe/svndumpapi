@@ -2,9 +2,16 @@ package com.github.cstroe.svndumpgui.internal.transform;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
+import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImplTest;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
@@ -67,5 +74,24 @@ public class PathChangeTest {
                 is(equalTo("README-changed.txt")));
         assertThat(dump.getRevisions().get(2).getNodes().get(0).get(SvnNodeHeader.PATH),
                 is(equalTo("OTHER.txt")));
+    }
+
+    @Test
+    public void update_mergeinfo() throws Exception {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/simple_branch_and_merge.dump");
+
+        SvnDumpMutator pathChange = new PathChange("branches", "custom_branches");
+        pathChange.mutate(dump);
+
+        ByteArrayOutputStream changedDump = new ByteArrayOutputStream();
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        writer.write(changedDump, dump);
+
+        final InputStream s = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("dumps/simple_branch_and_merge_renamed.dump");
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(changedDump.toByteArray());
+
+        SvnDumpWriterImplTest.assertEqualStreams(s, bis);
     }
 }

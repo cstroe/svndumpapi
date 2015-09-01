@@ -215,3 +215,47 @@ Same as `svn_rename.dump` but without the copy hashes.
 A variation on `undelete.dump` but instead of undeleting the file 
 from revision 1 we undelete it from revision 2, where it doesn't exist.
 It's an invalid svn dump, meant to verify that the validator throws an error.
+
+## simple_branch_and_merge.dump
+
+    <SETUP CODE>
+    mkdir -p trunk/innerdir branches
+    echo "this is a test file" > trunk/innerdir/README.txt
+    svn add trunk branches
+    svn commit -m "Initial commit."
+    svn copy trunk branches/mybranch
+    svn commit -m "Creating branch."
+    cd ..
+    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo/branches/mybranch" mybranch'
+    cd mybranch
+    echo "branch work" >> innerdir/README.txt
+    svn commit -m "Branch work."
+    cd ..
+    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo/trunk" trunk'
+    cd trunk
+    bash -c 'svn merge --reintegrate ^/branches/mybranch'
+    svn commit -m "Merge branch back into trunk."
+    bash -c  'svn delete ^/branches/mybranch -m "Removing branch."'
+    <EXPORT CODE>
+
+## simple_branch_and_merge_renamed.dump
+
+    <SETUP CODE>
+    mkdir -p trunk/renameddir branches
+    echo "this is a test file" > trunk/renameddir/README.txt
+    svn add trunk branches
+    svn commit -m "Initial commit."
+    svn copy trunk branches/mybranch
+    svn commit -m "Creating branch."
+    cd ..
+    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo/branches/mybranch" mybranch'
+    cd mybranch
+    echo "branch work" >> renameddir/README.txt
+    svn commit -m "Branch work."
+    cd ..
+    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo/trunk" trunk'
+    cd trunk
+    bash -c 'svn merge --reintegrate ^/branches/mybranch'
+    svn commit -m "Merge branch back into trunk."
+    bash -c  'svn delete ^/branches/mybranch -m "Removing branch."'
+    <EXPORT CODE>

@@ -46,7 +46,7 @@ public class PathChange extends AbstractSvnDumpMutator {
 
                 final String leadingSlashPath = "/" + oldPath;
                 if(mergeInfo.startsWith(leadingSlashPath)) {
-                    final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length());
+                    final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length() + 1);
                     node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
                 }
             }
