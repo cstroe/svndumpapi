@@ -1,12 +1,12 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.mutable.MutableSvnNode;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SvnNodeImpl implements SvnNode {
+public class SvnNodeImpl implements MutableSvnNode {
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
     private Map<String, String> properties;
     private byte[] content;
@@ -16,6 +16,7 @@ public class SvnNodeImpl implements SvnNode {
         return content;
     }
 
+    @Override
     public void setContent(byte[] content) {
         this.content = content;
     }
@@ -25,10 +26,12 @@ public class SvnNodeImpl implements SvnNode {
         return properties;
     }
 
+    @Override
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
+    @Override
     public void setHeaders(Map<SvnNodeHeader, String> headers) {
         this.headers = headers;
     }
