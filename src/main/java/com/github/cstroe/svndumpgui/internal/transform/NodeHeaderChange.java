@@ -1,6 +1,8 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.*;
+import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
@@ -34,11 +36,14 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
         if(revision.getNumber() == targetRevision) {
             foundTargetRevision = true;
+            for(SvnNode node : revision.getNodes()) {
+                mutate(node);
+            }
+
         }
     }
 
-    @Override
-    public void mutate(SvnNode node) {
+    private void mutate(SvnNode node) {
         if(updatedNode) {
             return;
         }

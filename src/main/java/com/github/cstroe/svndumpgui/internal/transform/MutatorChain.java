@@ -1,7 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.util.ArrayList;
@@ -19,13 +18,6 @@ public class MutatorChain extends AbstractSvnDumpMutator {
     public void mutate(SvnRevision revision) {
         for(SvnDumpMutator mutator : mutators) {
             mutator.mutate(revision);
-        }
-    }
-
-    @Override
-    public void mutate(SvnNode node) {
-        for(SvnDumpMutator mutator : mutators) {
-            mutator.mutate(node);
         }
     }
 

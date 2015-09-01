@@ -8,9 +8,8 @@ public class NodeRemove extends AbstractSvnDumpMutator {
     private final String action;
     private final String path;
 
-    private SvnRevision currentRevision = null;
-    private boolean foundTargetRevision;
-    private boolean removedNode;
+    private boolean foundTargetRevision = false;
+    private boolean removedNode = false;
 
     public NodeRemove(int targetRevision, String action, String nodePath) {
         this.targetRevision = targetRevision;
@@ -29,17 +28,16 @@ public class NodeRemove extends AbstractSvnDumpMutator {
         }
 
         if(revision.getNumber() == targetRevision) {
-            currentRevision = revision;
             foundTargetRevision = true;
-        }
-    }
-
-    @Override
-    public void mutate(SvnNode node) {
-        if(!removedNode &&
-                action.equals(node.get(SvnNodeHeader.ACTION)) &&
-                path.equals(node.get(SvnNodeHeader.PATH))) {
-            currentRevision.getNodes().remove(node);
+            for(SvnNode node : revision.getNodes()) {
+                if(foundTargetRevision && !removedNode &&
+                        action.equals(node.get(SvnNodeHeader.ACTION)) &&
+                        path.equals(node.get(SvnNodeHeader.PATH))) {
+                    revision.getNodes().remove(node);
+                    removedNode = true;
+                    break;
+                }
+            }
         }
     }
 
@@ -49,7 +47,6 @@ public class NodeRemove extends AbstractSvnDumpMutator {
             throw new IllegalArgumentException("Revision " + targetRevision + " was not found.");
         }
 
-        currentRevision = null;
         foundTargetRevision = false;
         removedNode = false;
     }

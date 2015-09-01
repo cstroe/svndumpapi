@@ -15,4 +15,7 @@ public class UpdateAuthorForEmptyRevisions extends AbstractSvnDumpMutator {
             revision.getProperties().put(SvnProperty.AUTHOR, newAuthor);
         }
     }
+
+    @Override
+    public void finish() {}
 }

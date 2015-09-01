@@ -13,10 +13,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.*;
 
-public class NodeRemoveTest {
+public class MutatorChainTest {
 
     @Test
-    public void remove_node() throws ParseException {
+    public void mutator_chain_with_single_mutator() throws ParseException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
 
         assertThat(dump.getRevisions().size(), is(3));
@@ -28,8 +28,12 @@ public class NodeRemoveTest {
         assertNull(node.get(SvnNodeHeader.KIND));
         assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("README2.txt")));
 
+        MutatorChain chain = new MutatorChain();
+
         SvnDumpMutator nodeRemove = new NodeRemove(2, "delete", "README2.txt");
-        nodeRemove.mutate(dump);
+        chain.add(nodeRemove);
+
+        chain.mutate(dump);
 
         assertThat(dump.getRevisions().size(), is(3));
         assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -40,29 +44,7 @@ public class NodeRemoveTest {
 
         assertThat(firstNode.get(SvnNodeHeader.PATH), is(not(equalTo("README2.txt"))));
         assertThat(secondNode.get(SvnNodeHeader.PATH), is(not(equalTo("README2.txt"))));
+
     }
 
-    @Test
-    public void remove_should_respect_the_target_revision_number() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/add_edit_delete_add.dump");
-
-        assertThat(dump.getRevisions().size(), is(5));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
-        SvnNode node = dump.getRevisions().get(1).getNodes().get(0);
-        assertThat(node.get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertThat(node.get(SvnNodeHeader.KIND), is(equalTo("file")));
-        assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
-
-        assertThat(dump.getRevisions().get(4).getNodes().size(), is(1));
-        node = dump.getRevisions().get(4).getNodes().get(0);
-        assertThat(node.get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertThat(node.get(SvnNodeHeader.KIND), is(equalTo("file")));
-        assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
-
-        SvnDumpMutator nodeRemove = new NodeRemove(4, "add", "README.txt");
-        nodeRemove.mutate(dump);
-
-        assertThat(dump.getRevisions().size(), is(5));
-        assertThat(dump.getRevisions().get(4).getNodes().size(), is(0));
-    }
 }
