@@ -149,7 +149,7 @@ public class AMDump {
 
         // validate that our dump file is actually consistent.
         SvnDumpValidator pathCollisionValidator = new PathCollision();
-        if(!pathCollisionValidator.isValid(dump)) {
+        if(!pathCollisionValidator.validate(dump)) {
             throw new AssertionError(pathCollisionValidator.getError().getMessage());
         }
 
