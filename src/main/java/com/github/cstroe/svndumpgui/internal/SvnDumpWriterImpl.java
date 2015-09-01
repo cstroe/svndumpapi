@@ -84,13 +84,14 @@ public class SvnDumpWriterImpl implements SvnDumpWriter {
                 writeProperties(ps, node.getProperties());
             }
 
-            if("dir".equals(node.get(SvnNodeHeader.KIND))) {
-                ps.println();
-            }
-
             // file content
             if(node.getContent() != null && node.getContent().length != 0) {
                 ps.write(node.getContent());
+                ps.println();
+            }
+
+            // write an extra newline when there is no content and properties were written.
+            if(node.getContent() == null && node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
                 ps.println();
             }
 

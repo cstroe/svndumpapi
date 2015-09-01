@@ -1,10 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-import com.github.cstroe.svndumpgui.api.SvnProperty;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.*;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import org.junit.Test;
@@ -28,7 +24,11 @@ public class SvnDumpFileParserTest {
     public static SvnDump parse(String dumpFile) throws ParseException {
         final InputStream s = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(dumpFile);
-        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+        return parse(s);
+    }
+
+    public static SvnDump parse(InputStream is) throws ParseException {
+        SvnDumpFileParser parser = new SvnDumpFileParser(is, "ISO-8859-1");
         return parser.Start();
     }
 

@@ -79,6 +79,24 @@ public class SvnDumpWriterImplTest {
         recreateDumpFile("dumps/svn_multi_file_delete.dump");
     }
 
+    @Test
+    public void rewrite_file() throws ParseException, IOException {
+        SvnDump dump = SvnDumpFileParserTest.parse("dumps/simple_branch_and_merge.dump");
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
+        writer.write(firstStream, dump);
+
+        SvnDump readDump = SvnDumpFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
+
+        ByteArrayOutputStream secondStream = new ByteArrayOutputStream();
+        writer.write(secondStream, readDump);
+
+        final InputStream s = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/simple_branch_and_merge.dump");
+
+        SvnDumpWriterImplTest.assertEqualStreams(s, new ByteArrayInputStream(secondStream.toByteArray()));
+    }
+
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
 
