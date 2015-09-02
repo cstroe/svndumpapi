@@ -24,7 +24,7 @@ public class SvnDumpAuthorsTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         authorsWriter.write(baos, dump);
 
-        assertThat(baos.toString(), is(equalTo("super2\nsuperd\n")));
+        assertThat(baos.toString(), is(equalTo("superd\nsuper2\n")));
     }
 
     @Test

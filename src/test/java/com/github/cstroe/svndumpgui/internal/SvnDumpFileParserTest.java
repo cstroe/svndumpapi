@@ -3,6 +3,7 @@ package com.github.cstroe.svndumpgui.internal;
 import com.github.cstroe.svndumpgui.api.*;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -29,7 +30,9 @@ public class SvnDumpFileParserTest {
 
     public static SvnDump parse(InputStream is) throws ParseException {
         SvnDumpFileParser parser = new SvnDumpFileParser(is, "ISO-8859-1");
-        return parser.Start();
+        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+        parser.Start(dumpInMemory);
+        return dumpInMemory.getDump();
     }
 
     @SuppressWarnings("unchecked")

@@ -13,21 +13,36 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.util.LinkedHashMap;
 
   import com.github.cstroe.svndumpgui.api.SvnDump;
+  import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
   import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
-  import com.github.cstroe.svndumpgui.api.SvnRevision;
+  import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-  import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
-  import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.github.cstroe.svndumpgui.api.SvnRevision;
   import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
-  import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
+  import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
+  import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.github.cstroe.svndumpgui.internal.writer.SvnDumpCollector;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
     throws ParseException, TokenMgrError {
       SvnDumpFileParser parser = new SvnDumpFileParser(System.in);
-      parser.Start();
+      SvnDumpWriter writer = new SvnDumpWriterImpl();
+      writer.writeTo(System.out);
+      parser.Start(writer);
+    }
+
+    /**
+     * @deprecated saves the entire dump in memory, not scalable
+     */
+    @Deprecated
+    public SvnDump fullRead() throws ParseException {
+        SvnDumpCollector collector = new SvnDumpCollector();
+        Start(collector);
+        return collector.getDump();
     }
 
     private String readCharacters(Integer number) {
@@ -98,9 +113,8 @@ TOKEN: { <TEXT_COPYSOURCE_SHA1_KEY: "Text-copy-source-sha1"> }
 
 // Parser
 
-public SvnDump Start():
+public void Start(SvnDumpConsumer consumer):
 {
-  SvnDumpImpl dump = new SvnDumpImpl();
   Token dumpVersion;
   Token uuid;
   SvnRevision revision;
@@ -115,18 +129,16 @@ public SvnDump Start():
     {
         if(uuid != null) {
             SvnDumpPreamble preamble = new SvnDumpPreambleImpl(uuid.image);
-            dump.setPreamble(preamble);
+            consumer.consume(preamble);
         }
     }
 
     (
         revision = Revision()
-        { dump.addRevision(revision); }
+        { consumer.consume(revision); }
     )*
 
     <EOF>
-
-    { return dump; }
 }
 
 public SvnRevision Revision():

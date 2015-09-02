@@ -39,7 +39,7 @@ public class AMDump {
     public void convert_AgreementMaker_repository() throws ParseException, NoSuchAlgorithmException, IOException {
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/onestep.dump");
         SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
-        SvnDump dump = parser.Start();
+        SvnDump dump = parser.fullRead();
 
         System.out.println("Read in onestep.dump");
 
@@ -176,9 +176,9 @@ public class AMDump {
     public void list_authors() throws IOException, ParseException {
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/finished.dump");
         SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
-        SvnDump dump = parser.Start();
-
         SvnDumpWriter authorsWriter = new SvnDumpAuthors();
-        authorsWriter.write(System.out, dump);
+        authorsWriter.writeTo(System.out);
+
+        parser.Start(authorsWriter);
     }
 }

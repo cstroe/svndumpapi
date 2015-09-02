@@ -15,48 +15,43 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void consume(SvnDumpPreamble preamble) {
-        PrintStream ps = new PrintStream(getOutputStream());
-        ps.println("SVN-fs-dump-format-version: 2\n");
+        ps().println("SVN-fs-dump-format-version: 2\n");
         if(preamble.getUUID() != null) {
-            ps.print("UUID: ");
-            ps.println(preamble.getUUID());
+            ps().print("UUID: ");
+            ps().println(preamble.getUUID());
         }
-        ps.println();
+        ps().println();
     }
 
     @Override
     public void consume(SvnRevision revision) {
-        PrintStream ps = new PrintStream(getOutputStream());
-        ps.print("Revision-number: ");
-        ps.println(revision.getNumber());
+        ps().print("Revision-number: ");
+        ps().println(revision.getNumber());
 
-        // properties
+        // properties are created here so that we can fill in the header values correctly
         ByteArrayOutputStream properties = new ByteArrayOutputStream();
         writeProperties(new PrintStream(properties, true), revision.getProperties());
         int propertiesLength = properties.size();
 
-        ps.print("Prop-content-length: ");
-        ps.println(propertiesLength);
-        ps.print("Content-length: ");
-        ps.println(propertiesLength);
-        ps.println();
+        ps().print("Prop-content-length: ");
+        ps().println(propertiesLength);
+        ps().print("Content-length: ");
+        ps().println(propertiesLength);
+        ps().println();
 
-        ps.print(properties.toString());
-        ps.println();
+        ps().print(properties.toString());
+        ps().println();
 
         // nodes
         ByteArrayOutputStream nodes = new ByteArrayOutputStream();
-        writeNodes(new PrintStream(nodes, true), revision);
+        writeNodes(revision);
 
         try {
-            ps.write(nodes.toByteArray());
+            ps().write(nodes.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public void finish() {}
 
     private void writeProperties(PrintStream ps, Map<String, String> properties) {
         if(properties == null) {
@@ -73,36 +68,36 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         ps.println("PROPS-END");
     }
 
-    private void writeNodes(PrintStream ps, SvnRevision revision) {
+    private void writeNodes(SvnRevision revision) {
         for(SvnNode node : revision.getNodes()) {
             // headers
             for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
-                ps.print(headerEntry.getKey().toString());
-                ps.println(headerEntry.getValue());
+                ps().print(headerEntry.getKey().toString());
+                ps().println(headerEntry.getValue());
             }
-            ps.println();
+            ps().println();
 
             // properties
             if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
-                writeProperties(ps, node.getProperties());
+                writeProperties(ps(), node.getProperties());
             }
 
             // file content
             if(node.getContent() != null && node.getContent().length != 0) {
                 try {
-                    ps.write(node.getContent());
+                    ps().write(node.getContent());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
-                ps.println();
+                ps().println();
             }
 
             // write an extra newline when there is no content and properties were written.
             if(node.getContent() == null && node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
-                ps.println();
+                ps().println();
             }
 
-            ps.println();
+            ps().println();
         }
     }
 }
