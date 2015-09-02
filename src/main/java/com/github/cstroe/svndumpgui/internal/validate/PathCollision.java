@@ -49,7 +49,7 @@ public class PathCollision implements SvnDumpValidator {
                             "but it was already added in revision " + currentRevisionPaths.get(path).first +
                             " by this node:\n" +
                             currentRevisionPaths.get(path).second;
-                    error = new SvnDumpErrorImpl(message, revision, node);
+                    error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
                 }
 
                 if(copyFromRevision != null) {
@@ -59,7 +59,7 @@ public class PathCollision implements SvnDumpValidator {
                                 "adding " + path + "\n" +
                                 "from " + copyFromPath + "@" + copyFromRevision + "\n" +
                                 "but it doesn't exist in revision " + copyFromRevision;
-                        error = new SvnDumpErrorImpl(message, revision, node);
+                        error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
                     }
                 }
 
@@ -80,7 +80,7 @@ public class PathCollision implements SvnDumpValidator {
                     String message = "Error at revision " + revision.getNumber() + "\n" +
                             "deleting " + path + "\n" +
                             "but it does not exist";
-                    error = new SvnDumpErrorImpl(message, revision, node);
+                    error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
                 }
 
                 currentRevisionPaths.remove(path);

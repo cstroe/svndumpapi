@@ -42,7 +42,7 @@ public class PathCollisionTest {
 
         SvnDumpError error = validator.getError();
         assertNotNull(error.getMessage());
-        assertThat(error.getRevision().getNumber(), is(2));
+        assertThat(error.getRevision(), is(2));
         assertThat(error.getNode().get(SvnNodeHeader.PATH), is(equalTo("testdir")));
     }
 
@@ -109,7 +109,7 @@ public class PathCollisionTest {
 
         SvnDumpError error = validator.getError();
         assertNotNull(error.getMessage());
-        assertThat(error.getRevision().getNumber(), is(3));
+        assertThat(error.getRevision(), is(3));
         assertThat(error.getNode().get(SvnNodeHeader.PATH), is(equalTo("file2.txt")));
     }
 

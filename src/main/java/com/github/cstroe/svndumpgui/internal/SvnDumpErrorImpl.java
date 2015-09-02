@@ -2,14 +2,13 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpError;
 import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 public class SvnDumpErrorImpl implements SvnDumpError {
     private final String message;
-    private final SvnRevision revision;
+    private final int revision;
     private final SvnNode node;
 
-    public SvnDumpErrorImpl(String message, SvnRevision revision, SvnNode node) {
+    public SvnDumpErrorImpl(String message, int revision, SvnNode node) {
         this.message = message;
         this.revision = revision;
         this.node = node;
@@ -21,7 +20,7 @@ public class SvnDumpErrorImpl implements SvnDumpError {
     }
 
     @Override
-    public SvnRevision getRevision() {
+    public int getRevision() {
         return revision;
     }
 

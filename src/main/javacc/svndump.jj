@@ -24,7 +24,6 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
-  import com.github.cstroe.svndumpgui.internal.writer.SvnDumpCollector;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
@@ -33,16 +32,6 @@ PARSER_BEGIN(SvnDumpFileParser)
       SvnDumpWriter writer = new SvnDumpWriterImpl();
       writer.writeTo(System.out);
       parser.Start(writer);
-    }
-
-    /**
-     * @deprecated saves the entire dump in memory, not scalable
-     */
-    @Deprecated
-    public SvnDump fullRead() throws ParseException {
-        SvnDumpCollector collector = new SvnDumpCollector();
-        Start(collector);
-        return collector.getDump();
     }
 
     private String readCharacters(Integer number) {
@@ -81,7 +70,7 @@ PARSER_END(SvnDumpFileParser)
 SKIP: { " " }
 TOKEN: { <EOL: "\n" | "\r" | "\r\n"> }
 TOKEN: { <NUMBER: (["0"-"9"])+> }
-TOKEN: { <COLON: ":"> }
+TOKEN: { <  COLON: ":"> }
 TOKEN: { <VERSION_KEY: "SVN-fs-dump-format-version"> }
 TOKEN: { <UUID_KEY: "UUID"> }
 TOKEN: { <UUID_VALUE: (["0"-"9","a"-"z"]){8} "-" (["0"-"9","a"-"z"]){4} "-" (["0"-"9","a"-"z"]){4} "-" (["0"-"9","a"-"z"]){4} "-" (["0"-"9","a"-"z"]){12}> }

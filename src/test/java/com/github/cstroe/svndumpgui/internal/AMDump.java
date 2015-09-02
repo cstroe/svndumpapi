@@ -1,18 +1,18 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.transform.ClearRevision;
-import com.github.cstroe.svndumpgui.internal.transform.MutatorChain;
+import com.github.cstroe.svndumpgui.internal.transform.ConsumerChain;
 import com.github.cstroe.svndumpgui.internal.transform.NodeAdd;
 import com.github.cstroe.svndumpgui.internal.transform.NodeHeaderChange;
 import com.github.cstroe.svndumpgui.internal.transform.NodeRemove;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.transform.UpdateAuthorForEmptyRevisions;
+import com.github.cstroe.svndumpgui.internal.utility.TerminatingValidator;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import com.github.cstroe.svndumpgui.internal.validate.PathCollision;
@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-
-import static org.junit.Assert.assertNotNull;
 
 public class AMDump {
 
@@ -49,15 +47,7 @@ public class AMDump {
     @Test
     @Ignore
     public void convert_AgreementMaker_repository() throws ParseException, NoSuchAlgorithmException, IOException {
-        final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/onestep.dump");
-        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
-        SvnDump dump = parser.fullRead();
-
-        System.out.println("Read in onestep.dump");
-
-        assertNotNull(dump);
-
-        MutatorChain chain = new MutatorChain();
+        ConsumerChain chain = new ConsumerChain();
 
         // add the main branch here
         SvnNodeImpl trunkAgreementMaker = new SvnNodeImpl();
@@ -155,28 +145,28 @@ public class AMDump {
 
         chain.add(new UpdateAuthorForEmptyRevisions("cosmin"));
 
-        chain.mutate(dump);
-
-        System.out.println("Mutated dump.");
-
-        // validate that our dump file is actually consistent.
         SvnDumpValidator pathCollisionValidator = new PathCollision();
-        if(!pathCollisionValidator.validate(dump)) {
-            throw new AssertionError(pathCollisionValidator.getError().getMessage());
-        }
+        SvnDumpValidator terminator = new TerminatingValidator(pathCollisionValidator);
+        chain.add(terminator);
 
-        // save the dump, plus a summary.
-
+        // save the dump
         FileOutputStream fos = new FileOutputStream("/tmp/am_good.dump");
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
-        dumpWriter.write(fos, dump);
-        fos.close();
+        dumpWriter.writeTo(fos);
+        chain.add(dumpWriter);
 
         FileOutputStream summaryOs = new FileOutputStream("/tmp/am_good.summary");
         SvnDumpWriter summaryWriter = new SvnDumpSummary();
-        summaryWriter.write(summaryOs, dump);
-        summaryOs.close();
+        summaryWriter.writeTo(summaryOs);
+        chain.add(summaryWriter);
 
+        final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/onestep.dump");
+        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+
+        parser.Start(chain);
+
+        fos.close();
+        summaryOs.close();
     }
 
     /**
