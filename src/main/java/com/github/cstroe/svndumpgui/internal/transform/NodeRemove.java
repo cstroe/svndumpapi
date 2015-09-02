@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
@@ -19,6 +20,9 @@ public class NodeRemove implements SvnDumpMutator {
         this.action = action;
         this.path = nodePath;
     }
+
+    @Override
+    public void consumePreamble(SvnDump dump) {}
 
     @Override
     public void consumeRevision(SvnRevision revision) {

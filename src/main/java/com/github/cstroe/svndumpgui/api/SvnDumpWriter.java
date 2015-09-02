@@ -6,9 +6,6 @@ import java.util.Iterator;
 
 public interface SvnDumpWriter extends SvnDumpConsumer {
     void writeTo(OutputStream os);
-    void consumePreamble(SvnDump dump) throws IOException;
-    void consumeRevision(SvnRevision revision) throws IOException;
-    void finish();
 
     default void write(OutputStream os, SvnDump dump) throws IOException {
         writeTo(os);

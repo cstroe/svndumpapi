@@ -98,6 +98,9 @@ public class PathCollision implements SvnDumpValidator {
     }
 
     @Override
+    public void finish() {}
+
+    @Override
     public boolean isValid() {
         return error == null;
     }

@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -10,6 +11,9 @@ public class UpdateAuthorForEmptyRevisions implements SvnDumpMutator {
     public UpdateAuthorForEmptyRevisions(String newAuthor) {
         this.newAuthor = newAuthor;
     }
+
+    @Override
+    public void consumePreamble(SvnDump dump) {}
 
     @Override
     public void consumeRevision(SvnRevision revision) {

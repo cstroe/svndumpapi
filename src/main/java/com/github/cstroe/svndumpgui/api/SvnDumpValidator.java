@@ -2,8 +2,6 @@ package com.github.cstroe.svndumpgui.api;
 
 
 public interface SvnDumpValidator extends SvnDumpConsumer {
-    void consumePreamble(SvnDump dump);
-    void consumeRevision(SvnRevision revision);
     boolean isValid();
     SvnDumpError getError();
 

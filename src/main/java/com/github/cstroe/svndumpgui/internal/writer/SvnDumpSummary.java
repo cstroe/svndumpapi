@@ -1,8 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.writer;
 
-import com.github.cstroe.svndumpgui.api.*;
+import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 public class SvnDumpSummary extends AbstractSvnDumpWriter {
@@ -12,10 +14,10 @@ public class SvnDumpSummary extends AbstractSvnDumpWriter {
     private int lastEmptyRevision = NOT_SET;
 
     @Override
-    public void consumePreamble(SvnDump dump) throws IOException {}
+    public void consumePreamble(SvnDump dump) {}
 
     @Override
-    public void consumeRevision(SvnRevision revision) throws IOException {
+    public void consumeRevision(SvnRevision revision) {
         PrintStream ps = new PrintStream(getOutputStream());
         if(revision.getNodes().isEmpty()) {
             if(firstEmptyRevision == NOT_SET) {

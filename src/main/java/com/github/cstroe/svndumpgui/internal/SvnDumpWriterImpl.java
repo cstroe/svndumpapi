@@ -14,7 +14,7 @@ import java.util.Map;
 public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
-    public void consumePreamble(SvnDump dump) throws IOException {
+    public void consumePreamble(SvnDump dump) {
         PrintStream ps = new PrintStream(getOutputStream());
         ps.println("SVN-fs-dump-format-version: 2\n");
         ps.print("UUID: ");
@@ -23,7 +23,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
     }
 
     @Override
-    public void consumeRevision(SvnRevision revision) throws IOException {
+    public void consumeRevision(SvnRevision revision) {
         PrintStream ps = new PrintStream(getOutputStream());
         ps.print("Revision-number: ");
         ps.println(revision.getNumber());
@@ -46,7 +46,11 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         ByteArrayOutputStream nodes = new ByteArrayOutputStream();
         writeNodes(new PrintStream(nodes, true), revision);
 
-        ps.write(nodes.toByteArray());
+        try {
+            ps.write(nodes.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -67,7 +71,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         ps.println("PROPS-END");
     }
 
-    private void writeNodes(PrintStream ps, SvnRevision revision) throws IOException {
+    private void writeNodes(PrintStream ps, SvnRevision revision) {
         for(SvnNode node : revision.getNodes()) {
             // headers
             for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
@@ -83,7 +87,11 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
             // file content
             if(node.getContent() != null && node.getContent().length != 0) {
-                ps.write(node.getContent());
+                try {
+                    ps.write(node.getContent());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 ps.println();
             }
 

@@ -3,9 +3,6 @@ package com.github.cstroe.svndumpgui.api;
 import java.util.Iterator;
 
 public interface SvnDumpMutator extends SvnDumpConsumer {
-    void consumeRevision(SvnRevision revision);
-    void finish();
-
     default void mutate(SvnDump dump) {
         Iterator<SvnRevision> revisionsIter = dump.revisions();
         while(revisionsIter.hasNext()) {
