@@ -4,9 +4,10 @@ import java.util.Iterator;
 
 public interface SvnDumpMutator extends SvnDumpConsumer {
     default void mutate(SvnDump dump) {
+        consume(dump.getPreamble());
         Iterator<SvnRevision> revisionsIter = dump.revisions();
         while(revisionsIter.hasNext()) {
-            consumeRevision(revisionsIter.next());
+            consume(revisionsIter.next());
         }
         finish();
     }

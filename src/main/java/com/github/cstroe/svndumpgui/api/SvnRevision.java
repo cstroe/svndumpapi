@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public interface SvnRevision extends SvnProperty {
+public interface SvnRevision extends SvnVisitable, SvnProperty {
     int getNumber();
     void setNumber(int number);
 

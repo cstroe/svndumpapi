@@ -1,6 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -14,16 +14,18 @@ import java.util.Map;
 public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
-    public void consumePreamble(SvnDump dump) {
+    public void consume(SvnDumpPreamble preamble) {
         PrintStream ps = new PrintStream(getOutputStream());
         ps.println("SVN-fs-dump-format-version: 2\n");
-        ps.print("UUID: ");
-        ps.println(dump.getUUID());
+        if(preamble.getUUID() != null) {
+            ps.print("UUID: ");
+            ps.println(preamble.getUUID());
+        }
         ps.println();
     }
 
     @Override
-    public void consumeRevision(SvnRevision revision) {
+    public void consume(SvnRevision revision) {
         PrintStream ps = new PrintStream(getOutputStream());
         ps.print("Revision-number: ");
         ps.println(revision.getNumber());

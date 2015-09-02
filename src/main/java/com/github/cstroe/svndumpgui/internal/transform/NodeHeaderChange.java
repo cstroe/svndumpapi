@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -28,10 +28,10 @@ public class NodeHeaderChange implements SvnDumpMutator {
     }
 
     @Override
-    public void consumePreamble(SvnDump dump) {}
+    public void consume(SvnDumpPreamble preamble) {}
 
     @Override
-    public void consumeRevision(SvnRevision revision) {
+    public void consume(SvnRevision revision) {
         if(foundTargetRevision) {
             if(!updatedNode) {
                 throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);

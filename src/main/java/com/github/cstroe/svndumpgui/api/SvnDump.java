@@ -4,7 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public interface SvnDump {
-    String getUUID();
+    SvnDumpPreamble getPreamble();
+    void setPreamble(SvnDumpPreamble preamble);
     List<SvnRevision> getRevisions();
     Iterator<SvnRevision> revisions();
 }

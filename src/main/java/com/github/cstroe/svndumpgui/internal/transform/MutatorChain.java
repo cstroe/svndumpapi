@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.util.ArrayList;
@@ -16,12 +16,16 @@ public class MutatorChain implements SvnDumpMutator {
     }
 
     @Override
-    public void consumePreamble(SvnDump dump) {}
+    public void consume(SvnDumpPreamble preamble) {
+        for(SvnDumpMutator mutator : mutators) {
+            mutator.consume(preamble);
+        }
+    }
 
     @Override
-    public void consumeRevision(SvnRevision revision) {
+    public void consume(SvnRevision revision) {
         for(SvnDumpMutator mutator : mutators) {
-            mutator.consumeRevision(revision);
+            mutator.consume(revision);
         }
     }
 

@@ -9,10 +9,10 @@ public interface SvnDumpWriter extends SvnDumpConsumer {
 
     default void write(OutputStream os, SvnDump dump) throws IOException {
         writeTo(os);
-        consumePreamble(dump);
+        consume(dump.getPreamble());
         Iterator<SvnRevision> revisionIter = dump.revisions();
         while(revisionIter.hasNext()) {
-            consumeRevision(revisionIter.next());
+            consume(revisionIter.next());
         }
         finish();
     }

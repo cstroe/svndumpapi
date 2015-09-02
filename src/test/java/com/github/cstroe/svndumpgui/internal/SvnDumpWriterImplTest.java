@@ -2,6 +2,7 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;
@@ -13,7 +14,24 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+
 public class SvnDumpWriterImplTest {
+
+    @Test
+    public void no_uuid() throws IOException {
+        SvnDump dump = new SvnDumpImpl();
+        dump.setPreamble(new SvnDumpPreambleImpl(null));
+        SvnRevision r0 = new SvnRevisionImpl(0);
+        dump.getRevisions().add(r0);
+
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        writer.write(os, dump);
+        assertThat(os.toString(), is(equalTo("SVN-fs-dump-format-version: 2\n\n\nRevision-number: 0\nProp-content-length: 10\nContent-length: 10\n\nPROPS-END\n\n")));
+    }
 
     @Test
     public void write_empty_dump() throws ParseException, IOException {

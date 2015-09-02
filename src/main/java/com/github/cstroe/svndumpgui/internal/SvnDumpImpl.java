@@ -1,6 +1,7 @@
 package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.util.ArrayList;
@@ -9,16 +10,17 @@ import java.util.List;
 
 public class SvnDumpImpl implements SvnDump {
 
-    private String uuid;
+    private SvnDumpPreamble preamble;
     private List<SvnRevision> revisions = new ArrayList<>();
 
     @Override
-    public String getUUID() {
-        return uuid;
+    public SvnDumpPreamble getPreamble() {
+        return preamble;
     }
 
-    public void setUUID(String uuid) {
-        this.uuid = uuid;
+    @Override
+    public void setPreamble(SvnDumpPreamble preamble) {
+        this.preamble = preamble;
     }
 
     public void addRevision(SvnRevision revision) {

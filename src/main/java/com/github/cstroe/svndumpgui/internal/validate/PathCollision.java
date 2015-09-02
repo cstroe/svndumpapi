@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
@@ -21,10 +21,10 @@ public class PathCollision implements SvnDumpValidator {
     private SvnRevision previousRevision = null;
 
     @Override
-    public void consumePreamble(SvnDump dump) {}
+    public void consume(SvnDumpPreamble preamble) {}
 
     @Override
-    public void consumeRevision(SvnRevision revision) {
+    public void consume(SvnRevision revision) {
         if(error != null) {
             return;
         }

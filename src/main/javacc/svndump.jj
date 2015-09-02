@@ -13,9 +13,11 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.util.LinkedHashMap;
 
   import com.github.cstroe.svndumpgui.api.SvnDump;
+  import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+  import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
@@ -112,7 +114,8 @@ public SvnDump Start():
 
     {
         if(uuid != null) {
-            dump.setUUID(uuid.image);
+            SvnDumpPreamble preamble = new SvnDumpPreambleImpl(uuid.image);
+            dump.setPreamble(preamble);
         }
     }
 

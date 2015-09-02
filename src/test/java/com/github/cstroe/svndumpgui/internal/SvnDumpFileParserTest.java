@@ -66,7 +66,7 @@ public class SvnDumpFileParserTest {
         SvnDump dump = parse("dumps/empty.dump");
 
         assertNotNull(dump);
-        assertThat(dump.getUUID(), is(equalTo("0c9743f5-f757-4bed-a5b3-acbcba4d645b")));
+        assertThat(dump.getPreamble().getUUID(), is(equalTo("0c9743f5-f757-4bed-a5b3-acbcba4d645b")));
     }
 
     @Test

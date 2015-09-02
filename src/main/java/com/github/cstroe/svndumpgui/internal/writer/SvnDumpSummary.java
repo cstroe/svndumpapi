@@ -1,6 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.writer;
 
-import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -14,10 +14,10 @@ public class SvnDumpSummary extends AbstractSvnDumpWriter {
     private int lastEmptyRevision = NOT_SET;
 
     @Override
-    public void consumePreamble(SvnDump dump) {}
+    public void consume(SvnDumpPreamble preamble) {}
 
     @Override
-    public void consumeRevision(SvnRevision revision) {
+    public void consume(SvnRevision revision) {
         PrintStream ps = new PrintStream(getOutputStream());
         if(revision.getNodes().isEmpty()) {
             if(firstEmptyRevision == NOT_SET) {
