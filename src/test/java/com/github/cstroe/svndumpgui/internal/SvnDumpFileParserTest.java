@@ -29,6 +29,7 @@ public class SvnDumpFileParserTest {
     public static SvnDump parse(String dumpFile) throws ParseException {
         final InputStream s = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(dumpFile);
+        assert s != null;
         return parse(s);
     }
 
