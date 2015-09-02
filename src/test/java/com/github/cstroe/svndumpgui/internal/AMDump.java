@@ -1,16 +1,28 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.*;
+import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
+import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
+import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.transform.*;
+import com.github.cstroe.svndumpgui.internal.transform.ClearRevision;
+import com.github.cstroe.svndumpgui.internal.transform.MutatorChain;
+import com.github.cstroe.svndumpgui.internal.transform.NodeAdd;
+import com.github.cstroe.svndumpgui.internal.transform.NodeHeaderChange;
+import com.github.cstroe.svndumpgui.internal.transform.NodeRemove;
+import com.github.cstroe.svndumpgui.internal.transform.PathChange;
+import com.github.cstroe.svndumpgui.internal.transform.UpdateAuthorForEmptyRevisions;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import com.github.cstroe.svndumpgui.internal.validate.PathCollision;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
