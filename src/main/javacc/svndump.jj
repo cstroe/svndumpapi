@@ -98,7 +98,7 @@ TOKEN: { <SHA1_VALUE: (["0"-"9","a"-"z"]){40}> }
 TOKEN: { <TEXT_COPYSOURCE_MD5_KEY: "Text-copy-source-md5"> }
 TOKEN: { <TEXT_COPYSOURCE_SHA1_KEY: "Text-copy-source-sha1"> }
 
-<READ_PATH> TOKEN: { <NODE_PATH_VALUE: (~["\n","\r"])+> : DEFAULT }
+<READ_PATH> TOKEN: { <NODE_PATH_VALUE: (~["\n","\r"])*> : DEFAULT }
 
 // Parser
 

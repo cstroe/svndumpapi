@@ -259,3 +259,31 @@ It's an invalid svn dump, meant to verify that the validator throws an error.
     svn commit -m "Merge branch back into trunk."
     bash -c  'svn delete ^/branches/mybranch -m "Removing branch."'
     <EXPORT CODE>
+
+## property_change_on_file.dump
+
+    <SETUP CODE>
+    echo "test file" >> test.txt
+    svn add test.txt
+    svn commit -m "Adding test file."
+    svn ps someproperty value test.txt
+    svn commit -m "Setting property."
+    svn rm test.txt
+    svn commit -m "Delete file."
+    <EXPORT CODE>
+
+## extra_newline_in_log_message.dump
+
+    <SETUP CODE>
+    echo "test file" >> test.txt
+    svn add test.txt
+    svn commit -m 'Adding test file.
+    '
+    <EXPORT CODE>
+
+## property_change_on_root.dump
+
+    <SETUP CODE>
+    svn ps someproperty value .
+    svn commit -m "Setting property on root."
+    <EXPORT CODE>

@@ -1,0 +1,45 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 68874640-03ea-4b82-9f22-086b558430fa
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-09-28T18:54:14.175673Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 126
+Content-length: 126
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-09-28T18:54:47.943988Z
+K 7
+svn:log
+V 25
+Setting property on root.
+PROPS-END
+
+Node-path: 
+Node-kind: dir
+Node-action: change
+Prop-content-length: 38
+Content-length: 38
+
+K 12
+someproperty
+V 5
+value
+PROPS-END
+
+

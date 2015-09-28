@@ -389,4 +389,42 @@ public class SvnDumpFileParserTest {
         assertThat(fileDelete.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
         assertThat(fileDelete.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
     }
+
+    @Test
+    public void should_parse_property_setting() throws ParseException {
+        SvnDump dump = parse("dumps/property_change_on_file.dump");
+
+        assertThat(dump.getRevisions().size(), is(4));
+
+        SvnRevision r2 = dump.getRevisions().get(2);
+        assertThat(r2.getNodes().size(), is(1));
+        SvnNode node = r2.getNodes().get(0);
+        assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("test.txt")));
+        assertThat(node.getProperties().get("someproperty"), is(equalTo("value")));
+    }
+
+    @Test
+    public void should_parse_extra_newline_in_log_message() throws ParseException {
+        SvnDump dump = parse("dumps/extra_newline_in_log_message.dump");
+
+        assertThat(dump.getRevisions().size(), is(2));
+
+        SvnRevision r1 = dump.getRevisions().get(1);
+        assertThat(r1.getNodes().size(), is(1));
+        SvnNode node = r1.getNodes().get(0);
+        assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("test.txt")));
+    }
+
+    @Test
+    public void should_parse_property_change_on_root() throws ParseException {
+        SvnDump dump = parse("dumps/property_change_on_root.dump");
+
+        assertThat(dump.getRevisions().size(), is(2));
+
+        SvnRevision r1 = dump.getRevisions().get(1);
+        assertThat(r1.getNodes().size(), is(1));
+        SvnNode node = r1.getNodes().get(0);
+        assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("")));
+        assertThat(node.getProperties().get("someproperty"), is(equalTo("value")));
+    }
 }

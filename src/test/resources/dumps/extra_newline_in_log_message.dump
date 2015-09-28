@@ -1,0 +1,46 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 1092b0b0-a083-4c66-9fcf-052fe4c57b6e
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-09-28T18:35:24.558403Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 119
+Content-length: 119
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-09-28T18:36:02.353112Z
+K 7
+svn:log
+V 18
+Adding test file.
+
+PROPS-END
+
+Node-path: test.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 10
+Text-content-md5: b05403212c66bdc8ccc597fedf6cd5fe
+Text-content-sha1: 0181d93fee60b818e3f92e470ea97a2aff4ca56a
+Content-length: 20
+
+PROPS-END
+test file
+
+
