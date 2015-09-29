@@ -12,6 +12,7 @@ import com.github.cstroe.svndumpgui.internal.transform.NodeHeaderChange;
 import com.github.cstroe.svndumpgui.internal.transform.NodeRemove;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.transform.UpdateAuthorForEmptyRevisions;
+import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.TerminatingValidator;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
@@ -23,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
@@ -161,7 +163,7 @@ public class AMDump {
         chain.add(summaryWriter);
 
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/onestep.dump");
-        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(s, "ISO-8859-1")));
 
         parser.Start(chain);
 
@@ -177,7 +179,7 @@ public class AMDump {
     @Ignore
     public void list_authors() throws IOException, ParseException {
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/finished.dump");
-        SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(s, "ISO-8859-1")));
         SvnDumpWriter authorsWriter = new SvnDumpAuthors();
         authorsWriter.writeTo(System.out);
 
