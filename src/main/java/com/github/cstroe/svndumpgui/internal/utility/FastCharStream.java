@@ -60,7 +60,7 @@ public final class FastCharStream implements CharStream {
             if (buffer == null) {        // first time: alloc buffer
                 buffer = new char[2048];
             } else if (bufferLength == buffer.length) { // grow buffer
-                char[] newBuffer = new char[buffer.length*2];
+                char[] newBuffer = new char[Math.max(buffer.length*2, Integer.MAX_VALUE - 5)];
                 System.arraycopy(buffer, 0, newBuffer, 0, bufferLength);
                 buffer = newBuffer;
             }
