@@ -24,6 +24,7 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.google.common.base.Stopwatch;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
@@ -48,17 +49,37 @@ PARSER_BEGIN(SvnDumpFileParser)
       return sb.toString();
     }
 
+    public static String humanReadableByteCount(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
     private byte[] readByteArray(Integer length) {
         if(length == null) {
             return null;
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        System.err.print("Reading " + humanReadableByteCount((long)length, false) + " ... ");
+        Stopwatch stopwatch = new Stopwatch().start();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
         for(int i = 0; i < length; i++) {
             try {
-              baos.write((int)token_source.input_stream.readChar());
+              baos.write(token_source.input_stream.readChar());
             }
             catch(IOException ex) {}
         }
+
+        try {
+            baos.flush();
+        } catch(IOException ex) {
+            // should not happen
+        }
+        System.err.println("done in " + stopwatch.toString());
+
         return baos.toByteArray();
     }
 
@@ -107,8 +128,13 @@ public void Start(SvnDumpConsumer consumer):
   Token dumpVersion;
   Token uuid;
   SvnRevision revision;
+  Stopwatch stopwatch;
 }
 {
+    {
+        stopwatch = new Stopwatch().start();
+    }
+
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
     <EOL>
 
@@ -124,7 +150,11 @@ public void Start(SvnDumpConsumer consumer):
 
     (
         revision = Revision()
-        { consumer.consume(revision); }
+        {
+            System.err.println(stopwatch.toString() + ": Consuming revision " + revision.getNumber());
+            consumer.consume(revision);
+            revision = null;
+        }
     )*
 
     <EOF>
@@ -202,8 +232,6 @@ public SvnNode Node():
     Token copiedFromPath = null;
     Token copiedFromMd5 = null;
     Token copiedFromSha1 = null;
-    byte[] fileContent = null;
-    Map properties;
     Map headers = new LinkedHashMap();
 }
 {
@@ -274,15 +302,14 @@ public SvnNode Node():
     {
         svnNode = new SvnNodeImpl();
         svnNode.setHeaders(headers);
+        headers = null;
 
         if(propContentLength != null) {
-            properties = Property();
-            svnNode.setProperties(properties);
+            svnNode.setProperties(Property());
         }
 
         if(textContentLength != null) {
-            fileContent = readByteArray(Integer.parseInt(textContentLength.image));
-            svnNode.setContent(fileContent);
+            svnNode.setContent(readByteArray(Integer.parseInt(textContentLength.image)));
         }
     }
 

@@ -4,8 +4,8 @@ package com.github.cstroe.svndumpgui.internal.utility;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
 import com.github.cstroe.svndumpgui.internal.transform.ConsumerChain;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 
 /**
  * Use this from a command line interface to pipe your dump into svndumpgui,
@@ -18,7 +18,7 @@ public class PipeThrough {
     public static void main(final String[] args) throws ParseException {
         ConsumerChain chain = new ConsumerChain();
 
-        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        SvnDumpWriter writer = new SvnDumpSummary();
         writer.writeTo(System.out);
         chain.add(writer);
 
