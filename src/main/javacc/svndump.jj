@@ -15,20 +15,17 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.util.Map;
   import java.util.LinkedHashMap;
 
-  import com.github.cstroe.svndumpgui.api.SvnDump;
   import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
   import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
   import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
-  import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
   import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
-  import com.google.common.base.Stopwatch;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
@@ -53,21 +50,10 @@ PARSER_BEGIN(SvnDumpFileParser)
       return sb.toString();
     }
 
-    public static String humanReadableByteCount(long bytes, boolean si) {
-        int unit = si ? 1000 : 1024;
-        if (bytes < unit) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
-        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
-    }
-
     private byte[] readByteArray(Integer length) {
         if(length == null) {
             return null;
         }
-
-        System.err.print("Reading " + humanReadableByteCount((long)length, false) + " ... ");
-        Stopwatch stopwatch = new Stopwatch().start();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
         for(int i = 0; i < length; i++) {
@@ -76,13 +62,6 @@ PARSER_BEGIN(SvnDumpFileParser)
             }
             catch(IOException ex) {}
         }
-
-        try {
-            baos.flush();
-        } catch(IOException ex) {
-            // should not happen
-        }
-        System.err.println("done in " + stopwatch.toString());
 
         return baos.toByteArray();
     }
@@ -132,13 +111,8 @@ public void Start(SvnDumpConsumer consumer):
   Token dumpVersion;
   Token uuid;
   SvnRevision revision;
-  Stopwatch stopwatch;
 }
 {
-    {
-        stopwatch = new Stopwatch().start();
-    }
-
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
     <EOL>
 
@@ -155,7 +129,6 @@ public void Start(SvnDumpConsumer consumer):
     (
         revision = Revision()
         {
-            System.err.println(stopwatch.toString() + ": Consuming revision " + revision.getNumber());
             consumer.consume(revision);
             revision = null;
         }
