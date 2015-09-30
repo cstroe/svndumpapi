@@ -1,8 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpError;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
-import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -14,14 +12,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class PathCollision implements SvnDumpValidator {
+public class PathCollision extends NoopSvnDumpValidator {
     private SvnDumpError error = null;
 
     private Map<Integer, Map<String, Pair<Integer, SvnNode>>> revisionSnapshots = new HashMap<>();
     private SvnRevision previousRevision = null;
-
-    @Override
-    public void consume(SvnDumpPreamble preamble) {}
 
     @Override
     public void consume(SvnRevision revision) {
@@ -96,9 +91,6 @@ public class PathCollision implements SvnDumpValidator {
         revisionSnapshots.put(revision.getNumber(), currentRevisionPaths);
         previousRevision = revision;
     }
-
-    @Override
-    public void finish() {}
 
     @Override
     public boolean isValid() {
