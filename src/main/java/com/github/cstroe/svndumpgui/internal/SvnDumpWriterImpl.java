@@ -41,16 +41,6 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
         ps().print(properties.toString());
         ps().println();
-
-        // nodes
-        ByteArrayOutputStream nodes = new ByteArrayOutputStream();
-        writeNodes(revision);
-
-        try {
-            ps().write(nodes.toByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void writeProperties(PrintStream ps, Map<String, String> properties) {
@@ -68,36 +58,35 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         ps.println("PROPS-END");
     }
 
-    private void writeNodes(SvnRevision revision) {
-        for(SvnNode node : revision.getNodes()) {
-            // headers
-            for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
-                ps().print(headerEntry.getKey().toString());
-                ps().println(headerEntry.getValue());
-            }
-            ps().println();
+    @Override
+    public void consume(SvnNode node) {
+        // headers
+        for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
+            ps().print(headerEntry.getKey().toString());
+            ps().println(headerEntry.getValue());
+        }
+        ps().println();
 
-            // properties
-            if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
-                writeProperties(ps(), node.getProperties());
-            }
+        // properties
+        if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
+            writeProperties(ps(), node.getProperties());
+        }
 
-            // file content
-            if(node.getContent() != null && node.getContent().length != 0) {
-                try {
-                    ps().write(node.getContent());
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-                ps().println();
+        // file content
+        if(node.getContent() != null && node.getContent().length != 0) {
+            try {
+                ps().write(node.getContent());
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
-
-            // write an extra newline when there is no content and properties were written.
-            if(node.getContent() == null && node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
-                ps().println();
-            }
-
             ps().println();
         }
+
+        // write an extra newline when there is no content and properties were written.
+        if(node.getContent() == null && node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
+            ps().println();
+        }
+
+        ps().println();
     }
 }

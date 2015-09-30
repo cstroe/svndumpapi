@@ -1,6 +1,7 @@
 package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
@@ -48,6 +49,22 @@ public class SvnDumpFileParserTest {
         SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
         parser.Start(dumpInMemory);
         return dumpInMemory.getDump();
+    }
+
+    public static void consume(String dumpFile, SvnDumpConsumer consumer) throws ParseException {
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(dumpFile);
+
+        InputStreamReader reader;
+        try {
+            reader = new InputStreamReader(is, "ISO-8859-1");
+        } catch (UnsupportedEncodingException ex) {
+            throw new ParseException(ex.getMessage());
+        }
+
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(reader));
+
+        parser.Start(consumer);
     }
 
     @SuppressWarnings("unchecked")

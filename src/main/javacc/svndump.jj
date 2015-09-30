@@ -129,18 +129,16 @@ public void Start(SvnDumpConsumer consumer):
 
     (
         revision = Revision()
+        { consumer.consume(revision); }
 
         (
             node = Node(revision)
-            { revision.addNode(node); }
+            { consumer.consume(node); }
             |
             <EOL>
         )*
 
-        {
-            consumer.consume(revision);
-            revision = null;
-        }
+        { revision = null; }
     )*
 
     <EOF>

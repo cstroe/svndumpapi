@@ -12,7 +12,13 @@ public interface SvnDumpWriter extends SvnDumpConsumer {
         consume(dump.getPreamble());
         Iterator<SvnRevision> revisionIter = dump.revisions();
         while(revisionIter.hasNext()) {
-            consume(revisionIter.next());
+            SvnRevision revision = revisionIter.next();
+            consume(revision);
+
+            Iterator<SvnNode> nodeIter = revision.nodes();
+            while(nodeIter.hasNext()) {
+                consume(nodeIter.next());
+            }
         }
         finish();
     }
