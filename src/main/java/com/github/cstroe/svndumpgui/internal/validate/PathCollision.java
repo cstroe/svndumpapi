@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class PathCollision extends NoopSvnDumpValidator {
+public class PathCollision extends AbstractSvnDumpValidator {
     private SvnDumpError error = null;
 
     private Map<Integer, Map<String, Pair<Integer, SvnNode>>> revisionSnapshots = new HashMap<>();
