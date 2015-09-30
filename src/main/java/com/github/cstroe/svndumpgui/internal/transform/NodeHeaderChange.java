@@ -1,12 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeHeaderChange implements SvnDumpMutator {
+public class NodeHeaderChange extends NoopSvnDumpMutator {
 
     private final int targetRevision;
     private final String nodeAction;
@@ -26,9 +24,6 @@ public class NodeHeaderChange implements SvnDumpMutator {
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
-
-    @Override
-    public void consume(SvnDumpPreamble preamble) {}
 
     @Override
     public void consume(SvnRevision revision) {

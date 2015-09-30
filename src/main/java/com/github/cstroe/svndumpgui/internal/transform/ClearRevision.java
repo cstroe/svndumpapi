@@ -1,10 +1,8 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class ClearRevision implements SvnDumpMutator {
+public class ClearRevision extends NoopSvnDumpMutator {
 
     private final int NOT_SET = -1;
     private final int fromRevision;
@@ -30,9 +28,6 @@ public class ClearRevision implements SvnDumpMutator {
         this.fromRevision = fromRevision;
         this.toRevision = toRevision;
     }
-
-    @Override
-    public void consume(SvnDumpPreamble preamble) {}
 
     @Override
     public void consume(SvnRevision revision) {
