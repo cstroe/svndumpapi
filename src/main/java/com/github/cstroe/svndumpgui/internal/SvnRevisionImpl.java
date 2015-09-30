@@ -60,6 +60,7 @@ public class SvnRevisionImpl implements SvnRevision {
         return nodes;
     }
 
+    @Override
     public void addNode(SvnNode node) {
         if(node == null) {
             throw new NullPointerException("Cannot add null node to SvnRevision.");

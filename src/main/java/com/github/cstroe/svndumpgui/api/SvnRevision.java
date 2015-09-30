@@ -13,6 +13,7 @@ public interface SvnRevision extends SvnVisitable, SvnProperty {
 
     List<SvnNode> getNodes();
     void setNodes(List<SvnNode> nodes);
+    void addNode(SvnNode node);
 
     Iterator<SvnNode> nodes();
 
