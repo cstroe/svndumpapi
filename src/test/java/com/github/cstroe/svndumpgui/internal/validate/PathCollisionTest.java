@@ -12,8 +12,12 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
 import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
@@ -21,24 +25,26 @@ import static org.junit.Assert.*;
 
 public class PathCollisionTest {
 
-    private void falsePositive(SvnDumpValidator validator) {
-        throw new AssertionError("False positive. This is what the validator says, but it's not correct:\n\n" + validator.getError().getMessage() + "\n\n");
+    private void falseNegative(SvnDumpValidator validator) {
+        throw new AssertionError("False negative. This is what the validator says, but it's not correct:\n\n" + validator.getError().getMessage() + "\n\n");
     }
 
     @Test
     public void detect_valid_dump() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_copy_file.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/svn_copy_file.dump", validator);
+
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void detect_invalid_dump() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/invalid/svn_add_directory_twice.invalid");
-        SvnDumpValidator validator = new PathCollision();
-        assertFalse(validator.validate(dump));
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/invalid/svn_add_directory_twice.invalid", validator);
+
+        assertFalse("The validator should detect the invalid condition of adding the same directory twice.", validator.isValid());
 
         SvnDumpError error = validator.getError();
         assertNotNull(error.getMessage());
@@ -48,64 +54,65 @@ public class PathCollisionTest {
 
     @Test
     public void validate_inner_dir_rm() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/inner_dir.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/inner_dir.dump", validator);
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void validate_file_deletes() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", validator);
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void validate_dir_deletes() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_dir_delete.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/svn_multi_dir_delete.dump", validator);
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void validate_file_add_delete_add() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/add_edit_delete_add.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/add_edit_delete_add.dump", validator);
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void validate_composite_commit() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/composite_commit.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/composite_commit.dump", validator);
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void validate_undelete() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/undelete.dump");
-        SvnDumpValidator validator = new PathCollision();
-        if(!validator.validate(dump)) {
-            falsePositive(validator);
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/undelete.dump", validator);
+        if(!validator.isValid()) {
+            falseNegative(validator);
         }
     }
 
     @Test
     public void detect_invalid_copy() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/invalid/undelete.invalid");
-        SvnDumpValidator validator = new PathCollision();
-        assertFalse("The validator should detect when copying files from nonexisting location",
-            validator.validate(dump));
+        final SvnDumpValidator validator = new PathCollision();
+        SvnDumpFileParserTest.consume("dumps/invalid/undelete.invalid", validator);
+
+        assertFalse("The validator should detect the invalid condition of copying files from nonexisting location",
+            validator.isValid());
 
         SvnDumpError error = validator.getError();
         assertNotNull(error.getMessage());
@@ -116,6 +123,8 @@ public class PathCollisionTest {
     @Test
     public void terminate_early_on_error() {
         SvnDump dump = new SvnDumpImpl();
+
+        final List<SvnNode> emptyList = new LinkedList<>();
 
         {
             SvnRevision r0 = new SvnRevisionImpl(0, "2015-08-30T07:23:07.042627Z");
@@ -136,6 +145,10 @@ public class PathCollisionTest {
 
             SvnRevision r3 = mockery.mock(SvnRevision.class);
             dump.getRevisions().add(r3);
+
+            mockery.checking(new Expectations() {{
+                // no expectations on r3 because we should terminate early and not even touch r3.
+            }});
         }
 
         SvnDumpValidator pcValidator = new PathCollision();
