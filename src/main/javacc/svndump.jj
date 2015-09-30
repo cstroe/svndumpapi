@@ -1,34 +1,36 @@
 options {
     STATIC = false;
     JAVA_UNICODE_ESCAPE = false;
+    USER_CHAR_STREAM = true;
 }
 
 PARSER_BEGIN(SvnDumpFileParser)
   package com.github.cstroe.svndumpgui.generated;
 
+  import java.io.InputStreamReader;
   import java.io.PrintStream;
   import java.io.IOException;
   import java.io.ByteArrayOutputStream;
+  import java.io.UnsupportedEncodingException;
   import java.util.Map;
   import java.util.LinkedHashMap;
 
-  import com.github.cstroe.svndumpgui.api.SvnDump;
   import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
   import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
   import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
-  import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
-    throws ParseException, TokenMgrError {
-      SvnDumpFileParser parser = new SvnDumpFileParser(System.in);
+    throws ParseException, TokenMgrError, UnsupportedEncodingException {
+      SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(System.in, "ISO-8859-1")));
       SvnDumpWriter writer = new SvnDumpWriterImpl();
       writer.writeTo(System.out);
       parser.Start(writer);
@@ -52,13 +54,15 @@ PARSER_BEGIN(SvnDumpFileParser)
         if(length == null) {
             return null;
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
         for(int i = 0; i < length; i++) {
             try {
-              baos.write((int)token_source.input_stream.readChar());
+              baos.write(token_source.input_stream.readChar());
             }
             catch(IOException ex) {}
         }
+
         return baos.toByteArray();
     }
 
@@ -124,7 +128,10 @@ public void Start(SvnDumpConsumer consumer):
 
     (
         revision = Revision()
-        { consumer.consume(revision); }
+        {
+            consumer.consume(revision);
+            revision = null;
+        }
     )*
 
     <EOF>
@@ -202,8 +209,6 @@ public SvnNode Node():
     Token copiedFromPath = null;
     Token copiedFromMd5 = null;
     Token copiedFromSha1 = null;
-    byte[] fileContent = null;
-    Map properties;
     Map headers = new LinkedHashMap();
 }
 {
@@ -274,15 +279,14 @@ public SvnNode Node():
     {
         svnNode = new SvnNodeImpl();
         svnNode.setHeaders(headers);
+        headers = null;
 
         if(propContentLength != null) {
-            properties = Property();
-            svnNode.setProperties(properties);
+            svnNode.setProperties(Property());
         }
 
         if(textContentLength != null) {
-            fileContent = readByteArray(Integer.parseInt(textContentLength.image));
-            svnNode.setContent(fileContent);
+            svnNode.setContent(readByteArray(Integer.parseInt(textContentLength.image)));
         }
     }
 

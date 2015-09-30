@@ -7,11 +7,14 @@ import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +37,14 @@ public class SvnDumpFileParserTest {
     }
 
     public static SvnDump parse(InputStream is) throws ParseException {
-        SvnDumpFileParser parser = new SvnDumpFileParser(is, "ISO-8859-1");
+        InputStreamReader reader;
+        try {
+            reader = new InputStreamReader(is, "ISO-8859-1");
+        } catch (UnsupportedEncodingException ex) {
+            throw new ParseException(ex.getMessage());
+        }
+
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(reader));
         SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
         parser.Start(dumpInMemory);
         return dumpInMemory.getDump();
@@ -46,7 +56,7 @@ public class SvnDumpFileParserTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/partial/simple_property.fragment");
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(s)));
 
         SvnRevisionImpl revision = new SvnRevisionImpl(0);
         Map properties = parser.Property();
@@ -61,7 +71,7 @@ public class SvnDumpFileParserTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/partial/empty_revision.fragment");
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(s);
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(s)));
         SvnRevision revision = parser.Revision();
 
         assertNotNull(revision);
