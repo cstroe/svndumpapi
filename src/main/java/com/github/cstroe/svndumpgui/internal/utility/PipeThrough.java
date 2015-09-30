@@ -4,6 +4,7 @@ package com.github.cstroe.svndumpgui.internal.utility;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
 import com.github.cstroe.svndumpgui.internal.transform.ConsumerChain;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 
@@ -21,7 +22,7 @@ public class PipeThrough {
     public static void main(final String[] args) throws ParseException, UnsupportedEncodingException {
         ConsumerChain chain = new ConsumerChain();
 
-        SvnDumpWriter writer = new SvnDumpSummary();
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
         writer.writeTo(System.out);
         chain.add(writer);
 
