@@ -1,8 +1,14 @@
 package com.github.cstroe.svndumpgui.api;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface SvnNode {
+    /**
+     * @return An SvnNode can be "detached", i.e., not belong to a revision.
+     */
+    Optional<SvnRevision> getRevision();
+
     Map<SvnNodeHeader, String> getHeaders();
     void setHeaders(Map<SvnNodeHeader, String> headers);
 

@@ -29,7 +29,7 @@ public class NodeAddTest {
         headers.put(SvnNodeHeader.KIND, "dir");
         headers.put(SvnNodeHeader.PATH, "testdir");
 
-        SvnNode node = new SvnNodeImpl();
+        SvnNode node = new SvnNodeImpl(null);
         node.setHeaders(headers);
 
         SvnDumpMutator nodeAdd = new NodeAdd(1, node);

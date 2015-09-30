@@ -52,7 +52,7 @@ public class AMDump {
         ConsumerChain chain = new ConsumerChain();
 
         // add the main branch here
-        SvnNodeImpl trunkAgreementMaker = new SvnNodeImpl();
+        SvnNodeImpl trunkAgreementMaker = new SvnNodeImpl(null);
         trunkAgreementMaker.getHeaders().put(SvnNodeHeader.ACTION, "add");
         trunkAgreementMaker.getHeaders().put(SvnNodeHeader.KIND, "dir");
         trunkAgreementMaker.getHeaders().put(SvnNodeHeader.PATH, "trunk/AgreementMaker");

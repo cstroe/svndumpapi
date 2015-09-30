@@ -117,11 +117,6 @@ public class PathCollisionTest {
     public void terminate_early_on_error() {
         SvnDump dump = new SvnDumpImpl();
 
-        SvnNode duplicateNode = new SvnNodeImpl();
-        duplicateNode.getHeaders().put(SvnNodeHeader.ACTION, "add");
-        duplicateNode.getHeaders().put(SvnNodeHeader.KIND, "dir");
-        duplicateNode.getHeaders().put(SvnNodeHeader.PATH, "trunk");
-
         {
             SvnRevision r0 = new SvnRevisionImpl(0, "2015-08-30T07:23:07.042627Z");
             r0.getProperties().put(SvnProperty.AUTHOR, "testUser");
@@ -129,12 +124,12 @@ public class PathCollisionTest {
         } {
             SvnRevision r1 = new SvnRevisionImpl(1, "2015-08-30T07:24:07.042627Z");
             r1.getProperties().put(SvnProperty.AUTHOR, "testUser");
-            r1.getNodes().add(duplicateNode);
+            r1.getNodes().add(createNode(r1));
             dump.getRevisions().add(r1);
         } {
             SvnRevision r2 = new SvnRevisionImpl(2, "2015-08-30T07:25:07.042627Z");
             r2.getProperties().put(SvnProperty.AUTHOR, "testUser");
-            r2.getNodes().add(duplicateNode);
+            r2.getNodes().add(createNode(r2));
             dump.getRevisions().add(r2);
         } {
             Mockery mockery = new Mockery();
@@ -146,5 +141,13 @@ public class PathCollisionTest {
         SvnDumpValidator pcValidator = new PathCollision();
 
         assertFalse(pcValidator.validate(dump));
+    }
+
+    private SvnNode createNode(SvnRevision r) {
+        SvnNode duplicateNode = new SvnNodeImpl(r);
+        duplicateNode.getHeaders().put(SvnNodeHeader.ACTION, "add");
+        duplicateNode.getHeaders().put(SvnNodeHeader.KIND, "dir");
+        duplicateNode.getHeaders().put(SvnNodeHeader.PATH, "trunk");
+        return duplicateNode;
     }
 }

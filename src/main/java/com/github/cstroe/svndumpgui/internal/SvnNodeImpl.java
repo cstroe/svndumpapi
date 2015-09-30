@@ -2,14 +2,26 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class SvnNodeImpl implements SvnNode {
+    private final Optional<SvnRevision> revision;
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
     private Map<String, String> properties;
     private byte[] content;
+
+    public SvnNodeImpl(SvnRevision revision) {
+        this.revision = Optional.ofNullable(revision);
+    }
+
+    @Override
+    public Optional<SvnRevision> getRevision() {
+        return revision;
+    }
 
     @Override
     public byte[] getContent() {

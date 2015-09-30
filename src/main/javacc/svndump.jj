@@ -159,7 +159,7 @@ public SvnRevision Revision():
     { revision.setProperties(properties); }
 
     (
-        node = Node()
+        node = Node(revision)
         { revision.addNode(node); }
         |
         <EOL>
@@ -194,7 +194,7 @@ public Map Property():
     { return properties; }
 }
 
-public SvnNode Node():
+public SvnNode Node(SvnRevision revision):
 {
     SvnNodeImpl svnNode;
     Token nodePath = null;
@@ -277,7 +277,7 @@ public SvnNode Node():
     <EOL>
 
     {
-        svnNode = new SvnNodeImpl();
+        svnNode = new SvnNodeImpl(revision);
         svnNode.setHeaders(headers);
         headers = null;
 
