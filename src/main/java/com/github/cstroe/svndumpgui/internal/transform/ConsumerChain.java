@@ -6,6 +6,7 @@ import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
+import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.internal.SvnDumpErrorAggregator;
 
@@ -44,6 +45,13 @@ public class ConsumerChain implements SvnDumpMutator, SvnDumpValidator, SvnDumpW
           mutators.stream().forEach(c -> c.consume(revision));
         validators.stream().forEach(c -> c.consume(revision));
            writers.stream().forEach(c -> c.consume(revision));
+    }
+
+    @Override
+    public void consume(SvnNode node) {
+          mutators.stream().forEach(c -> c.consume(node));
+        validators.stream().forEach(c -> c.consume(node));
+           writers.stream().forEach(c -> c.consume(node));
     }
 
     @Override

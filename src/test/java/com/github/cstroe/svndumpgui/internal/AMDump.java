@@ -13,7 +13,7 @@ import com.github.cstroe.svndumpgui.internal.transform.NodeRemove;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.transform.UpdateAuthorForEmptyRevisions;
 import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
-import com.github.cstroe.svndumpgui.internal.utility.TerminatingValidator;
+import com.github.cstroe.svndumpgui.internal.validate.TerminatingValidator;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import com.github.cstroe.svndumpgui.internal.validate.PathCollision;

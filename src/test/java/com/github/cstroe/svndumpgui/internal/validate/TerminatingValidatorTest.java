@@ -1,4 +1,4 @@
-package com.github.cstroe.svndumpgui.internal.utility;
+package com.github.cstroe.svndumpgui.internal.validate;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpError;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
