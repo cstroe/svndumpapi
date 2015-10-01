@@ -36,14 +36,12 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
         if(revision.getNumber() == targetRevision) {
             foundTargetRevision = true;
-            for(SvnNode node : revision.getNodes()) {
-                mutate(node);
-            }
-
         }
+        super.consume(revision);
     }
 
-    private void mutate(SvnNode node) {
+    @Override
+    public void consume(SvnNode node) {
         if(updatedNode) {
             return;
         }
@@ -56,6 +54,7 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
             node.getHeaders().put(headerToChange, newValue);
             updatedNode = true;
         }
+        super.consume(node);
     }
 
     @Override
@@ -66,5 +65,6 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
         foundTargetRevision = false;
         updatedNode = false;
+        super.finish();
     }
 }
