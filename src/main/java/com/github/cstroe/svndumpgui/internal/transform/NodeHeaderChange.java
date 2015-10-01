@@ -43,6 +43,7 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
     @Override
     public void consume(SvnNode node) {
         if(updatedNode) {
+            super.consume(node);
             return;
         }
 
