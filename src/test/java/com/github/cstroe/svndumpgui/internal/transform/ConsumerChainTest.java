@@ -100,5 +100,24 @@ public class ConsumerChainTest {
 
         assertFalse(chain.isValid());
     }
+    
+    @Test
+    public void chain_respects_early_termination_of_nodes() {
+        Mockery context = new Mockery();
+        
+        SvnNode n1 = context.mock(SvnNode.class, "n1");
+        SvnDumpMutator m1 = context.mock(SvnDumpMutator.class, "m1");
+        SvnDumpValidator v1 = context.mock(SvnDumpValidator.class, "v1");
+
+        context.checking(new Expectations() {{
+            allowing(m1).consume(n1); will(returnValue(false));
+        }});
+        
+        ConsumerChain chain = new ConsumerChain();
+        chain.add(m1);
+        chain.add(v1);
+        
+        chain.consume(n1);
+    }
 
 }

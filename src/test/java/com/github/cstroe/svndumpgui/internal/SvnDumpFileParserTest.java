@@ -2,12 +2,16 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
+import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
+import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.internal.transform.ConsumerChain;
 import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import org.junit.Test;
@@ -51,7 +55,10 @@ public class SvnDumpFileParserTest {
         return dumpInMemory.getDump();
     }
 
-    public static void consume(String dumpFile, SvnDumpConsumer consumer) throws ParseException {
+    /**
+     * @return The SvnDump after it's been modified by the consumer.
+     */
+    public static SvnDump consume(String dumpFile, SvnDumpConsumer consumer) throws ParseException {
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(dumpFile);
 
@@ -62,9 +69,25 @@ public class SvnDumpFileParserTest {
             throw new ParseException(ex.getMessage());
         }
 
+        ConsumerChain chain = new ConsumerChain();
+        if(consumer instanceof SvnDumpMutator) {
+            chain.add((SvnDumpMutator) consumer);
+        } else if(consumer instanceof SvnDumpValidator) {
+            chain.add((SvnDumpValidator)consumer);
+        } else if(consumer instanceof SvnDumpWriter) {
+            chain.add((SvnDumpWriter)consumer);
+        } else {
+            throw new ParseException("Unknown instance type.");
+        }
+
+        SvnDumpInMemory saveDump = new SvnDumpInMemory();
+        chain.add(saveDump);
+        
         SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(reader));
 
-        parser.Start(consumer);
+        parser.Start(chain);
+        
+        return saveDump.getDump();
     }
 
     @SuppressWarnings("unchecked")
