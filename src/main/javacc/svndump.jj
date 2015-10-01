@@ -142,6 +142,8 @@ public void Start(SvnDumpConsumer consumer):
     )*
 
     <EOF>
+
+    { consumer.finish(); }
 }
 
 public SvnRevision Revision():
