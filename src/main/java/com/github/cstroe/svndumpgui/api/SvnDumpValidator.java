@@ -8,11 +8,18 @@ public interface SvnDumpValidator extends SvnDumpConsumer {
     default boolean validate(SvnDump dump) {
         consume(dump.getPreamble());
         for(SvnRevision revision : dump.getRevisions()) {
+            if(!isValid()) {
+                return false;
+            }
             consume(revision);
             for(SvnNode node : revision.getNodes()) {
+                if(!isValid()) {
+                    return false;
+                }
                 consume(node);
             }
         }
+        finish();
         return isValid();
     }
 }

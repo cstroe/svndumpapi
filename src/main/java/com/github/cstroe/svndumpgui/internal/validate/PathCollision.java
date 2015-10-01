@@ -30,66 +30,78 @@ public class PathCollision extends AbstractSvnDumpValidator {
         if(previousRevision != null) {
             currentRevisionPaths.putAll(revisionSnapshots.get(previousRevision.getNumber()));
         }
-        for(SvnNode node : revision.getNodes()) {
-            final String action = node.get(SvnNodeHeader.ACTION);
-            final String kind = node.get(SvnNodeHeader.KIND);
-            final String path = node.get(SvnNodeHeader.PATH);
-            final String copyFromRevision = node.get(SvnNodeHeader.COPY_FROM_REV);
-            final String copyFromPath = node.get(SvnNodeHeader.COPY_FROM_PATH);
-
-            if("add".equals(action)) {
-                if(currentRevisionPaths.containsKey(path)) {
-                    String message = "Error at revision " + revision.getNumber() + "\n" +
-                            "adding " + path + "\n" +
-                            "but it was already added in revision " + currentRevisionPaths.get(path).first +
-                            " by this node:\n" +
-                            currentRevisionPaths.get(path).second;
-                    error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
-                }
-
-                if(copyFromRevision != null) {
-                    Map sourceSnapshot = revisionSnapshots.get(Integer.parseInt(copyFromRevision));
-                    if(!sourceSnapshot.containsKey(copyFromPath)) {
-                        String message = "Error at revision " + revision.getNumber() + "\n" +
-                                "adding " + path + "\n" +
-                                "from " + copyFromPath + "@" + copyFromRevision + "\n" +
-                                "but it doesn't exist in revision " + copyFromRevision;
-                        error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
-                    }
-                }
-
-                currentRevisionPaths.put(path, Pair.of(revision.getNumber(), node));
-
-                if ("dir".equals(kind) && copyFromRevision != null) {
-                    // add sub paths also
-                    final String oldPrefix = copyFromPath + "/";
-                    final String newPrefix = path + "/";
-                    Set<String> subPaths = getSubPaths(revisionSnapshots.get(Integer.parseInt(copyFromRevision)).keySet(), copyFromPath);
-                    for (String subPath : subPaths) {
-                        final String newSubPath = newPrefix + subPath.substring(oldPrefix.length());
-                        currentRevisionPaths.put(newSubPath, Pair.of(revision.getNumber(), node));
-                    }
-                }
-            } else if("delete".equals(action)) {
-                if(!currentRevisionPaths.containsKey(path)) {
-                    String message = "Error at revision " + revision.getNumber() + "\n" +
-                            "deleting " + path + "\n" +
-                            "but it does not exist";
-                    error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
-                }
-
-                currentRevisionPaths.remove(path);
-
-                // remove any subpaths that may exist
-                Set<String> subPaths = getSubPaths(currentRevisionPaths.keySet(), path);
-                for (String subPath : subPaths) {
-                    currentRevisionPaths.remove(subPath);
-                }
-            }
-        }
-
+        
         revisionSnapshots.put(revision.getNumber(), currentRevisionPaths);
         previousRevision = revision;
+    }
+
+    @Override
+    public void consume(SvnNode node) {
+        if(error != null) {
+            return;
+        }
+        
+        final SvnRevision revision = node.getRevision().get();
+        
+        // path -> (revision added, node that added it)
+        Map<String, Pair<Integer, SvnNode>> currentRevisionPaths = 
+                revisionSnapshots.get(revision.getNumber());
+        
+        final String action = node.get(SvnNodeHeader.ACTION);
+        final String kind = node.get(SvnNodeHeader.KIND);
+        final String path = node.get(SvnNodeHeader.PATH);
+        final String copyFromRevision = node.get(SvnNodeHeader.COPY_FROM_REV);
+        final String copyFromPath = node.get(SvnNodeHeader.COPY_FROM_PATH);
+
+        if("add".equals(action)) {
+            if(currentRevisionPaths.containsKey(path)) {
+                String message = "Error at revision " + revision.getNumber() + "\n" +
+                        "adding " + path + "\n" +
+                        "but it was already added in revision " + currentRevisionPaths.get(path).first +
+                        " by this node:\n" +
+                        currentRevisionPaths.get(path).second;
+                error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
+            }
+
+            if(copyFromRevision != null) {
+                Map sourceSnapshot = revisionSnapshots.get(Integer.parseInt(copyFromRevision));
+                if(!sourceSnapshot.containsKey(copyFromPath)) {
+                    String message = "Error at revision " + revision.getNumber() + "\n" +
+                            "adding " + path + "\n" +
+                            "from " + copyFromPath + "@" + copyFromRevision + "\n" +
+                            "but it doesn't exist in revision " + copyFromRevision;
+                    error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
+                }
+            }
+
+            currentRevisionPaths.put(path, Pair.of(revision.getNumber(), node));
+
+            if ("dir".equals(kind) && copyFromRevision != null) {
+                // add sub paths also
+                final String oldPrefix = copyFromPath + "/";
+                final String newPrefix = path + "/";
+                Set<String> subPaths = getSubPaths(revisionSnapshots.get(Integer.parseInt(copyFromRevision)).keySet(), copyFromPath);
+                for (String subPath : subPaths) {
+                    final String newSubPath = newPrefix + subPath.substring(oldPrefix.length());
+                    currentRevisionPaths.put(newSubPath, Pair.of(revision.getNumber(), node));
+                }
+            }
+        } else if("delete".equals(action)) {
+            if(!currentRevisionPaths.containsKey(path)) {
+                String message = "Error at revision " + revision.getNumber() + "\n" +
+                        "deleting " + path + "\n" +
+                        "but it does not exist";
+                error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
+            }
+
+            currentRevisionPaths.remove(path);
+
+            // remove any subpaths that may exist
+            Set<String> subPaths = getSubPaths(currentRevisionPaths.keySet(), path);
+            for (String subPath : subPaths) {
+                currentRevisionPaths.remove(subPath);
+            }
+        }
     }
 
     @Override
