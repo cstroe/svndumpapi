@@ -15,5 +15,6 @@ public class UpdateAuthorForEmptyRevisions extends AbstractSvnDumpMutator {
         if(revision.getProperties().containsKey(SvnProperty.AUTHOR) && revision.getNodes().isEmpty() ) {
             revision.getProperties().put(SvnProperty.AUTHOR, newAuthor);
         }
+        super.consume(revision);
     }
 }

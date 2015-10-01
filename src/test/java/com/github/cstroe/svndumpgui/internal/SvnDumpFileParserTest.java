@@ -2,6 +2,7 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
+import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
@@ -12,6 +13,8 @@ import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,6 +61,13 @@ public class SvnDumpFileParserTest {
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(dumpFile);
 
+        return consume(is, consumer);
+    }
+
+    /**
+     * @return The SvnDump after it's been modified by the consumer.
+     */
+    public static SvnDump consume(InputStream is, SvnDumpConsumer consumer) throws ParseException {
         InputStreamReader reader;
         try {
             reader = new InputStreamReader(is, "ISO-8859-1");
@@ -70,8 +80,21 @@ public class SvnDumpFileParserTest {
 
         SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(reader));
         parser.Start(consumer);
-        
+
         return saveDump.getDump();
+    }
+
+    public static SvnDump consume(SvnDump dump, SvnDumpConsumer consumer) throws ParseException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            SvnDumpWriter writer = new SvnDumpWriterImpl();
+            writer.write(baos, dump);
+        } catch (IOException ex) {
+            throw new ParseException(ex.getMessage());
+        }
+
+        return consume(new ByteArrayInputStream(baos.toByteArray()), consumer);
     }
 
     @SuppressWarnings("unchecked")
