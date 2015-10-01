@@ -1,14 +1,14 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
-import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
-import com.github.cstroe.svndumpgui.internal.SvnDumpErrorAggregator;
+import com.github.cstroe.svndumpgui.internal.SvnDumpValidationErrorAggregator;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -69,8 +69,8 @@ public class ConsumerChain implements SvnDumpMutator, SvnDumpValidator, SvnDumpW
     }
 
     @Override
-    public SvnDumpError getError() {
-        SvnDumpErrorAggregator allErrors = new SvnDumpErrorAggregator();
+    public SvnDumpValidationError getError() {
+        SvnDumpValidationErrorAggregator allErrors = new SvnDumpValidationErrorAggregator();
         validators.stream().map(SvnDumpValidator::getError).forEach(allErrors::add);
         return allErrors;
     }

@@ -1,6 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
@@ -9,15 +9,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class SvnDumpErrorAggregatorTest {
+public class SvnDumpValidationErrorAggregatorTest {
     @Test
     public void get_revision_returns_revision_number() {
         Mockery context = new Mockery();
 
-        SvnDumpError e1 = context.mock(SvnDumpError.class, "e1");
-        SvnDumpError e2 = context.mock(SvnDumpError.class, "e2");
-        SvnDumpError e3 = context.mock(SvnDumpError.class, "e3");
-        SvnDumpError e4 = context.mock(SvnDumpError.class, "e4");
+        SvnDumpValidationError e1 = context.mock(SvnDumpValidationError.class, "e1");
+        SvnDumpValidationError e2 = context.mock(SvnDumpValidationError.class, "e2");
+        SvnDumpValidationError e3 = context.mock(SvnDumpValidationError.class, "e3");
+        SvnDumpValidationError e4 = context.mock(SvnDumpValidationError.class, "e4");
 
         context.checking(new Expectations() {{
             allowing(e1).getRevision(); will(returnValue(2));
@@ -26,7 +26,7 @@ public class SvnDumpErrorAggregatorTest {
             allowing(e4).getRevision(); will(returnValue(4));
         }});
 
-        SvnDumpErrorAggregator aggregator = new SvnDumpErrorAggregator();
+        SvnDumpValidationErrorAggregator aggregator = new SvnDumpValidationErrorAggregator();
         aggregator.add(e1);
         aggregator.add(e2);
         aggregator.add(e3);
@@ -39,10 +39,10 @@ public class SvnDumpErrorAggregatorTest {
     public void get_message_concatenates_messages() {
         Mockery context = new Mockery();
 
-        SvnDumpError e1 = context.mock(SvnDumpError.class, "e1");
-        SvnDumpError e2 = context.mock(SvnDumpError.class, "e2");
-        SvnDumpError e3 = context.mock(SvnDumpError.class, "e3");
-        SvnDumpError e4 = context.mock(SvnDumpError.class, "e4");
+        SvnDumpValidationError e1 = context.mock(SvnDumpValidationError.class, "e1");
+        SvnDumpValidationError e2 = context.mock(SvnDumpValidationError.class, "e2");
+        SvnDumpValidationError e3 = context.mock(SvnDumpValidationError.class, "e3");
+        SvnDumpValidationError e4 = context.mock(SvnDumpValidationError.class, "e4");
 
         context.checking(new Expectations() {{
             allowing(e1).getMessage(); will(returnValue("message1"));
@@ -51,7 +51,7 @@ public class SvnDumpErrorAggregatorTest {
             allowing(e4).getMessage(); will(returnValue("message4"));
         }});
 
-        SvnDumpErrorAggregator aggregator = new SvnDumpErrorAggregator();
+        SvnDumpValidationErrorAggregator aggregator = new SvnDumpValidationErrorAggregator();
         aggregator.add(e1);
         aggregator.add(e2);
         aggregator.add(e3);

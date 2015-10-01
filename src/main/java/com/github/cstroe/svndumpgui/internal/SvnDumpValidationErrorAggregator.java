@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal;
 
 
-import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 
 import java.util.ArrayList;
@@ -9,22 +9,22 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
-public class SvnDumpErrorAggregator implements SvnDumpError {
+public class SvnDumpValidationErrorAggregator implements SvnDumpValidationError {
 
-    private List<SvnDumpError> errors = new ArrayList<>();
+    private List<SvnDumpValidationError> errors = new ArrayList<>();
 
-    public void add(SvnDumpError error) {
+    public void add(SvnDumpValidationError error) {
         errors.add(error);
     }
 
     @Override
     public String getMessage() {
-        return errors.stream().map(SvnDumpError::getMessage).collect(Collectors.joining("\n\n"));
+        return errors.stream().map(SvnDumpValidationError::getMessage).collect(Collectors.joining("\n\n"));
     }
 
     @Override
     public int getRevision() {
-        OptionalInt min = errors.stream().mapToInt(SvnDumpError::getRevision).min();
+        OptionalInt min = errors.stream().mapToInt(SvnDumpValidationError::getRevision).min();
         if(min.isPresent()) {
             return min.getAsInt();
         }

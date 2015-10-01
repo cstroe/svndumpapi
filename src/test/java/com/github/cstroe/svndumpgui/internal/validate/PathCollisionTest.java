@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
-import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
@@ -46,7 +46,7 @@ public class PathCollisionTest {
 
         assertFalse("The validator should detect the invalid condition of adding the same directory twice.", validator.isValid());
 
-        SvnDumpError error = validator.getError();
+        SvnDumpValidationError error = validator.getError();
         assertNotNull(error.getMessage());
         assertThat(error.getRevision(), is(2));
         assertThat(error.getNode().get(SvnNodeHeader.PATH), is(equalTo("testdir")));
@@ -114,7 +114,7 @@ public class PathCollisionTest {
         assertFalse("The validator should detect the invalid condition of copying files from nonexisting location",
             validator.isValid());
 
-        SvnDumpError error = validator.getError();
+        SvnDumpValidationError error = validator.getError();
         assertNotNull(error.getMessage());
         assertThat(error.getRevision(), is(3));
         assertThat(error.getNode().get(SvnNodeHeader.PATH), is(equalTo("file2.txt")));

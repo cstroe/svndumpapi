@@ -1,6 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -19,7 +19,7 @@ public class TerminatingValidator extends AbstractSvnDumpValidator {
     }
 
     @Override
-    public SvnDumpError getError() {
+    public SvnDumpValidationError getError() {
         return wrappedValidator.getError();
     }
 

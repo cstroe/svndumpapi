@@ -1,10 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpError;
+import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
-import com.github.cstroe.svndumpgui.internal.SvnDumpErrorImpl;
+import com.github.cstroe.svndumpgui.internal.SvnDumpValidationErrorImpl;
 import com.github.cstroe.svndumpgui.internal.utility.Pair;
 
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class PathCollision extends AbstractSvnDumpValidator {
-    private SvnDumpError error = null;
+    private SvnDumpValidationError error = null;
 
     private Map<Integer, Map<String, Pair<Integer, SvnNode>>> revisionSnapshots = new HashMap<>();
     private SvnRevision previousRevision = null;
@@ -60,7 +60,7 @@ public class PathCollision extends AbstractSvnDumpValidator {
                         "but it was already added in revision " + currentRevisionPaths.get(path).first +
                         " by this node:\n" +
                         currentRevisionPaths.get(path).second;
-                error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
+                error = new SvnDumpValidationErrorImpl(message, revision.getNumber(), node);
             }
 
             if(copyFromRevision != null) {
@@ -70,7 +70,7 @@ public class PathCollision extends AbstractSvnDumpValidator {
                             "adding " + path + "\n" +
                             "from " + copyFromPath + "@" + copyFromRevision + "\n" +
                             "but it doesn't exist in revision " + copyFromRevision;
-                    error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
+                    error = new SvnDumpValidationErrorImpl(message, revision.getNumber(), node);
                 }
             }
 
@@ -91,7 +91,7 @@ public class PathCollision extends AbstractSvnDumpValidator {
                 String message = "Error at revision " + revision.getNumber() + "\n" +
                         "deleting " + path + "\n" +
                         "but it does not exist";
-                error = new SvnDumpErrorImpl(message, revision.getNumber(), node);
+                error = new SvnDumpValidationErrorImpl(message, revision.getNumber(), node);
             }
 
             currentRevisionPaths.remove(path);
@@ -110,7 +110,7 @@ public class PathCollision extends AbstractSvnDumpValidator {
     }
 
     @Override
-    public SvnDumpError getError() {
+    public SvnDumpValidationError getError() {
         return error;
     }
 
