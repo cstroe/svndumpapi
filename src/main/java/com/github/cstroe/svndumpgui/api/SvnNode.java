@@ -8,6 +8,7 @@ public interface SvnNode {
      * @return An SvnNode can be "detached", i.e., not belong to a revision.
      */
     Optional<SvnRevision> getRevision();
+    void setRevision(SvnRevision revision);
 
     Map<SvnNodeHeader, String> getHeaders();
     void setHeaders(Map<SvnNodeHeader, String> headers);

@@ -29,16 +29,16 @@ public class NodeAddTest {
         headers.put(SvnNodeHeader.KIND, "dir");
         headers.put(SvnNodeHeader.PATH, "testdir");
 
-        SvnNode node = new SvnNodeImpl(null);
-        node.setHeaders(headers);
+        SvnNode newNode = new SvnNodeImpl(null);
+        newNode.setHeaders(headers);
 
-        SvnDumpMutator nodeAdd = new NodeAdd(1, node);
-        nodeAdd.mutate(dump);
+        SvnDumpMutator nodeAdd = new NodeAdd(1, newNode);
+        SvnDump updatedDump = SvnDumpFileParserTest.consume("dumps/firstcommit.dump", nodeAdd);
 
-        assertThat(dump.getRevisions().size(), is(2));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(2));
+        assertThat(updatedDump.getRevisions().size(), is(2));
+        assertThat(updatedDump.getRevisions().get(1).getNodes().size(), is(2));
 
-        SvnNode addedNode = dump.getRevisions().get(1).getNodes().get(1);
+        SvnNode addedNode = updatedDump.getRevisions().get(1).getNodes().get(0);
         assertThat(addedNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
         assertThat(addedNode.get(SvnNodeHeader.KIND), is(equalTo("dir")));
         assertThat(addedNode.get(SvnNodeHeader.PATH), is(equalTo("testdir")));

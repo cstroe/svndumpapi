@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class SvnNodeImpl implements SvnNode {
-    private final Optional<SvnRevision> revision;
+    private Optional<SvnRevision> revision;
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
     private Map<String, String> properties;
     private byte[] content;
@@ -21,6 +21,11 @@ public class SvnNodeImpl implements SvnNode {
     @Override
     public Optional<SvnRevision> getRevision() {
         return revision;
+    }
+
+    @Override
+    public void setRevision(SvnRevision revision) {
+        this.revision = Optional.of(revision);
     }
 
     @Override
