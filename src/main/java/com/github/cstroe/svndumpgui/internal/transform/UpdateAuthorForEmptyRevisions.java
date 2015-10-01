@@ -3,7 +3,7 @@ package com.github.cstroe.svndumpgui.internal.transform;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class UpdateAuthorForEmptyRevisions extends NoopSvnDumpMutator {
+public class UpdateAuthorForEmptyRevisions extends AbstractSvnDumpMutator {
     private final String newAuthor;
 
     public UpdateAuthorForEmptyRevisions(String newAuthor) {

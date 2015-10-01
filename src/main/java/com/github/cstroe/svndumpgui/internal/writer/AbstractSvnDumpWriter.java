@@ -3,11 +3,12 @@ package com.github.cstroe.svndumpgui.internal.writer;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.internal.AbstractSvnDumpConsumer;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-public abstract class AbstractSvnDumpWriter implements SvnDumpWriter {
+public abstract class AbstractSvnDumpWriter extends AbstractSvnDumpConsumer implements SvnDumpWriter {
     private OutputStream os;
     private PrintStream ps;
 

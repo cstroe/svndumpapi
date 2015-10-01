@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class PathChange extends NoopSvnDumpMutator {
+public class PathChange extends AbstractSvnDumpMutator {
 
     private final String oldPath;
     private final String newPath;

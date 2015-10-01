@@ -4,8 +4,9 @@ import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.internal.AbstractSvnDumpConsumer;
 
-public abstract class AbstractSvnDumpValidator implements SvnDumpValidator {
+public abstract class AbstractSvnDumpValidator extends AbstractSvnDumpConsumer implements SvnDumpValidator {
     @Override
     public void consume(SvnDumpPreamble preamble) {}
 

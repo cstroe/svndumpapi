@@ -1,8 +1,9 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class ClearRevision extends NoopSvnDumpMutator {
+public class ClearRevision extends AbstractSvnDumpMutator {
 
     private final int NOT_SET = -1;
     private final int fromRevision;
@@ -30,13 +31,16 @@ public class ClearRevision extends NoopSvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnRevision revision) {
+    public void consume(SvnNode node) {
+        final SvnRevision revision = node.getRevision().get();
         if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
-            revision.getNodes().clear();
             changedSomething = true;
+            return;
         } else if(revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision) {
-            revision.getNodes().clear();
             changedSomething = true;
+            return;
+        } else {
+            super.consume(node);
         }
     }
 
@@ -45,6 +49,7 @@ public class ClearRevision extends NoopSvnDumpMutator {
         if(!changedSomething) {
             throw new IllegalArgumentException("No revisions matched: " + toString());
         }
+        super.finish();
     }
 
     @Override

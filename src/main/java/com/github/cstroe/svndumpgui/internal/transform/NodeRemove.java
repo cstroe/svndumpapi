@@ -4,7 +4,7 @@ import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeRemove extends NoopSvnDumpMutator {
+public class NodeRemove extends AbstractSvnDumpMutator {
 
     private final int targetRevision;
     private final String action;

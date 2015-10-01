@@ -3,7 +3,7 @@ package com.github.cstroe.svndumpgui.internal.transform;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeAdd extends NoopSvnDumpMutator {
+public class NodeAdd extends AbstractSvnDumpMutator {
     private final int targetRevision;
     private final SvnNode node;
 
