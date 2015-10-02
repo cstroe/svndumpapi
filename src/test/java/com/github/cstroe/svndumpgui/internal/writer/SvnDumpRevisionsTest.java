@@ -19,7 +19,7 @@ public class SvnDumpRevisionsTest {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/add_edit_delete_add.dump");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SvnDumpWriter printRevisions = new SvnDumpRevisions();
-        printRevisions.write(out, dump);
+        SvnDumpFileParserTest.consume(dump, printRevisions);
 
         assertThat(out.toString(), is(equalTo("Finished revision 0.\nFinished revision 1.\nFinished revision 2.\nFinished revision 3.\nFinished revision 4.\n")));
     }
