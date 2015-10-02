@@ -19,10 +19,10 @@ public class SvnDumpAuthorsTest {
     @Test
     public void read_authors() throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete_multiple_authors.dump");
-        SvnDumpWriter authorsWriter = new SvnDumpAuthors();
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        authorsWriter.write(baos, dump);
+        SvnDumpWriter authorsWriter = new SvnDumpAuthors();
+        authorsWriter.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, authorsWriter);
 
         assertThat(baos.toString(), is(equalTo("superd\nsuper2\n")));
     }
@@ -31,9 +31,9 @@ public class SvnDumpAuthorsTest {
     public void filter_duplicates() throws ParseException, IOException {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
         SvnDumpWriter authorsWriter = new SvnDumpAuthors();
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        authorsWriter.write(baos, dump);
+        authorsWriter.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, authorsWriter);
 
         assertThat(baos.toString(), is(equalTo("cosmin\n")));
     }
