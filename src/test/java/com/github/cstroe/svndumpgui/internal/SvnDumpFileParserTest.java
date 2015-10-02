@@ -10,6 +10,7 @@ import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import org.junit.Test;
 
@@ -87,12 +88,9 @@ public class SvnDumpFileParserTest {
     public static SvnDump consume(SvnDump dump, SvnDumpConsumer consumer) throws ParseException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try {
-            SvnDumpWriter writer = new SvnDumpWriterImpl();
-            writer.write(baos, dump);
-        } catch (IOException ex) {
-            throw new ParseException(ex.getMessage());
-        }
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        writer.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, writer);
 
         return consume(new ByteArrayInputStream(baos.toByteArray()), consumer);
     }
