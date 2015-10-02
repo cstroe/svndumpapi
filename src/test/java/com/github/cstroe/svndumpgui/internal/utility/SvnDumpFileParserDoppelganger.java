@@ -4,7 +4,14 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Convenience class to mimic what happens in the SvnDumpFileParser, but
@@ -39,6 +46,23 @@ public class SvnDumpFileParserDoppelganger {
         consumer.continueTo(dumpInMemory);
         new SvnDumpFileParserDoppelganger(dump).Start(consumer);
         return dumpInMemory.getDump();
+    }
+
+    public static SvnDump consume(String fileName, SvnDumpConsumer consumer) throws ParseException {
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(fileName);
+
+        Reader reader;
+        try {
+            reader = new InputStreamReader(is, "ISO-8859-1");
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+
+        SvnDumpInMemory svnDumpInMemory = new SvnDumpInMemory();
+        consumer.continueTo(svnDumpInMemory);
+        SvnDumpFileParser.consume(reader, consumer);
+        return svnDumpInMemory.getDump();
     }
 
     /**
