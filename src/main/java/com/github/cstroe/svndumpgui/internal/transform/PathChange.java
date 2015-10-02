@@ -24,35 +24,38 @@ public class PathChange extends AbstractSvnDumpMutator {
                 revision.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
             }
         }
+        super.consume(revision);
+    }
 
-        for(SvnNode node : revision.getNodes()) {
-            final String nodePath = node.get(SvnNodeHeader.PATH);
-            if(nodePath.startsWith(oldPath)) {
-                final String changed = newPath + nodePath.substring(oldPath.length());
-                node.getHeaders().put(SvnNodeHeader.PATH, changed);
-            }
+    @Override
+    public void consume(SvnNode node) {
+        final String nodePath = node.get(SvnNodeHeader.PATH);
+        if(nodePath.startsWith(oldPath)) {
+            final String changed = newPath + nodePath.substring(oldPath.length());
+            node.getHeaders().put(SvnNodeHeader.PATH, changed);
+        }
 
-            if(node.getHeaders().containsKey(SvnNodeHeader.COPY_FROM_PATH)) {
-                final String copyPath = node.get(SvnNodeHeader.COPY_FROM_PATH);
-                if(copyPath.startsWith(oldPath)) {
-                    final String changed = newPath + copyPath.substring(oldPath.length());
-                    node.getHeaders().put(SvnNodeHeader.COPY_FROM_PATH, changed);
-                }
-            }
-
-            if(node.getProperties() != null && node.getProperties().containsKey(SvnProperty.MERGEINFO)) {
-                final String mergeInfo = node.getProperties().get(SvnProperty.MERGEINFO);
-                if(mergeInfo.startsWith(oldPath)) {
-                    final String newMergeInfo = newPath + mergeInfo.substring(oldPath.length());
-                    node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
-                }
-
-                final String leadingSlashPath = "/" + oldPath;
-                if(mergeInfo.startsWith(leadingSlashPath)) {
-                    final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length() + 1);
-                    node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
-                }
+        if(node.getHeaders().containsKey(SvnNodeHeader.COPY_FROM_PATH)) {
+            final String copyPath = node.get(SvnNodeHeader.COPY_FROM_PATH);
+            if(copyPath.startsWith(oldPath)) {
+                final String changed = newPath + copyPath.substring(oldPath.length());
+                node.getHeaders().put(SvnNodeHeader.COPY_FROM_PATH, changed);
             }
         }
+
+        if(node.getProperties() != null && node.getProperties().containsKey(SvnProperty.MERGEINFO)) {
+            final String mergeInfo = node.getProperties().get(SvnProperty.MERGEINFO);
+            if(mergeInfo.startsWith(oldPath)) {
+                final String newMergeInfo = newPath + mergeInfo.substring(oldPath.length());
+                node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
+            }
+
+            final String leadingSlashPath = "/" + oldPath;
+            if(mergeInfo.startsWith(leadingSlashPath)) {
+                final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length() + 1);
+                node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
+            }
+        }
+        super.consume(node);
     }
 }
