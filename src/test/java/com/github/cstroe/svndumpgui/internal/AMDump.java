@@ -51,7 +51,7 @@ public class AMDump {
     public void convert_AgreementMaker_repository() throws ParseException, NoSuchAlgorithmException, IOException {
 
         // add the main branch here
-        SvnNodeImpl trunkAgreementMaker = new SvnNodeImpl(null);
+        SvnNodeImpl trunkAgreementMaker = new SvnNodeImpl();
         trunkAgreementMaker.getHeaders().put(SvnNodeHeader.ACTION, "add");
         trunkAgreementMaker.getHeaders().put(SvnNodeHeader.KIND, "dir");
         trunkAgreementMaker.getHeaders().put(SvnNodeHeader.PATH, "trunk/AgreementMaker");

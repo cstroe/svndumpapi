@@ -37,7 +37,7 @@ public class NodeAddTest {
             assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
         }
         {
-            SvnNode newNode = new SvnNodeImpl(null);
+            SvnNode newNode = new SvnNodeImpl();
             newNode.setHeaders(headers);
 
             SvnDumpMutator nodeAdd = new NodeAdd(1, newNode);

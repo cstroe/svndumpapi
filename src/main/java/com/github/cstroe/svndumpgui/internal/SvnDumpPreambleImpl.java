@@ -9,7 +9,9 @@ public class SvnDumpPreambleImpl implements SvnDumpPreamble {
     public SvnDumpPreambleImpl() {}
 
     public SvnDumpPreambleImpl(SvnDumpPreamble preamble) {
-        this.uuid = preamble.getUUID();
+        if(preamble != null) {
+            this.uuid = preamble.getUUID();
+        }
     }
 
     public SvnDumpPreambleImpl(String uuid) {

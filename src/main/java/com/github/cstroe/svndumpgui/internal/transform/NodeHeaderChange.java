@@ -31,6 +31,7 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
             if(!updatedNode) {
                 throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);
             }
+            super.consume(revision);
             return;
         }
 

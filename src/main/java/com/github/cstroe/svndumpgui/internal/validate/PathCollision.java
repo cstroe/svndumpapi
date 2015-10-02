@@ -21,6 +21,7 @@ public class PathCollision extends AbstractSvnDumpValidator {
     @Override
     public void consume(SvnRevision revision) {
         if(error != null) {
+            super.consume(revision);
             return;
         }
 
@@ -33,11 +34,14 @@ public class PathCollision extends AbstractSvnDumpValidator {
         
         revisionSnapshots.put(revision.getNumber(), currentRevisionPaths);
         previousRevision = revision;
+
+        super.consume(revision);
     }
 
     @Override
     public void consume(SvnNode node) {
         if(error != null) {
+            super.consume(node);
             return;
         }
         
@@ -102,6 +106,8 @@ public class PathCollision extends AbstractSvnDumpValidator {
                 currentRevisionPaths.remove(subPath);
             }
         }
+
+        super.consume(node);
     }
 
     @Override

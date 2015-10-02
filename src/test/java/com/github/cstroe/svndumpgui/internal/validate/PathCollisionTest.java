@@ -12,11 +12,12 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
 import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -124,8 +125,6 @@ public class PathCollisionTest {
     public void terminate_early_on_error() {
         SvnDump dump = new SvnDumpImpl();
 
-        final List<SvnNode> emptyList = new LinkedList<>();
-
         {
             SvnRevision r0 = new SvnRevisionImpl(0, "2015-08-30T07:23:07.042627Z");
             r0.getProperties().put(SvnProperty.AUTHOR, "testUser");
@@ -133,30 +132,36 @@ public class PathCollisionTest {
         } {
             SvnRevision r1 = new SvnRevisionImpl(1, "2015-08-30T07:24:07.042627Z");
             r1.getProperties().put(SvnProperty.AUTHOR, "testUser");
-            r1.getNodes().add(createNode(r1));
+            r1.getNodes().add(createErrorTriggerringNode(r1));
             dump.getRevisions().add(r1);
         } {
             SvnRevision r2 = new SvnRevisionImpl(2, "2015-08-30T07:25:07.042627Z");
             r2.getProperties().put(SvnProperty.AUTHOR, "testUser");
-            r2.getNodes().add(createNode(r2));
+            r2.getNodes().add(createErrorTriggerringNode(r2));
             dump.getRevisions().add(r2);
         } {
             Mockery mockery = new Mockery();
 
-            SvnRevision r3 = mockery.mock(SvnRevision.class);
+            SvnRevision r3 = mockery.mock(SvnRevision.class, "r3");
             dump.getRevisions().add(r3);
 
+            final List<SvnNode> nodeList = new ArrayList<>();
+
+            SvnNode n3_1 = mockery.mock(SvnNode.class, "n3_1");
+            nodeList.add(n3_1);
+
             mockery.checking(new Expectations() {{
-                // no expectations on r3 because we should terminate early and not even touch r3.
+                oneOf(r3).getNumber(); will(returnValue(3));
+                oneOf(r3).getNodes(); will(returnValue(nodeList));
             }});
         }
 
         SvnDumpValidator pcValidator = new PathCollision();
-
-        assertFalse(pcValidator.validate(dump));
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, pcValidator);
+        assertFalse(pcValidator.isValid());
     }
 
-    private SvnNode createNode(SvnRevision r) {
+    private SvnNode createErrorTriggerringNode(SvnRevision r) {
         SvnNode duplicateNode = new SvnNodeImpl(r);
         duplicateNode.getHeaders().put(SvnNodeHeader.ACTION, "add");
         duplicateNode.getHeaders().put(SvnNodeHeader.KIND, "dir");

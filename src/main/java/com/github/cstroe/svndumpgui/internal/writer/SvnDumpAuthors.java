@@ -16,5 +16,6 @@ public class SvnDumpAuthors extends AbstractSvnDumpWriter {
             ps().println(author);
             authors.add(author);
         }
+        super.consume(revision);
     }
 }
