@@ -14,16 +14,19 @@ public class SvnDumpInMemory extends AbstractSvnDumpWriter {
     public void consume(SvnDumpPreamble preamble) {
         dump = new SvnDumpImpl();
         dump.setPreamble(preamble);
+        super.consume(preamble);
     }
 
     @Override
     public void consume(SvnRevision revision) {
         dump.getRevisions().add(revision);
+        super.consume(revision);
     }
 
     @Override
     public void consume(SvnNode node) {
         node.getRevision().get().addNode(node);
+        super.consume(node);
     }
 
     public SvnDump getDump() {
