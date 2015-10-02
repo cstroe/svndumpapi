@@ -14,38 +14,46 @@ public class ClearRevisionTest {
 
     @Test
     public void clear_revision() throws ParseException {
-        SvnDump dumpBefore = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
-        
-        assertThat(dumpBefore.getRevisions().size(), is(3));
-        assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dumpBefore.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dumpBefore.getRevisions().get(2).getNodes().size(), is(3));
+        String dumpFilePath = "dumps/svn_multi_file_delete.dump";
+        {
+            SvnDump dumpBefore = SvnDumpFileParserTest.parse(dumpFilePath);
 
-        SvnDumpMutator cr = new ClearRevision(2);
-        SvnDump dumpAfter = SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
+            assertThat(dumpBefore.getRevisions().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpBefore.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(2).getNodes().size(), is(3));
+        }
+        {
+            SvnDumpMutator cr = new ClearRevision(2);
+            SvnDump dumpAfter = SvnDumpFileParserTest.consume(dumpFilePath, cr);
 
-        assertThat(dumpAfter.getRevisions().size(), is(3));
-        assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dumpAfter.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dumpAfter.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+            assertThat(dumpAfter.getRevisions().size(), is(3));
+            assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpAfter.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dumpAfter.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+        }
     }
 
     @Test
     public void clear_range() throws ParseException {
-        SvnDump dumpBefore = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        String dumpFilePath = "dumps/svn_multi_file_delete.dump";
+        {
+            SvnDump dumpBefore = SvnDumpFileParserTest.parse(dumpFilePath);
 
-        assertThat(dumpBefore.getRevisions().size(), is(3));
-        assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dumpBefore.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dumpBefore.getRevisions().get(2).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpBefore.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(2).getNodes().size(), is(3));
+        }
+        {
+            SvnDumpMutator clear = new ClearRevision(1, 2);
+            SvnDump dumpAfter = SvnDumpFileParserTest.consume(dumpFilePath, clear);
 
-        SvnDumpMutator clear = new ClearRevision(1,2);
-        SvnDump dumpAfter = SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", clear);
-
-        assertThat(dumpAfter.getRevisions().size(), is(3));
-        assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dumpAfter.getRevisions().get(1).getNodes().size(), is(0)); // nodes cleared
-        assertThat(dumpAfter.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+            assertThat(dumpAfter.getRevisions().size(), is(3));
+            assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpAfter.getRevisions().get(1).getNodes().size(), is(0)); // nodes cleared
+            assertThat(dumpAfter.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)

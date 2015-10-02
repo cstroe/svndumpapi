@@ -33,12 +33,9 @@ public class ClearRevision extends AbstractSvnDumpMutator {
     @Override
     public void consume(SvnNode node) {
         final SvnRevision revision = node.getRevision().get();
-        if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
-            changedSomething = true;
-            return;
-        } else if(revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision) {
-            changedSomething = true;
-            return;
+        if((toRevision == NOT_SET && revision.getNumber() == fromRevision) ||
+           (revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision)) {
+            changedSomething = true; // notice we don't call super.consume(node) in this case.
         } else {
             super.consume(node);
         }
