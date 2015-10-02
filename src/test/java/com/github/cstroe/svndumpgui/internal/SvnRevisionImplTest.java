@@ -114,4 +114,28 @@ public class SvnRevisionImplTest {
         assertThat(revisionCopy.getNodes().get(2).getHeaders().get(SvnNodeHeader.PATH), is(equalTo("dir3")));
         assertThat(revisionCopy.getNodes().get(2).getHeaders().get(SvnNodeHeader.KIND), is(equalTo("dir")));
     }
+
+    @Test
+    public void descriptive_toString() {
+        {
+            SvnRevisionImpl revision = new SvnRevisionImpl(2);
+            assertThat(revision.toString(), is(equalTo("Revision: 2, *** empty message ***")));
+        } {
+            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
+            assertThat(revision.toString(), is(equalTo("Revision: 2, *** empty message *** - someDate")));
+        } {
+            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
+            revision.getProperties().put(SvnProperty.LOG, "A log message.");
+            assertThat(revision.toString(), is(equalTo("Revision: 2, A log message. - someDate")));
+        } {
+            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
+            revision.getProperties().put(SvnProperty.LOG, "A log message.");
+            revision.getProperties().put(SvnProperty.AUTHOR, "developer1");
+            assertThat(revision.toString(), is(equalTo("Revision: 2, A log message. - developer1 @ someDate")));
+        } {
+            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
+            revision.getProperties().put(SvnProperty.AUTHOR, "developer1");
+            assertThat(revision.toString(), is(equalTo("Revision: 2, *** empty message *** - developer1 @ someDate")));
+        }
+    }
 }
