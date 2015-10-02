@@ -58,6 +58,10 @@ public class SvnDumpFileParserDoppelganger {
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(fileName);
 
+        return consume(is, consumer);
+    }
+
+    public static SvnDump consume(InputStream is, SvnDumpConsumer consumer) throws ParseException {
         Reader reader;
         try {
             reader = new InputStreamReader(is, "ISO-8859-1");
