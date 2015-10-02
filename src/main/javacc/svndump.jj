@@ -8,7 +8,7 @@ PARSER_BEGIN(SvnDumpFileParser)
   package com.github.cstroe.svndumpgui.generated;
 
   import java.io.InputStreamReader;
-  import java.io.PrintStream;
+  import java.io.Reader;
   import java.io.IOException;
   import java.io.ByteArrayOutputStream;
   import java.io.UnsupportedEncodingException;
@@ -66,6 +66,9 @@ PARSER_BEGIN(SvnDumpFileParser)
         return baos.toByteArray();
     }
 
+    public static void consume(Reader reader, SvnDumpConsumer consumer) throws ParseException {
+        new SvnDumpFileParser(new FastCharStream(reader)).Start(consumer);
+    }
   }
 PARSER_END(SvnDumpFileParser)
 
