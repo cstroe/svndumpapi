@@ -24,7 +24,7 @@ public class SvnDumpWriterImplTest {
     @Test
     public void no_uuid() throws IOException {
         SvnDump dump = new SvnDumpImpl();
-        dump.setPreamble(new SvnDumpPreambleImpl(null));
+        dump.setPreamble(new SvnDumpPreambleImpl());
         SvnRevision r0 = new SvnRevisionImpl(0);
         dump.getRevisions().add(r0);
 
@@ -101,7 +101,7 @@ public class SvnDumpWriterImplTest {
 
     @Test
     public void rewrite_file() throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/simple_branch_and_merge.dump");
+        SvnDump dump = SvnDumpFileParserDoppelganger.parse("dumps/simple_branch_and_merge.dump");
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
         writer.writeTo(firstStream);
@@ -120,7 +120,7 @@ public class SvnDumpWriterImplTest {
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
+        SvnDump dump = SvnDumpFileParserDoppelganger.parse(dumpFile);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
