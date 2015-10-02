@@ -14,8 +14,27 @@ public class SvnNodeImpl implements SvnNode {
     private Map<String, String> properties;
     private byte[] content;
 
+    public SvnNodeImpl() {
+        this.revision = Optional.empty();
+    }
+
     public SvnNodeImpl(SvnRevision revision) {
         this.revision = Optional.ofNullable(revision);
+    }
+
+    public SvnNodeImpl(SvnNode node) {
+        this.revision = Optional.ofNullable(node.getRevision().orElse(null));
+        this.headers = new LinkedHashMap<>(node.getHeaders());
+        if(node.getProperties() != null) {
+            this.properties = new LinkedHashMap<>(node.getProperties());
+        }
+
+        byte[] content = node.getContent();
+        if(content != null) {
+            byte[] copy = new byte[content.length];
+            System.arraycopy(content, 0, copy, 0, content.length);
+            this.content = copy;
+        }
     }
 
     @Override

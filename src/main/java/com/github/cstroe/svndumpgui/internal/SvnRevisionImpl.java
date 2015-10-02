@@ -27,6 +27,14 @@ public class SvnRevisionImpl implements SvnRevision {
         }
     }
 
+    public SvnRevisionImpl(SvnRevision revision) {
+        this.number = revision.getNumber();
+        this.properties = new LinkedHashMap<>(revision.getProperties());
+        for(SvnNode node : revision.getNodes()) {
+            nodes.add(new SvnNodeImpl(node));
+        }
+    }
+
     @Override
     public int getNumber() {
         return number;

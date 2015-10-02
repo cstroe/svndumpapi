@@ -6,6 +6,12 @@ import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 public class SvnDumpPreambleImpl implements SvnDumpPreamble {
     private String uuid;
 
+    public SvnDumpPreambleImpl() {}
+
+    public SvnDumpPreambleImpl(SvnDumpPreamble preamble) {
+        this.uuid = preamble.getUUID();
+    }
+
     public SvnDumpPreambleImpl(String uuid) {
         this.uuid = uuid;
     }
