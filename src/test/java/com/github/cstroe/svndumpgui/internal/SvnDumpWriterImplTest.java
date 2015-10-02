@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
@@ -29,7 +30,8 @@ public class SvnDumpWriterImplTest {
 
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        writer.write(os, dump);
+        writer.writeTo(os);
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
         assertThat(os.toString(), is(equalTo("SVN-fs-dump-format-version: 2\n\n\nRevision-number: 0\nProp-content-length: 10\nContent-length: 10\n\nPROPS-END\n\n")));
     }
 
@@ -102,12 +104,14 @@ public class SvnDumpWriterImplTest {
         SvnDump dump = SvnDumpFileParserTest.parse("dumps/simple_branch_and_merge.dump");
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
-        writer.write(firstStream, dump);
+        writer.writeTo(firstStream);
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
 
         SvnDump readDump = SvnDumpFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
 
         ByteArrayOutputStream secondStream = new ByteArrayOutputStream();
-        writer.write(secondStream, readDump);
+        writer.writeTo(secondStream);
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(readDump, writer);
 
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
@@ -120,8 +124,8 @@ public class SvnDumpWriterImplTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
-
-        dumpWriter.write(baos, dump);
+        dumpWriter.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, dumpWriter);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStream s = Thread.currentThread().getContextClassLoader()

@@ -21,6 +21,8 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
             ps().println(preamble.getUUID());
         }
         ps().println();
+
+        super.consume(preamble);
     }
 
     @Override
@@ -41,6 +43,8 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
         ps().print(properties.toString());
         ps().println();
+
+        super.consume(revision);
     }
 
     private void writeProperties(PrintStream ps, Map<String, String> properties) {
@@ -88,5 +92,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         }
 
         ps().println();
+
+        super.consume(node);
     }
 }
