@@ -41,6 +41,12 @@ public class SvnDumpFileParserDoppelganger {
         consumer.finish();
     }
 
+    public static SvnDump parse(String fileName) throws ParseException {
+        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+        consume(fileName, dumpInMemory);
+        return dumpInMemory.getDump();
+    }
+
     public static SvnDump consume(SvnDump dump, SvnDumpConsumer consumer) {
         SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
         consumer.continueTo(dumpInMemory);
