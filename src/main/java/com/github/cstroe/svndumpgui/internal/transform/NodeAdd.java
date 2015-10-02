@@ -30,5 +30,6 @@ public class NodeAdd extends AbstractSvnDumpMutator {
             throw new IllegalArgumentException("Could not find revision " + targetRevision);
         }
         nodeAdded = false;
+        super.finish();
     }
 }
