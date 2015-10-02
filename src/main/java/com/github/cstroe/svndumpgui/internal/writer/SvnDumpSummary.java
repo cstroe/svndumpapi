@@ -17,6 +17,7 @@ public class SvnDumpSummary extends AbstractSvnDumpWriter {
                 firstEmptyRevision = revision.getNumber();
             }
             lastEmptyRevision = revision.getNumber();
+            super.consume(revision);
             return;
         } else if(firstEmptyRevision != NOT_SET) {
             // no longer have empty revisions
@@ -39,5 +40,6 @@ public class SvnDumpSummary extends AbstractSvnDumpWriter {
             ps().println("\t" + node.toString());
         }
         ps().println();
+        super.consume(revision);
     }
 }
