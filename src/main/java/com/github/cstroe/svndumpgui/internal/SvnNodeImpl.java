@@ -1,10 +1,15 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -12,7 +17,7 @@ public class SvnNodeImpl implements SvnNode {
     private Optional<SvnRevision> revision;
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
     private Map<String, String> properties;
-    private byte[] content;
+    private List<FileContentChunk> content = new LinkedList<>();
 
     public SvnNodeImpl() {
         this.revision = Optional.empty();
@@ -29,11 +34,10 @@ public class SvnNodeImpl implements SvnNode {
             this.properties = new LinkedHashMap<>(node.getProperties());
         }
 
-        byte[] content = node.getContent();
-        if(content != null) {
-            byte[] copy = new byte[content.length];
-            System.arraycopy(content, 0, copy, 0, content.length);
-            this.content = copy;
+        List<FileContentChunk> nodeContent = node.getContent();
+        content = new ArrayList<>(nodeContent.size());
+        for(FileContentChunk nodeChunk : nodeContent) {
+            content.add(new FileContentChunk(nodeChunk));
         }
     }
 
@@ -48,13 +52,13 @@ public class SvnNodeImpl implements SvnNode {
     }
 
     @Override
-    public byte[] getContent() {
-        return content;
+    public List<FileContentChunk> getContent() {
+        return Collections.unmodifiableList(content);
     }
 
     @Override
-    public void setContent(byte[] content) {
-        this.content = content;
+    public void addFileContentChunk(FileContentChunk chunk) {
+        content.add(chunk);
     }
 
     @Override

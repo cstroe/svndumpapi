@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
@@ -39,6 +40,13 @@ public abstract class AbstractSvnDumpConsumer implements SvnDumpConsumer {
     public void consume(SvnNode node) {
         if(nextConsumer != null) {
             nextConsumer.consume(node);
+        }
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        if(nextConsumer != null) {
+            nextConsumer.consume(chunk);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
@@ -77,9 +78,11 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         }
 
         // file content
-        if(node.getContent() != null && node.getContent().length != 0) {
+        if(node.getContent() != null && node.getContent().size() != 0) {
             try {
-                ps().write(node.getContent());
+                for(FileContentChunk chunk : node.getContent()) {
+                    ps().write(chunk.getContent());
+                }
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

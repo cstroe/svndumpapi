@@ -55,4 +55,21 @@ public class SvnDumpFileParserDoppelgangerTest {
 
         SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, consumer);
     }
+
+    @Test
+    public void consume_file_content() {
+        final SvnDumpImpl dump = new SvnDumpImpl();
+        SvnDumpPreambleImpl preamble = new SvnDumpPreambleImpl();
+        dump.setPreamble(preamble);
+
+        SvnRevision r0 = new SvnRevisionImpl(0);
+        dump.addRevision(r0);
+
+        SvnRevision r1 = new SvnRevisionImpl(1);
+        dump.addRevision(r1);
+        SvnNodeImpl n1_1 = new SvnNodeImpl(r1);
+        {
+            r1.addNode(n1_1);
+        }
+    }
 }

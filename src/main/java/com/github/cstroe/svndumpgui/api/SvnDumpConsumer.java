@@ -4,6 +4,7 @@ public interface SvnDumpConsumer {
     void consume(SvnDumpPreamble preamble);
     void consume(SvnRevision revision);
     void consume(SvnNode node);
+    void consume(FileContentChunk chunk);
     void finish();
 
     /**

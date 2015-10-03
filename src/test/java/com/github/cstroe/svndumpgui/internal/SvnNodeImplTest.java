@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import org.junit.Test;
 
@@ -10,7 +11,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class SvnNodeImplTest {
 
@@ -38,7 +39,7 @@ public class SvnNodeImplTest {
         content[3] = 'd';
         content[4] = 'e';
 
-        firstNode.setContent(content);
+        firstNode.addFileContentChunk(new FileContentChunk(content));
 
         SvnNodeImpl secondNode = new SvnNodeImpl(firstNode);
 
@@ -50,12 +51,8 @@ public class SvnNodeImplTest {
         propertiesMap.clear();
         headersMap.clear();
 
-        assertThat(secondNode.getContent().length, is(5));
-        assertTrue(secondNode.getContent()[0] == 'a');
-        assertTrue(secondNode.getContent()[1] == 'b');
-        assertTrue(secondNode.getContent()[2] == 'c');
-        assertTrue(secondNode.getContent()[3] == 'd');
-        assertTrue(secondNode.getContent()[4] == 'e');
+        assertThat(secondNode.getContent().size(), is(1));
+        assertThat(new String(secondNode.getContent().get(0).getContent()), is(equalTo("abcde")));
 
         {
             assertThat(secondNode.getHeaders().size(), is(3));
@@ -91,4 +88,10 @@ public class SvnNodeImplTest {
         }
     }
 
+    @Test
+    public void copy_constructor_works_for_empty_node() {
+        SvnRevisionImpl revision = new SvnRevisionImpl(1);
+        SvnNodeImpl node = new SvnNodeImpl(revision);
+        new SvnNodeImpl(node);
+    }
 }

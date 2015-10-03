@@ -1,7 +1,9 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
@@ -12,6 +14,9 @@ import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.Sequence;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -187,15 +192,15 @@ public class SvnDumpFileParserTest {
         assertThat(readmeTxt.get(SvnNodeHeader.ACTION), is(equalTo("add")));
         assertThat(readmeTxt.get(SvnNodeHeader.MD5), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
         assertThat(readmeTxt.get(SvnNodeHeader.SHA1), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
-        assertThat(new String(readmeTxt.getContent()), is(equalTo("this is a test file\n")));
+        assertThat(new String(readmeTxt.getByteContent()), is(equalTo("this is a test file\n")));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(readmeTxt.getContent());
+        byte[] md5raw = md5.digest(readmeTxt.getByteContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
+        byte[] sha1raw = sha1.digest(readmeTxt.getByteContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
     }
@@ -214,15 +219,15 @@ public class SvnDumpFileParserTest {
         assertThat(readmeTxt.get(SvnNodeHeader.ACTION), is(equalTo("add")));
         assertThat(readmeTxt.get(SvnNodeHeader.MD5), is(equalTo("4221d002ceb5d3c9e9137e495ceaa647")));
         assertThat(readmeTxt.get(SvnNodeHeader.SHA1), is(equalTo("804d716fc5844f1cc5516c8f0be7a480517fdea2")));
-        assertThat(new String(readmeTxt.getContent()), is(equalTo("this is a test file\n")));
+        assertThat(new String(readmeTxt.getByteContent()), is(equalTo("this is a test file\n")));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(readmeTxt.getContent());
+        byte[] md5raw = md5.digest(readmeTxt.getByteContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
+        byte[] sha1raw = sha1.digest(readmeTxt.getByteContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
     }
@@ -295,16 +300,16 @@ public class SvnDumpFileParserTest {
 
         assertThat(fileBin.getProperties().get(SvnProperty.MIMETYPE), is(equalTo("application/octet-stream")));
 
-        assertThat(fileBin.getContent().length, is(1024));
+        assertThat(fileBin.getByteContent().length, is(1024));
         assertThat(fileBin.get(SvnNodeHeader.PATH), is("file.bin"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(fileBin.getContent());
+        byte[] md5raw = md5.digest(fileBin.getByteContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(fileBin.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(fileBin.getContent());
+        byte[] sha1raw = sha1.digest(fileBin.getByteContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(fileBin.get(SvnNodeHeader.SHA1))));
     }
@@ -323,16 +328,16 @@ public class SvnDumpFileParserTest {
 
         SvnNode readmeTxt = createFileRevision.getNodes().get(0);
 
-        assertThat(readmeTxt.getContent().length, is(20));
+        assertThat(readmeTxt.getByteContent().length, is(20));
         assertThat(readmeTxt.get(SvnNodeHeader.PATH), is("README.txt"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(readmeTxt.getContent());
+        byte[] md5raw = md5.digest(readmeTxt.getByteContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
+        byte[] sha1raw = sha1.digest(readmeTxt.getByteContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
 
@@ -370,16 +375,16 @@ public class SvnDumpFileParserTest {
 
         SvnNode readmeTxt = createFileRevision.getNodes().get(0);
 
-        assertThat(readmeTxt.getContent().length, is(20));
+        assertThat(readmeTxt.getByteContent().length, is(20));
         assertThat(readmeTxt.get(SvnNodeHeader.PATH), is("README.txt"));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] md5raw = md5.digest(readmeTxt.getContent());
+        byte[] md5raw = md5.digest(readmeTxt.getByteContent());
         String md5sum = md5sum(md5raw);
         assertThat(md5sum, is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
 
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        byte[] sha1raw = sha1.digest(readmeTxt.getContent());
+        byte[] sha1raw = sha1.digest(readmeTxt.getByteContent());
         String sha1sum = sha1sum(sha1raw);
         assertThat(sha1sum, is(equalTo(readmeTxt.get(SvnNodeHeader.SHA1))));
 
@@ -481,5 +486,26 @@ public class SvnDumpFileParserTest {
         SvnNode node = r1.getNodes().get(0);
         assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("")));
         assertThat(node.getProperties().get("someproperty"), is(equalTo("value")));
+    }
+
+    @Test
+    public void should_parse_file_content_via_file_content_chunks() throws ParseException {
+        Mockery context = new Mockery();
+
+        SvnDumpConsumer consumer = context.mock(SvnDumpConsumer.class, "consumer1");
+
+        final Sequence consumerSequence = context.sequence("consumerSequence");
+        context.checking(new Expectations() {{
+            oneOf(consumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).finish(); inSequence(consumerSequence);
+        }});
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/add_file.dump");
+        SvnDumpFileParser.consume(is, consumer);
     }
 }

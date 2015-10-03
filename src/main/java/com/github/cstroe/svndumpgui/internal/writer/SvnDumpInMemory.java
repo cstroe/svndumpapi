@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.writer;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
@@ -13,6 +14,7 @@ public class SvnDumpInMemory extends AbstractSvnDumpWriter {
 
     private SvnDump dump;
     private SvnRevision currentRevision;
+    private SvnNode currentNode;
 
     @Override
     public void consume(SvnDumpPreamble preamble) {
@@ -30,10 +32,15 @@ public class SvnDumpInMemory extends AbstractSvnDumpWriter {
 
     @Override
     public void consume(SvnNode node) {
-        SvnNodeImpl nodeCopy = new SvnNodeImpl(node);
-        nodeCopy.setRevision(currentRevision);
-        currentRevision.addNode(nodeCopy);
+        currentNode = new SvnNodeImpl(node);
+        currentNode.setRevision(currentRevision);
+        currentRevision.addNode(currentNode);
         super.consume(node);
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        currentNode.addFileContentChunk(chunk);
     }
 
     public SvnDump getDump() {
