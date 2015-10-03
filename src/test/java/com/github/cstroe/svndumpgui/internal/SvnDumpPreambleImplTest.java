@@ -22,4 +22,14 @@ public class SvnDumpPreambleImplTest {
         assertThat(preamble.getUUID(), is(not(equalTo(preambleCopy.getUUID()))));
     }
 
+    @Test
+    public void descriptive_toString() {
+        {
+            SvnDumpPreambleImpl preamble = new SvnDumpPreambleImpl();
+            assertThat(preamble.toString(), is(equalTo("SvnDumpPreambleImpl")));
+        } {
+            SvnDumpPreambleImpl preamble = new SvnDumpPreambleImpl("uuid");
+            assertThat(preamble.toString(), is(equalTo("SvnDumpPreambleImpl uuid")));
+        }
+    }
 }

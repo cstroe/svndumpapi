@@ -32,4 +32,13 @@ public class SvnDumpPreambleImpl implements SvnDumpPreamble {
     public void accept(SvnDumpConsumer consumer) {
         consumer.consume(this);
     }
+
+    @Override
+    public String toString() {
+        if(uuid == null) {
+            return "SvnDumpPreambleImpl";
+        } else {
+            return "SvnDumpPreambleImpl " + uuid;
+        }
+    }
 }
