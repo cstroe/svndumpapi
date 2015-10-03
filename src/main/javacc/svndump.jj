@@ -7,6 +7,7 @@ options {
 PARSER_BEGIN(SvnDumpFileParser)
   package com.github.cstroe.svndumpgui.generated;
 
+  import java.io.InputStream;
   import java.io.InputStreamReader;
   import java.io.Reader;
   import java.io.IOException;
@@ -64,6 +65,10 @@ PARSER_BEGIN(SvnDumpFileParser)
         }
 
         return baos.toByteArray();
+    }
+
+    public static void consume(InputStream inputStream, SvnDumpConsumer consumer) throws ParseException {
+        consume(new InputStreamReader(inputStream), consumer);
     }
 
     public static void consume(Reader reader, SvnDumpConsumer consumer) throws ParseException {
