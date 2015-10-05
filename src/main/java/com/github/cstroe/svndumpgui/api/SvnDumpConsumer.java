@@ -3,8 +3,11 @@ package com.github.cstroe.svndumpgui.api;
 public interface SvnDumpConsumer {
     void consume(SvnDumpPreamble preamble);
     void consume(SvnRevision revision);
+    void endRevision(SvnRevision revision);
     void consume(SvnNode node);
+    void endNode(SvnNode node);
     void consume(FileContentChunk chunk);
+    void endChunks();
     void finish();
 
     /**

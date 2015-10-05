@@ -53,7 +53,7 @@ PARSER_BEGIN(SvnDumpFileParser)
     }
 
     private void readChunks(Long length, SvnDumpConsumer consumer) {
-        if(length == null) {
+        if(length == null || length == 0) {
             return;
         }
 
@@ -67,6 +67,7 @@ PARSER_BEGIN(SvnDumpFileParser)
 
         FileContentChunk chunk = new FileContentChunk(baos.toByteArray());
         consumer.consume(chunk);
+        consumer.endChunks();
     }
 
     public static void consume(InputStream inputStream, SvnDumpConsumer consumer) throws ParseException {
@@ -150,12 +151,17 @@ public void Start(SvnDumpConsumer consumer):
                 if(textContentLength != null) {
                     readChunks(Long.parseLong(textContentLength), consumer);
                 }
+
+                consumer.endNode(node);
             }
             |
             <EOL>
         )*
 
-        { revision = null; }
+        {
+            consumer.endRevision(revision);
+            revision = null;
+        }
     )*
 
     <EOF>

@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.utility;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnNode;
@@ -36,7 +37,17 @@ public class SvnDumpFileParserDoppelganger {
             consumer.consume(revision);
             for(SvnNode node : revision.getNodes()) {
                 consumer.consume(node);
+                boolean wroteChunk = false;
+                for(FileContentChunk chunk : node.getContent()) {
+                    wroteChunk = true;
+                    consumer.consume(chunk);
+                }
+                if(wroteChunk) {
+                    consumer.endChunks();
+                }
+                consumer.endNode(node);
             }
+            consumer.endRevision(revision);
         }
         consumer.finish();
     }

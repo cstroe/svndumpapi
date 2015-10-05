@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
@@ -18,6 +19,7 @@ import org.jmock.Mockery;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -150,9 +152,11 @@ public class PathCollisionTest {
             SvnNode n3_1 = mockery.mock(SvnNode.class, "n3_1");
             nodeList.add(n3_1);
 
+            final List<FileContentChunk> emptyList = new LinkedList<>();
+
             mockery.checking(new Expectations() {{
-                oneOf(r3).getNumber(); will(returnValue(3));
                 oneOf(r3).getNodes(); will(returnValue(nodeList));
+                oneOf(n3_1).getContent(); will(returnValue(emptyList));
             }});
         }
 

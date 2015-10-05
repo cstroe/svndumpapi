@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
@@ -9,6 +10,7 @@ public class ClearRevision extends AbstractSvnDumpMutator {
     private final int fromRevision;
     private final int toRevision;
 
+    private SvnRevision currentRevision;
     private boolean changedSomething = false;
 
     public ClearRevision(int revision) {
@@ -30,14 +32,32 @@ public class ClearRevision extends AbstractSvnDumpMutator {
         this.toRevision = toRevision;
     }
 
+    private boolean revisionMatches(SvnRevision revision) {
+        return (toRevision == NOT_SET && revision.getNumber() == fromRevision) ||
+               (revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision);
+    }
+
+    @Override
+    public void consume(SvnRevision revision) {
+        currentRevision = revision;
+        super.consume(revision);
+    }
+
     @Override
     public void consume(SvnNode node) {
-        final SvnRevision revision = node.getRevision().get();
-        if((toRevision == NOT_SET && revision.getNumber() == fromRevision) ||
-           (revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision)) {
+        if(revisionMatches(currentRevision)) {
             changedSomething = true; // notice we don't call super.consume(node) in this case.
         } else {
             super.consume(node);
+        }
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        if(revisionMatches(currentRevision)) {
+            changedSomething = true; // notice we don't call super.consumer(chunk) in this case.
+        } else {
+            super.consume(chunk);
         }
     }
 

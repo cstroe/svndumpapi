@@ -75,27 +75,37 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         // properties
         if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
             writeProperties(ps(), node.getProperties());
-        }
 
-        // file content
-        if(node.getContent() != null && node.getContent().size() != 0) {
-            try {
-                for(FileContentChunk chunk : node.getContent()) {
-                    ps().write(chunk.getContent());
-                }
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+            // write an extra newline when there is no content and properties were written.
+            if(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) == null) {
+                ps().println();
             }
-            ps().println();
         }
-
-        // write an extra newline when there is no content and properties were written.
-        if(node.getContent() == null && node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
-            ps().println();
-        }
-
-        ps().println();
 
         super.consume(node);
+    }
+
+    @Override
+    public void endNode(SvnNode node) {
+        ps().println();
+        super.endNode(node);
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        try {
+            if(chunk.getContent() != null && chunk.getContent().length > 0) {
+                ps().write(chunk.getContent());
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        super.consume(chunk);
+    }
+
+    @Override
+    public void endChunks() {
+        ps().println();
+        super.endChunks();
     }
 }

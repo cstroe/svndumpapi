@@ -37,6 +37,13 @@ public abstract class AbstractSvnDumpConsumer implements SvnDumpConsumer {
     }
 
     @Override
+    public void endRevision(SvnRevision revision) {
+        if(nextConsumer != null) {
+            nextConsumer.endRevision(revision);
+        }
+    }
+
+    @Override
     public void consume(SvnNode node) {
         if(nextConsumer != null) {
             nextConsumer.consume(node);
@@ -44,9 +51,23 @@ public abstract class AbstractSvnDumpConsumer implements SvnDumpConsumer {
     }
 
     @Override
+    public void endNode(SvnNode node) {
+        if(nextConsumer != null) {
+            nextConsumer.endNode(node);
+        }
+    }
+
+    @Override
     public void consume(FileContentChunk chunk) {
         if(nextConsumer != null) {
             nextConsumer.consume(chunk);
+        }
+    }
+
+    @Override
+    public void endChunks() {
+        if(nextConsumer != null) {
+            nextConsumer.endChunks();
         }
     }
 

@@ -350,7 +350,7 @@ public class SvnDumpFileParserTest {
         assertThat(newFileNode.get(SvnNodeHeader.PATH), is(equalTo("README-new.txt")));
         assertThat(newFileNode.get(SvnNodeHeader.KIND), is(equalTo("file")));
         assertThat(newFileNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertNull(newFileNode.getContent());
+        assertThat(newFileNode.getContent().size(), is(0));
         assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_REV), is(equalTo("1")));
         assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_PATH), is(equalTo("README.txt")));
         assertThat(newFileNode.get(SvnNodeHeader.SOURCE_MD5), is(equalTo(readmeTxt.get(SvnNodeHeader.MD5))));
@@ -397,7 +397,7 @@ public class SvnDumpFileParserTest {
         assertThat(newFileNode.get(SvnNodeHeader.PATH), is(equalTo("README-new.txt")));
         assertThat(newFileNode.get(SvnNodeHeader.KIND), is(equalTo("file")));
         assertThat(newFileNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertNull(newFileNode.getContent());
+        assertThat(newFileNode.getContent().size(), is(0));
         assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_REV), is(equalTo("1")));
         assertThat(newFileNode.get(SvnNodeHeader.COPY_FROM_PATH), is(equalTo("README.txt")));
 
@@ -498,9 +498,13 @@ public class SvnDumpFileParserTest {
         context.checking(new Expectations() {{
             oneOf(consumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
             oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
             oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
             oneOf(consumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
             oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).endChunks(); inSequence(consumerSequence);
+            oneOf(consumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
             oneOf(consumer).finish(); inSequence(consumerSequence);
         }});
 
