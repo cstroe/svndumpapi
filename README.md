@@ -77,15 +77,12 @@ All the operations to the SVN dump file are detailed in [this test](src/test/jav
 
 ## Reading an SVN dump file
 
-Parsing an SVN dump file is straight forward:
+Parsing an SVN dump file is straight forward.  Here's an example that uses a single consumer (writes the SVN dump to STD OUT):
 
-    ConsumerChain chain = new ConsumerChain();
     SvnDumpWriter writer = new SvnDumpWriterImpl();
     writer.writeTo(System.out);
-    chain.add(writer);
-
-    InputStream s = new FileInputStream("svn.dump");
-    SvnDumpFileParser parser = new SvnDumpFileParser(s, "ISO-8859-1");
-    SvnDump dump = parser.Start(chain);
+    
+    InputStream is = new FileInputStream("svn.dump");
+    SvnDumpFileParser.consume(is, writer);
 
 See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpFileParserTest.java) for usage patterns of the parser.
