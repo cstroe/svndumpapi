@@ -41,6 +41,7 @@ public class SvnDumpInMemory extends AbstractSvnDumpWriter {
     @Override
     public void consume(FileContentChunk chunk) {
         currentNode.addFileContentChunk(chunk);
+        super.consume(chunk);
     }
 
     public SvnDump getDump() {
