@@ -30,6 +30,16 @@ classes in this project.
 To get an `svn log`-like summary of your dump file, you can use the 
 [`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/utility/SvnDumpSummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
 
+## Consumers
+
+An `SvnDumpConsumer` consumes the various pieces of an `SvnDump`.  Specializations of a consumer are:
+
+* `SvnDumpMutator`: changes the SvnDump in some way
+* `SvnDumpValidator`: validates the correctness of the SvnDump in some way
+* `SvnDumpWriter`: write the SvnDump in some format
+
+Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files.
+
 ## Mutators
 
 The API allows for changing of an SVN dump file via 
@@ -42,8 +52,7 @@ Some useful mutators are:
 * [`NodeAdd`](src/main/java/com/github/cstroe/svndumpgui/internal/transform/NodeAdd.java) - add some newly crafted change to a specific revision
 * [`NodeHeaderChange`](src/main/java/com/github/cstroe/svndumpgui/internal/transform/NodeHeaderChange.java) - change a specific property on an existing SvnNode
 
-To apply multiple mutators in sequence, you can add them to a 
-[`MutatorChain`](src/main/java/com/github/cstroe/svndumpgui/internal/transform/MutatorChain.java).
+To apply multiple mutators in sequence, you can chain them together, using `SvnDumpConsumer.continueTo(SvnDumpConsumer)`.
 
 ## Validators
 
