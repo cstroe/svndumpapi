@@ -22,8 +22,6 @@ public class FastCharStreamTest {
 
         charStream = new FastCharStream(new InputStreamReader(inputStream));
 
-        StringBuilder buffer = new StringBuilder();
-
         int number;
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(16));
