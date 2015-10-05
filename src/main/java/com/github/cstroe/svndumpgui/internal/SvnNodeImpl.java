@@ -16,7 +16,7 @@ import java.util.Optional;
 public class SvnNodeImpl implements SvnNode {
     private Optional<SvnRevision> revision;
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
-    private Map<String, String> properties;
+    private Map<String, String> properties = new LinkedHashMap<>();
     private List<FileContentChunk> content = new LinkedList<>();
 
     public SvnNodeImpl() {

@@ -512,4 +512,151 @@ public class SvnDumpFileParserTest {
                 .getResourceAsStream("dumps/add_file.dump");
         SvnDumpFileParser.consume(is, consumer);
     }
+
+    @Test
+    public void should_respect_file_content_chunk_size() throws UnsupportedEncodingException, ParseException {
+        final long fileContentChunkSize = 64;
+        SvnDumpImpl dump = new SvnDumpImpl();
+        {
+            dump.setPreamble(new SvnDumpPreambleImpl("903a69a2-8256-45e6-a9dc-d9a846114b23"));
+            SvnRevision r0 = new SvnRevisionImpl(0);
+            dump.addRevision(r0);
+            SvnRevision r1 = new SvnRevisionImpl(1);
+            SvnNode n1_1 = new SvnNodeImpl(r1);
+            n1_1.getHeaders().put(SvnNodeHeader.ACTION, "add");
+            n1_1.getHeaders().put(SvnNodeHeader.KIND, "file");
+            n1_1.getHeaders().put(SvnNodeHeader.PATH, "file1");
+            n1_1.getHeaders().put(SvnNodeHeader.TEXT_CONTENT_LENGTH, "256");
+            n1_1.getHeaders().put(SvnNodeHeader.PROP_CONTENT_LENGTH, "56");
+            n1_1.getProperties().put(SvnProperty.DATE, "2015-08-27T13:56:55.851461Z");
+            byte[] content = new byte[256];
+            for (int i = 0; i < 256; i++) {
+                content[i] = 'a';
+            }
+            FileContentChunk chunk = new FileContentChunk(content);
+            n1_1.addFileContentChunk(chunk);
+            r1.addNode(n1_1);
+            dump.addRevision(r1);
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SvnDumpWriterImpl writer = new SvnDumpWriterImpl();
+        writer.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, writer);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        parser.setFileContentChunkSize(fileContentChunkSize);
+
+        Mockery context = new Mockery();
+
+        SvnDumpConsumer consumer = context.mock(SvnDumpConsumer.class, "consumer1");
+
+        Sequence consumerSequence = context.sequence("consumerSequence");
+
+        context.checking(new Expectations() {{
+            oneOf(consumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            // 256 / 64 = 4 chunks
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).endChunks(); inSequence(consumerSequence);
+            oneOf(consumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).finish(); inSequence(consumerSequence);
+        }});
+
+        parser.Start(consumer);
+
+        // actually record the FileContentChunks this time
+        bais = new ByteArrayInputStream(baos.toByteArray());
+        parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        parser.setFileContentChunkSize(fileContentChunkSize);
+        SvnDumpInMemory inMemoryDump = new SvnDumpInMemory();
+        parser.Start(inMemoryDump);
+
+        List<FileContentChunk> chunks = inMemoryDump.getDump().getRevisions().get(1).getNodes().get(0).getContent();
+        assertThat(chunks.size(), is(4));
+        assertThat(chunks.get(0).getContent().length, is(64));
+        assertThat(chunks.get(1).getContent().length, is(64));
+        assertThat(chunks.get(2).getContent().length, is(64));
+        assertThat(chunks.get(3).getContent().length, is(64));
+    }
+
+    @Test
+    public void should_respect_file_content_chunk_size_with_short_chunk_at_end() throws UnsupportedEncodingException, ParseException {
+        final long fileContentChunkSize = 100;
+        SvnDumpImpl dump = new SvnDumpImpl();
+        {
+            dump.setPreamble(new SvnDumpPreambleImpl("903a69a2-8256-45e6-a9dc-d9a846114b23"));
+            SvnRevision r0 = new SvnRevisionImpl(0);
+            dump.addRevision(r0);
+            SvnRevision r1 = new SvnRevisionImpl(1);
+            SvnNode n1_1 = new SvnNodeImpl(r1);
+            n1_1.getHeaders().put(SvnNodeHeader.ACTION, "add");
+            n1_1.getHeaders().put(SvnNodeHeader.KIND, "file");
+            n1_1.getHeaders().put(SvnNodeHeader.PATH, "file1");
+            n1_1.getHeaders().put(SvnNodeHeader.TEXT_CONTENT_LENGTH, "256");
+            n1_1.getHeaders().put(SvnNodeHeader.PROP_CONTENT_LENGTH, "56");
+            n1_1.getProperties().put(SvnProperty.DATE, "2015-08-27T13:56:55.851461Z");
+            byte[] content = new byte[256];
+            for (int i = 0; i < 256; i++) {
+                content[i] = 'a';
+            }
+            FileContentChunk chunk = new FileContentChunk(content);
+            n1_1.addFileContentChunk(chunk);
+            r1.addNode(n1_1);
+            dump.addRevision(r1);
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SvnDumpWriterImpl writer = new SvnDumpWriterImpl();
+        writer.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, writer);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        parser.setFileContentChunkSize(fileContentChunkSize);
+
+        Mockery context = new Mockery();
+
+        SvnDumpConsumer consumer = context.mock(SvnDumpConsumer.class, "consumer1");
+
+        Sequence consumerSequence = context.sequence("consumerSequence");
+
+        context.checking(new Expectations() {{
+            oneOf(consumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            // 256 / 64 = 4 chunks
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(consumer).endChunks(); inSequence(consumerSequence);
+            oneOf(consumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(consumer).finish(); inSequence(consumerSequence);
+        }});
+
+        parser.Start(consumer);
+
+        // actually record the FileContentChunks this time
+        bais = new ByteArrayInputStream(baos.toByteArray());
+        parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        parser.setFileContentChunkSize(fileContentChunkSize);
+        SvnDumpInMemory inMemoryDump = new SvnDumpInMemory();
+        parser.Start(inMemoryDump);
+
+        List<FileContentChunk> chunks = inMemoryDump.getDump().getRevisions().get(1).getNodes().get(0).getContent();
+        assertThat(chunks.size(), is(3));
+        assertThat(chunks.get(0).getContent().length, is(100));
+        assertThat(chunks.get(1).getContent().length, is(100));
+        assertThat(chunks.get(2).getContent().length, is(56));
+    }
 }

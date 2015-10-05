@@ -11,7 +11,9 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class SvnNodeImplTest {
 
@@ -93,5 +95,12 @@ public class SvnNodeImplTest {
         SvnRevisionImpl revision = new SvnRevisionImpl(1);
         SvnNodeImpl node = new SvnNodeImpl(revision);
         new SvnNodeImpl(node);
+    }
+
+    @Test
+    public void get_properties_should_return_empty_map() {
+        SvnNodeImpl node = new SvnNodeImpl();
+        assertNotNull(node.getProperties());
+        assertTrue(node.getProperties().isEmpty());
     }
 }

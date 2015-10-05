@@ -38,6 +38,12 @@ PARSER_BEGIN(SvnDumpFileParser)
       parser.Start(writer);
     }
 
+    private long fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
+
+    public void setFileContentChunkSize(long size) {
+        this.fileContentChunkSize = size;
+    }
+
     private String readCharacters(Integer number) {
       if(number == null) {
         return null;
@@ -57,16 +63,21 @@ PARSER_BEGIN(SvnDumpFileParser)
             return;
         }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(length.intValue());
-        for(int i = 0; i < length; i++) {
-            try {
-              baos.write(token_source.input_stream.readChar());
+        long lengthLeft = length;
+        while(lengthLeft > 0) {
+            long chunkSize = Math.min(fileContentChunkSize, lengthLeft);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(length.intValue());
+            for(long i = 0; i < chunkSize; i++) {
+                try {
+                  baos.write(token_source.input_stream.readChar());
+                  lengthLeft--;
+                }
+                catch(IOException ex) {}
             }
-            catch(IOException ex) {}
-        }
 
-        FileContentChunk chunk = new FileContentChunk(baos.toByteArray());
-        consumer.consume(chunk);
+            FileContentChunk chunk = new FileContentChunk(baos.toByteArray());
+            consumer.consume(chunk);
+        }
         consumer.endChunks();
     }
 
