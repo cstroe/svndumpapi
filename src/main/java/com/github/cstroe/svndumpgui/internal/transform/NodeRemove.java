@@ -39,7 +39,11 @@ public class NodeRemove extends AbstractSvnDumpMutator {
 
     @Override
     public void consume(SvnNode node) {
-        if(nodeMatches(node)) {
+        boolean nodeMatches = foundTargetRevision && !removedNode &&
+                action.equals(node.get(SvnNodeHeader.ACTION)) &&
+                path.equals(node.get(SvnNodeHeader.PATH));
+
+        if(nodeMatches) {
             removedNode = true;
             inRemovedNode = true;
             return;
@@ -65,12 +69,6 @@ public class NodeRemove extends AbstractSvnDumpMutator {
     public void endNode(SvnNode node) {
         inRemovedNode = false;
         super.endNode(node);
-    }
-
-    private boolean nodeMatches(SvnNode node) {
-        return foundTargetRevision && !removedNode &&
-                action.equals(node.get(SvnNodeHeader.ACTION)) &&
-                path.equals(node.get(SvnNodeHeader.PATH));
     }
 
     @Override
