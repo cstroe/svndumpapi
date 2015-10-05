@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
@@ -21,6 +22,8 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
             ps().println(preamble.getUUID());
         }
         ps().println();
+
+        super.consume(preamble);
     }
 
     @Override
@@ -42,15 +45,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         ps().print(properties.toString());
         ps().println();
 
-        // nodes
-        ByteArrayOutputStream nodes = new ByteArrayOutputStream();
-        writeNodes(revision);
-
-        try {
-            ps().write(nodes.toByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        super.consume(revision);
     }
 
     private void writeProperties(PrintStream ps, Map<String, String> properties) {
@@ -68,36 +63,49 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         ps.println("PROPS-END");
     }
 
-    private void writeNodes(SvnRevision revision) {
-        for(SvnNode node : revision.getNodes()) {
-            // headers
-            for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
-                ps().print(headerEntry.getKey().toString());
-                ps().println(headerEntry.getValue());
-            }
-            ps().println();
+    @Override
+    public void consume(SvnNode node) {
+        // headers
+        for(Map.Entry<SvnNodeHeader, String> headerEntry : node.getHeaders().entrySet()) {
+            ps().print(headerEntry.getKey().toString());
+            ps().println(headerEntry.getValue());
+        }
+        ps().println();
 
-            // properties
-            if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
-                writeProperties(ps(), node.getProperties());
-            }
-
-            // file content
-            if(node.getContent() != null && node.getContent().length != 0) {
-                try {
-                    ps().write(node.getContent());
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-                ps().println();
-            }
+        // properties
+        if(node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
+            writeProperties(ps(), node.getProperties());
 
             // write an extra newline when there is no content and properties were written.
-            if(node.getContent() == null && node.getHeaders().containsKey(SvnNodeHeader.PROP_CONTENT_LENGTH)) {
+            if(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) == null) {
                 ps().println();
             }
-
-            ps().println();
         }
+
+        super.consume(node);
+    }
+
+    @Override
+    public void endNode(SvnNode node) {
+        ps().println();
+        super.endNode(node);
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        try {
+            if(chunk.getContent() != null && chunk.getContent().length > 0) {
+                ps().write(chunk.getContent());
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        super.consume(chunk);
+    }
+
+    @Override
+    public void endChunks() {
+        ps().println();
+        super.endChunks();
     }
 }

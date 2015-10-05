@@ -1,24 +1,64 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class SvnNodeImpl implements SvnNode {
+    private Optional<SvnRevision> revision;
     private Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
-    private Map<String, String> properties;
-    private byte[] content;
+    private Map<String, String> properties = new LinkedHashMap<>();
+    private List<FileContentChunk> content = new LinkedList<>();
 
-    @Override
-    public byte[] getContent() {
-        return content;
+    public SvnNodeImpl() {
+        this.revision = Optional.empty();
+    }
+
+    public SvnNodeImpl(SvnRevision revision) {
+        this.revision = Optional.ofNullable(revision);
+    }
+
+    public SvnNodeImpl(SvnNode node) {
+        this.revision = Optional.ofNullable(node.getRevision().orElse(null));
+        this.headers = new LinkedHashMap<>(node.getHeaders());
+        if(node.getProperties() != null) {
+            this.properties = new LinkedHashMap<>(node.getProperties());
+        }
+
+        List<FileContentChunk> nodeContent = node.getContent();
+        content = new ArrayList<>(nodeContent.size());
+        for(FileContentChunk nodeChunk : nodeContent) {
+            content.add(new FileContentChunk(nodeChunk));
+        }
     }
 
     @Override
-    public void setContent(byte[] content) {
-        this.content = content;
+    public Optional<SvnRevision> getRevision() {
+        return revision;
+    }
+
+    @Override
+    public void setRevision(SvnRevision revision) {
+        this.revision = Optional.of(revision);
+    }
+
+    @Override
+    public List<FileContentChunk> getContent() {
+        return Collections.unmodifiableList(content);
+    }
+
+    @Override
+    public void addFileContentChunk(FileContentChunk chunk) {
+        content.add(chunk);
     }
 
     @Override

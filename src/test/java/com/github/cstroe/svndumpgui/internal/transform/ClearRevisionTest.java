@@ -1,6 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
@@ -13,38 +14,46 @@ public class ClearRevisionTest {
 
     @Test
     public void clear_revision() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        String dumpFilePath = "dumps/svn_multi_file_delete.dump";
+        {
+            SvnDump dumpBefore = SvnDumpFileParserTest.parse(dumpFilePath);
 
-        assertThat(dump.getRevisions().size(), is(3));
-        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpBefore.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(2).getNodes().size(), is(3));
+        }
+        {
+            SvnDumpMutator cr = new ClearRevision(2);
+            SvnDump dumpAfter = SvnDumpFileParserTest.consume(dumpFilePath, cr);
 
-        SvnDumpMutator clear = new ClearRevision(2);
-        clear.mutate(dump);
-
-        assertThat(dump.getRevisions().size(), is(3));
-        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dump.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+            assertThat(dumpAfter.getRevisions().size(), is(3));
+            assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpAfter.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dumpAfter.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+        }
     }
 
     @Test
     public void clear_range() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        String dumpFilePath = "dumps/svn_multi_file_delete.dump";
+        {
+            SvnDump dumpBefore = SvnDumpFileParserTest.parse(dumpFilePath);
 
-        assertThat(dump.getRevisions().size(), is(3));
-        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpBefore.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dumpBefore.getRevisions().get(2).getNodes().size(), is(3));
+        }
+        {
+            SvnDumpMutator clear = new ClearRevision(1, 2);
+            SvnDump dumpAfter = SvnDumpFileParserTest.consume(dumpFilePath, clear);
 
-        SvnDumpMutator clear = new ClearRevision(1,2);
-        clear.mutate(dump);
-
-        assertThat(dump.getRevisions().size(), is(3));
-        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(0)); // nodes cleared
-        assertThat(dump.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+            assertThat(dumpAfter.getRevisions().size(), is(3));
+            assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dumpAfter.getRevisions().get(1).getNodes().size(), is(0)); // nodes cleared
+            assertThat(dumpAfter.getRevisions().get(2).getNodes().size(), is(0)); // nodes cleared
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -69,7 +78,7 @@ public class ClearRevisionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cant_change_non_existent_revision() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
-        new ClearRevision(3).mutate(dump);
+        SvnDumpConsumer cr = new ClearRevision(3);
+        SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
     }
 }

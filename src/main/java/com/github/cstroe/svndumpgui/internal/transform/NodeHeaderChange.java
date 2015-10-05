@@ -1,12 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeHeaderChange implements SvnDumpMutator {
+public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
     private final int targetRevision;
     private final String nodeAction;
@@ -28,28 +26,25 @@ public class NodeHeaderChange implements SvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnDumpPreamble preamble) {}
-
-    @Override
     public void consume(SvnRevision revision) {
         if(foundTargetRevision) {
             if(!updatedNode) {
                 throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);
             }
+            super.consume(revision);
             return;
         }
 
         if(revision.getNumber() == targetRevision) {
             foundTargetRevision = true;
-            for(SvnNode node : revision.getNodes()) {
-                mutate(node);
-            }
-
         }
+        super.consume(revision);
     }
 
-    private void mutate(SvnNode node) {
+    @Override
+    public void consume(SvnNode node) {
         if(updatedNode) {
+            super.consume(node);
             return;
         }
 
@@ -61,6 +56,7 @@ public class NodeHeaderChange implements SvnDumpMutator {
             node.getHeaders().put(headerToChange, newValue);
             updatedNode = true;
         }
+        super.consume(node);
     }
 
     @Override
@@ -71,5 +67,6 @@ public class NodeHeaderChange implements SvnDumpMutator {
 
         foundTargetRevision = false;
         updatedNode = false;
+        super.finish();
     }
 }

@@ -17,29 +17,31 @@ public class NodeHeaderChangeTest {
 
     @Test
     public void change_action() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        String dumpFilePath = "dumps/svn_multi_file_delete.dump";
+        {
+            SvnDump dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
-        assertThat(dump.getRevisions().size(), is(3));
-        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
-        SvnNode node = dump.getRevisions().get(2).getNodes().get(1);
-        assertThat(node.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
-        assertNull(node.get(SvnNodeHeader.KIND));
-        assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("README2.txt")));
+            assertThat(dump.getRevisions().size(), is(3));
+            assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
+            SvnNode node = dump.getRevisions().get(2).getNodes().get(1);
+            assertThat(node.get(SvnNodeHeader.ACTION), is(equalTo("delete")));
+            assertNull(node.get(SvnNodeHeader.KIND));
+            assertThat(node.get(SvnNodeHeader.PATH), is(equalTo("README2.txt")));
+        }{
+            SvnDumpMutator actionChange = new NodeHeaderChange(2, "delete", "README2.txt", SvnNodeHeader.ACTION, "delete", "add");
+            SvnDump updateDump = SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
 
-        SvnDumpMutator actionChange = new NodeHeaderChange(2, "delete", "README2.txt", SvnNodeHeader.ACTION, "delete", "add");
-        actionChange.mutate(dump);
+            assertThat(updateDump.getRevisions().size(), is(3));
+            assertThat(updateDump.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(updateDump.getRevisions().get(1).getNodes().size(), is(3));
+            assertThat(updateDump.getRevisions().get(2).getNodes().size(), is(3));
 
-        assertThat(dump.getRevisions().size(), is(3));
-        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
-        assertThat(dump.getRevisions().get(2).getNodes().size(), is(3));
-
-        SvnNode changedNode = dump.getRevisions().get(2).getNodes().get(1);
-        assertThat(changedNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertNull(changedNode.get(SvnNodeHeader.KIND));
-        assertThat(changedNode.get(SvnNodeHeader.PATH), is(equalTo("README2.txt")));
+            SvnNode changedNode = updateDump.getRevisions().get(2).getNodes().get(1);
+            assertThat(changedNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+            assertNull(changedNode.get(SvnNodeHeader.KIND));
+            assertThat(changedNode.get(SvnNodeHeader.PATH), is(equalTo("README2.txt")));
+        }
     }
-
 }

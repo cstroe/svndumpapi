@@ -7,14 +7,16 @@ options {
 PARSER_BEGIN(SvnDumpFileParser)
   package com.github.cstroe.svndumpgui.generated;
 
+  import java.io.InputStream;
   import java.io.InputStreamReader;
-  import java.io.PrintStream;
+  import java.io.Reader;
   import java.io.IOException;
   import java.io.ByteArrayOutputStream;
   import java.io.UnsupportedEncodingException;
   import java.util.Map;
   import java.util.LinkedHashMap;
 
+  import com.github.cstroe.svndumpgui.api.FileContentChunk;
   import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
   import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
   import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
@@ -36,6 +38,12 @@ PARSER_BEGIN(SvnDumpFileParser)
       parser.Start(writer);
     }
 
+    private long fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
+
+    public void setFileContentChunkSize(long size) {
+        this.fileContentChunkSize = size;
+    }
+
     private String readCharacters(Integer number) {
       if(number == null) {
         return null;
@@ -50,22 +58,36 @@ PARSER_BEGIN(SvnDumpFileParser)
       return sb.toString();
     }
 
-    private byte[] readByteArray(Integer length) {
-        if(length == null) {
-            return null;
+    private void readChunks(Long length, SvnDumpConsumer consumer) {
+        if(length == null || length == 0) {
+            return;
         }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
-        for(int i = 0; i < length; i++) {
-            try {
-              baos.write(token_source.input_stream.readChar());
+        long lengthLeft = length;
+        while(lengthLeft > 0) {
+            long chunkSize = Math.min(fileContentChunkSize, lengthLeft);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(length.intValue());
+            for(long i = 0; i < chunkSize; i++) {
+                try {
+                  baos.write(token_source.input_stream.readChar());
+                  lengthLeft--;
+                }
+                catch(IOException ex) {}
             }
-            catch(IOException ex) {}
-        }
 
-        return baos.toByteArray();
+            FileContentChunk chunk = new FileContentChunk(baos.toByteArray());
+            consumer.consume(chunk);
+        }
+        consumer.endChunks();
     }
 
+    public static void consume(InputStream inputStream, SvnDumpConsumer consumer) throws ParseException {
+        consume(new InputStreamReader(inputStream), consumer);
+    }
+
+    public static void consume(Reader reader, SvnDumpConsumer consumer) throws ParseException {
+        new SvnDumpFileParser(new FastCharStream(reader)).Start(consumer);
+    }
   }
 PARSER_END(SvnDumpFileParser)
 
@@ -111,6 +133,7 @@ public void Start(SvnDumpConsumer consumer):
   Token dumpVersion;
   Token uuid;
   SvnRevision revision;
+  SvnNode node;
 }
 {
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
@@ -128,13 +151,33 @@ public void Start(SvnDumpConsumer consumer):
 
     (
         revision = Revision()
+        { consumer.consume(revision); }
+
+        (
+            node = Node(revision)
+            {
+                consumer.consume(node);
+
+                String textContentLength = node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH);
+                if(textContentLength != null) {
+                    readChunks(Long.parseLong(textContentLength), consumer);
+                }
+
+                consumer.endNode(node);
+            }
+            |
+            <EOL>
+        )*
+
         {
-            consumer.consume(revision);
+            consumer.endRevision(revision);
             revision = null;
         }
     )*
 
     <EOF>
+
+    { consumer.finish(); }
 }
 
 public SvnRevision Revision():
@@ -143,7 +186,6 @@ public SvnRevision Revision():
     Token revisionNumber;
     Token contentLength;
     Map properties;
-    SvnNode node;
 }
 {
     <REVISION_NUMBER_KEY> <COLON> revisionNumber = <NUMBER> <EOL>
@@ -157,13 +199,6 @@ public SvnRevision Revision():
 
     properties = Property()
     { revision.setProperties(properties); }
-
-    (
-        node = Node()
-        { revision.addNode(node); }
-        |
-        <EOL>
-    )*
 
     { return revision; }
 }
@@ -194,7 +229,7 @@ public Map Property():
     { return properties; }
 }
 
-public SvnNode Node():
+public SvnNode Node(SvnRevision revision):
 {
     SvnNodeImpl svnNode;
     Token nodePath = null;
@@ -277,16 +312,12 @@ public SvnNode Node():
     <EOL>
 
     {
-        svnNode = new SvnNodeImpl();
+        svnNode = new SvnNodeImpl(revision);
         svnNode.setHeaders(headers);
         headers = null;
 
         if(propContentLength != null) {
             svnNode.setProperties(Property());
-        }
-
-        if(textContentLength != null) {
-            svnNode.setContent(readByteArray(Integer.parseInt(textContentLength.image)));
         }
     }
 

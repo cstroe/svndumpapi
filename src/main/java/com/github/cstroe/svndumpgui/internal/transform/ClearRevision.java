@@ -1,15 +1,16 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
+import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class ClearRevision implements SvnDumpMutator {
+public class ClearRevision extends AbstractSvnDumpMutator {
 
     private final int NOT_SET = -1;
     private final int fromRevision;
     private final int toRevision;
 
+    private SvnRevision currentRevision;
     private boolean changedSomething = false;
 
     public ClearRevision(int revision) {
@@ -31,17 +32,32 @@ public class ClearRevision implements SvnDumpMutator {
         this.toRevision = toRevision;
     }
 
-    @Override
-    public void consume(SvnDumpPreamble preamble) {}
+    private boolean revisionMatches(SvnRevision revision) {
+        return (toRevision == NOT_SET && revision.getNumber() == fromRevision) ||
+               (revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision);
+    }
 
     @Override
     public void consume(SvnRevision revision) {
-        if(toRevision == NOT_SET && revision.getNumber() == fromRevision) {
-            revision.getNodes().clear();
-            changedSomething = true;
-        } else if(revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision) {
-            revision.getNodes().clear();
-            changedSomething = true;
+        currentRevision = revision;
+        super.consume(revision);
+    }
+
+    @Override
+    public void consume(SvnNode node) {
+        if(revisionMatches(currentRevision)) {
+            changedSomething = true; // notice we don't call super.consume(node) in this case.
+        } else {
+            super.consume(node);
+        }
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        if(revisionMatches(currentRevision)) {
+            changedSomething = true; // notice we don't call super.consumer(chunk) in this case.
+        } else {
+            super.consume(chunk);
         }
     }
 
@@ -50,6 +66,7 @@ public class ClearRevision implements SvnDumpMutator {
         if(!changedSomething) {
             throw new IllegalArgumentException("No revisions matched: " + toString());
         }
+        super.finish();
     }
 
     @Override

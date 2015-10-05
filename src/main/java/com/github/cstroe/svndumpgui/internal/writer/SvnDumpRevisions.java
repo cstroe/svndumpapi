@@ -9,5 +9,6 @@ public class SvnDumpRevisions extends AbstractSvnDumpWriter {
         ps().print("Finished revision ");
         ps().print(revision.getNumber());
         ps().println(".");
+        super.consume(revision);
     }
 }

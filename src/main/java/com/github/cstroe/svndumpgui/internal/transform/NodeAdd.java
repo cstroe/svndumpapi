@@ -1,11 +1,9 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeAdd implements SvnDumpMutator {
+public class NodeAdd extends AbstractSvnDumpMutator {
     private final int targetRevision;
     private final SvnNode node;
 
@@ -17,12 +15,11 @@ public class NodeAdd implements SvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnDumpPreamble preamble) {}
-
-    @Override
     public void consume(SvnRevision revision) {
+        getNextConsumer().consume(revision);
         if(revision.getNumber() == targetRevision && !nodeAdded) {
-            revision.getNodes().add(node);
+            node.setRevision(revision);
+            getNextConsumer().consume(node);
             nodeAdded = true;
         }
     }
@@ -33,5 +30,6 @@ public class NodeAdd implements SvnDumpMutator {
             throw new IllegalArgumentException("Could not find revision " + targetRevision);
         }
         nodeAdded = false;
+        super.finish();
     }
 }

@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
@@ -23,13 +24,14 @@ public class SvnDumpWriterImplTest {
     @Test
     public void no_uuid() throws IOException {
         SvnDump dump = new SvnDumpImpl();
-        dump.setPreamble(new SvnDumpPreambleImpl(null));
+        dump.setPreamble(new SvnDumpPreambleImpl());
         SvnRevision r0 = new SvnRevisionImpl(0);
         dump.getRevisions().add(r0);
 
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        writer.write(os, dump);
+        writer.writeTo(os);
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
         assertThat(os.toString(), is(equalTo("SVN-fs-dump-format-version: 2\n\n\nRevision-number: 0\nProp-content-length: 10\nContent-length: 10\n\nPROPS-END\n\n")));
     }
 
@@ -99,15 +101,17 @@ public class SvnDumpWriterImplTest {
 
     @Test
     public void rewrite_file() throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/simple_branch_and_merge.dump");
+        SvnDump dump = SvnDumpFileParserDoppelganger.parse("dumps/simple_branch_and_merge.dump");
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
-        writer.write(firstStream, dump);
+        writer.writeTo(firstStream);
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
 
         SvnDump readDump = SvnDumpFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
 
         ByteArrayOutputStream secondStream = new ByteArrayOutputStream();
-        writer.write(secondStream, readDump);
+        writer.writeTo(secondStream);
+        SvnDumpFileParserDoppelganger.consumeWithoutChaining(readDump, writer);
 
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
@@ -116,12 +120,12 @@ public class SvnDumpWriterImplTest {
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserTest.parse(dumpFile);
+        SvnDump dump = SvnDumpFileParserDoppelganger.parse(dumpFile);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
-
-        dumpWriter.write(baos, dump);
+        dumpWriter.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, dumpWriter);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStream s = Thread.currentThread().getContextClassLoader()
@@ -150,7 +154,7 @@ public class SvnDumpWriterImplTest {
             }
             int d2r = d2.read();
             if(!(d2r < 0)) { // is the end of the second file also?
-                throw new ComparisonFailure("Actual stream is shorter than expected. (The extra character is tacked on at the end)",
+                throw new ComparisonFailure("Actual stream is longer than expected. (The extra character is tacked on at the end)",
                         new String(buf1), new String(buf2) + String.valueOf((char)d2r));
             }
         } catch(EOFException ioe) {

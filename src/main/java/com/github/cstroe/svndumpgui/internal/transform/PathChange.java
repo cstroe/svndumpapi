@@ -1,13 +1,11 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class PathChange implements SvnDumpMutator {
+public class PathChange extends AbstractSvnDumpMutator {
 
     private final String oldPath;
     private final String newPath;
@@ -18,9 +16,6 @@ public class PathChange implements SvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnDumpPreamble preamble) {}
-
-    @Override
     public void consume(SvnRevision revision) {
         if(revision.getProperties().containsKey(SvnProperty.MERGEINFO)) {
             final String mergeInfo = revision.get(SvnProperty.MERGEINFO);
@@ -29,38 +24,38 @@ public class PathChange implements SvnDumpMutator {
                 revision.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
             }
         }
-
-        for(SvnNode node : revision.getNodes()) {
-            final String nodePath = node.get(SvnNodeHeader.PATH);
-            if(nodePath.startsWith(oldPath)) {
-                final String changed = newPath + nodePath.substring(oldPath.length());
-                node.getHeaders().put(SvnNodeHeader.PATH, changed);
-            }
-
-            if(node.getHeaders().containsKey(SvnNodeHeader.COPY_FROM_PATH)) {
-                final String copyPath = node.get(SvnNodeHeader.COPY_FROM_PATH);
-                if(copyPath.startsWith(oldPath)) {
-                    final String changed = newPath + copyPath.substring(oldPath.length());
-                    node.getHeaders().put(SvnNodeHeader.COPY_FROM_PATH, changed);
-                }
-            }
-
-            if(node.getProperties() != null && node.getProperties().containsKey(SvnProperty.MERGEINFO)) {
-                final String mergeInfo = node.getProperties().get(SvnProperty.MERGEINFO);
-                if(mergeInfo.startsWith(oldPath)) {
-                    final String newMergeInfo = newPath + mergeInfo.substring(oldPath.length());
-                    node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
-                }
-
-                final String leadingSlashPath = "/" + oldPath;
-                if(mergeInfo.startsWith(leadingSlashPath)) {
-                    final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length() + 1);
-                    node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
-                }
-            }
-        }
+        super.consume(revision);
     }
 
     @Override
-    public void finish() {}
+    public void consume(SvnNode node) {
+        final String nodePath = node.get(SvnNodeHeader.PATH);
+        if(nodePath.startsWith(oldPath)) {
+            final String changed = newPath + nodePath.substring(oldPath.length());
+            node.getHeaders().put(SvnNodeHeader.PATH, changed);
+        }
+
+        if(node.getHeaders().containsKey(SvnNodeHeader.COPY_FROM_PATH)) {
+            final String copyPath = node.get(SvnNodeHeader.COPY_FROM_PATH);
+            if(copyPath.startsWith(oldPath)) {
+                final String changed = newPath + copyPath.substring(oldPath.length());
+                node.getHeaders().put(SvnNodeHeader.COPY_FROM_PATH, changed);
+            }
+        }
+
+        if(node.getProperties() != null && node.getProperties().containsKey(SvnProperty.MERGEINFO)) {
+            final String mergeInfo = node.getProperties().get(SvnProperty.MERGEINFO);
+            if(mergeInfo.startsWith(oldPath)) {
+                final String newMergeInfo = newPath + mergeInfo.substring(oldPath.length());
+                node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
+            }
+
+            final String leadingSlashPath = "/" + oldPath;
+            if(mergeInfo.startsWith(leadingSlashPath)) {
+                final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length() + 1);
+                node.getProperties().put(SvnProperty.MERGEINFO, newMergeInfo);
+            }
+        }
+        super.consume(node);
+    }
 }

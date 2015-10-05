@@ -1,12 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
-public class NodeRemove implements SvnDumpMutator {
+public class NodeRemove extends AbstractSvnDumpMutator {
 
     private final int targetRevision;
     private final String action;
@@ -22,30 +20,30 @@ public class NodeRemove implements SvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnDumpPreamble preamble) {}
-
-    @Override
     public void consume(SvnRevision revision) {
         if(foundTargetRevision) {
             if(!removedNode) {
                 throw new IllegalArgumentException("The node \"" + action + " " + path +
                         "\" was not found at revision " + targetRevision);
             }
-            return;
         }
 
         if(revision.getNumber() == targetRevision) {
             foundTargetRevision = true;
-            for(SvnNode node : revision.getNodes()) {
-                if(foundTargetRevision && !removedNode &&
-                        action.equals(node.get(SvnNodeHeader.ACTION)) &&
-                        path.equals(node.get(SvnNodeHeader.PATH))) {
-                    revision.getNodes().remove(node);
-                    removedNode = true;
-                    break;
-                }
-            }
         }
+
+        super.consume(revision);
+    }
+
+    @Override
+    public void consume(SvnNode node) {
+        if(foundTargetRevision && !removedNode &&
+                action.equals(node.get(SvnNodeHeader.ACTION)) &&
+                path.equals(node.get(SvnNodeHeader.PATH))) {
+            removedNode = true;
+            return;
+        }
+        super.consume(node);
     }
 
     @Override
@@ -56,5 +54,6 @@ public class NodeRemove implements SvnDumpMutator {
 
         foundTargetRevision = false;
         removedNode = false;
+        super.finish();
     }
 }

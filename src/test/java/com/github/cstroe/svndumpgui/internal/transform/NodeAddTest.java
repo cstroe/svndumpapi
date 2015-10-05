@@ -9,6 +9,7 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -19,28 +20,36 @@ import static org.junit.Assert.*;
 public class NodeAddTest {
     @Test
     public void simple_add() throws ParseException {
-        SvnDump dump = SvnDumpFileParserTest.parse("dumps/firstcommit.dump");
+        final Map<SvnNodeHeader, String> headers;
+        {
+            Map<SvnNodeHeader, String> map = new LinkedHashMap<>();
+            map.put(SvnNodeHeader.ACTION, "add");
+            map.put(SvnNodeHeader.KIND, "dir");
+            map.put(SvnNodeHeader.PATH, "testdir");
+            headers = Collections.unmodifiableMap(map);
+        }
 
-        assertThat(dump.getRevisions().size(), is(2));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
+        String dumpFilePath = "dumps/firstcommit.dump";
+        {
+            SvnDump dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
-        Map<SvnNodeHeader, String> headers = new LinkedHashMap<>();
-        headers.put(SvnNodeHeader.ACTION, "add");
-        headers.put(SvnNodeHeader.KIND, "dir");
-        headers.put(SvnNodeHeader.PATH, "testdir");
+            assertThat(dump.getRevisions().size(), is(2));
+            assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
+        }
+        {
+            SvnNode newNode = new SvnNodeImpl();
+            newNode.setHeaders(headers);
 
-        SvnNode node = new SvnNodeImpl();
-        node.setHeaders(headers);
+            SvnDumpMutator nodeAdd = new NodeAdd(1, newNode);
+            SvnDump updatedDump = SvnDumpFileParserTest.consume(dumpFilePath, nodeAdd);
 
-        SvnDumpMutator nodeAdd = new NodeAdd(1, node);
-        nodeAdd.mutate(dump);
+            assertThat(updatedDump.getRevisions().size(), is(2));
+            assertThat(updatedDump.getRevisions().get(1).getNodes().size(), is(2));
 
-        assertThat(dump.getRevisions().size(), is(2));
-        assertThat(dump.getRevisions().get(1).getNodes().size(), is(2));
-
-        SvnNode addedNode = dump.getRevisions().get(1).getNodes().get(1);
-        assertThat(addedNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertThat(addedNode.get(SvnNodeHeader.KIND), is(equalTo("dir")));
-        assertThat(addedNode.get(SvnNodeHeader.PATH), is(equalTo("testdir")));
+            SvnNode addedNode = updatedDump.getRevisions().get(1).getNodes().get(0);
+            assertThat(addedNode.get(SvnNodeHeader.ACTION), is(equalTo("add")));
+            assertThat(addedNode.get(SvnNodeHeader.KIND), is(equalTo("dir")));
+            assertThat(addedNode.get(SvnNodeHeader.PATH), is(equalTo("testdir")));
+        }
     }
 }

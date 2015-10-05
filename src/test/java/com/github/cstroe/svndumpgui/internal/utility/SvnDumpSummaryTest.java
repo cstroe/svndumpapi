@@ -21,7 +21,8 @@ public class SvnDumpSummaryTest {
 
         SvnDumpWriter summaryWriter = new SvnDumpSummary();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        summaryWriter.write(baos, dump);
+        summaryWriter.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, summaryWriter);
 
         InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");

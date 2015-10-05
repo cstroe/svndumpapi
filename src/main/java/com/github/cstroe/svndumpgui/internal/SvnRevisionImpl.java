@@ -2,6 +2,7 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.util.ArrayList;
@@ -24,6 +25,14 @@ public class SvnRevisionImpl implements SvnRevision {
         this.number = number;
         if(date != null) {
             this.properties.put(DATE, date);
+        }
+    }
+
+    public SvnRevisionImpl(SvnRevision revision) {
+        this.number = revision.getNumber();
+        this.properties = new LinkedHashMap<>(revision.getProperties());
+        for(SvnNode node : revision.getNodes()) {
+            nodes.add(new SvnNodeImpl(node));
         }
     }
 
@@ -60,6 +69,7 @@ public class SvnRevisionImpl implements SvnRevision {
         return nodes;
     }
 
+    @Override
     public void addNode(SvnNode node) {
         if(node == null) {
             throw new NullPointerException("Cannot add null node to SvnRevision.");
@@ -80,5 +90,40 @@ public class SvnRevisionImpl implements SvnRevision {
     @Override
     public void accept(SvnDumpConsumer consumer) {
         consumer.consume(this);
+    }
+
+    @Override
+    public String toString() {
+        String date = get(SvnProperty.DATE);
+        String author = get(SvnProperty.AUTHOR);
+        String log = get(SvnProperty.LOG);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Revision: ")
+               .append(number)
+               .append(", ");
+
+        if(log != null) {
+            builder.append(log);
+        } else {
+            builder.append("*** empty message ***");
+        }
+
+        if(author != null || date != null) {
+            builder.append(" - ");
+        }
+
+        if(author != null) {
+            builder.append(author);
+        }
+
+        if(date != null) {
+            if(author != null) {
+                builder.append(" @ ");
+            }
+            builder.append(date);
+        }
+
+        return builder.toString();
     }
 }
