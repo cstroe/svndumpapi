@@ -154,7 +154,7 @@ public class SvnDumpWriterImplTest {
             }
             int d2r = d2.read();
             if(!(d2r < 0)) { // is the end of the second file also?
-                throw new ComparisonFailure("Actual stream is shorter than expected. (The extra character is tacked on at the end)",
+                throw new ComparisonFailure("Actual stream is longer than expected. (The extra character is tacked on at the end)",
                         new String(buf1), new String(buf2) + String.valueOf((char)d2r));
             }
         } catch(EOFException ioe) {
