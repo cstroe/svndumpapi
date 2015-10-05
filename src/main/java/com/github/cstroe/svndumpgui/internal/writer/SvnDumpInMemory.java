@@ -31,11 +31,23 @@ public class SvnDumpInMemory extends AbstractSvnDumpWriter {
     }
 
     @Override
+    public void endRevision(SvnRevision revision) {
+        currentRevision = null;
+        super.endRevision(revision);
+    }
+
+    @Override
     public void consume(SvnNode node) {
         currentNode = new SvnNodeImpl(node);
         currentNode.setRevision(currentRevision);
         currentRevision.addNode(currentNode);
         super.consume(node);
+    }
+
+    @Override
+    public void endNode(SvnNode node) {
+        currentNode = null;
+        super.endNode(node);
     }
 
     @Override

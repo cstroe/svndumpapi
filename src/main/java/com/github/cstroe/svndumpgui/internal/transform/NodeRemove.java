@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -12,6 +13,7 @@ public class NodeRemove extends AbstractSvnDumpMutator {
 
     private boolean foundTargetRevision = false;
     private boolean removedNode = false;
+    private boolean inRemovedNode = false;
 
     public NodeRemove(int targetRevision, String action, String nodePath) {
         this.targetRevision = targetRevision;
@@ -37,13 +39,38 @@ public class NodeRemove extends AbstractSvnDumpMutator {
 
     @Override
     public void consume(SvnNode node) {
-        if(foundTargetRevision && !removedNode &&
-                action.equals(node.get(SvnNodeHeader.ACTION)) &&
-                path.equals(node.get(SvnNodeHeader.PATH))) {
+        if(nodeMatches(node)) {
             removedNode = true;
+            inRemovedNode = true;
             return;
         }
         super.consume(node);
+    }
+
+    @Override
+    public void consume(FileContentChunk chunk) {
+        if(!inRemovedNode) {
+            super.consume(chunk);
+        }
+    }
+
+    @Override
+    public void endChunks() {
+        if(!inRemovedNode) {
+            super.endChunks();
+        }
+    }
+
+    @Override
+    public void endNode(SvnNode node) {
+        inRemovedNode = false;
+        super.endNode(node);
+    }
+
+    private boolean nodeMatches(SvnNode node) {
+        return foundTargetRevision && !removedNode &&
+                action.equals(node.get(SvnNodeHeader.ACTION)) &&
+                path.equals(node.get(SvnNodeHeader.PATH));
     }
 
     @Override
