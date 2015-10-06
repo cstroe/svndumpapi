@@ -13,6 +13,9 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.io.IOException;
   import java.io.ByteArrayOutputStream;
   import java.io.UnsupportedEncodingException;
+  import java.nio.ByteBuffer;
+  import java.nio.CharBuffer;
+  import java.nio.charset.StandardCharsets;
   import java.util.Map;
   import java.util.LinkedHashMap;
 
@@ -38,9 +41,9 @@ PARSER_BEGIN(SvnDumpFileParser)
       parser.Start(writer);
     }
 
-    private long fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
+    private int fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
 
-    public void setFileContentChunkSize(long size) {
+    public void setFileContentChunkSize(int size) {
         this.fileContentChunkSize = size;
     }
 
@@ -65,17 +68,34 @@ PARSER_BEGIN(SvnDumpFileParser)
 
         long lengthLeft = length;
         while(lengthLeft > 0) {
-            long chunkSize = Math.min(fileContentChunkSize, lengthLeft);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(length.intValue());
-            for(long i = 0; i < chunkSize; i++) {
+            int chunkSize = (int) Math.min((long)fileContentChunkSize, lengthLeft);
+
+            FileContentChunk chunk = null;
+            CharStream stream = token_source.input_stream;
+            if(stream instanceof FastCharStream) {
+                FastCharStream fastCharStream = (FastCharStream) stream;
                 try {
-                  baos.write(token_source.input_stream.readChar());
-                  lengthLeft--;
+                    CharBuffer charBuffer = CharBuffer.wrap(fastCharStream.readChars(chunkSize));
+                    ByteBuffer byteBuffer = StandardCharsets.ISO_8859_1.encode(charBuffer);
+                    chunk = new FileContentChunk(byteBuffer.array());
+                    lengthLeft -= chunkSize;
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
                 }
-                catch(IOException ex) {}
+            } else {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(length.intValue());
+                for (long i = 0; i < chunkSize; i++) {
+                    try {
+                        baos.write(token_source.input_stream.readChar());
+                        lengthLeft--;
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    chunk = new FileContentChunk(baos.toByteArray());
+                }
             }
 
-            FileContentChunk chunk = new FileContentChunk(baos.toByteArray());
+            assert chunk != null;
             consumer.consume(chunk);
         }
         consumer.endChunks();

@@ -515,7 +515,7 @@ public class SvnDumpFileParserTest {
 
     @Test
     public void should_respect_file_content_chunk_size() throws UnsupportedEncodingException, ParseException {
-        final long fileContentChunkSize = 64;
+        final int fileContentChunkSize = 64;
         SvnDumpImpl dump = new SvnDumpImpl();
         {
             dump.setPreamble(new SvnDumpPreambleImpl("903a69a2-8256-45e6-a9dc-d9a846114b23"));
@@ -590,7 +590,7 @@ public class SvnDumpFileParserTest {
 
     @Test
     public void should_respect_file_content_chunk_size_with_short_chunk_at_end() throws UnsupportedEncodingException, ParseException {
-        final long fileContentChunkSize = 100;
+        final int fileContentChunkSize = 100;
         SvnDumpImpl dump = new SvnDumpImpl();
         {
             dump.setPreamble(new SvnDumpPreambleImpl("903a69a2-8256-45e6-a9dc-d9a846114b23"));
