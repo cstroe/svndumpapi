@@ -40,6 +40,8 @@ public final class FastCharStream implements CharStream {
     int tokenStart = 0;          // offset in buffer
     int bufferStart = 0;          // position in file of buffer
 
+    long streamPosition = 0;
+
     Reader input;            // source of chars
 
     /** Constructs from a Reader. */
@@ -51,6 +53,7 @@ public final class FastCharStream implements CharStream {
     public final char readChar() throws IOException {
         if (bufferPosition >= bufferLength)
             refill();
+        streamPosition++;
         return buffer[bufferPosition++];
     }
 
@@ -78,6 +81,7 @@ public final class FastCharStream implements CharStream {
             }
         }
 
+        streamPosition += length;
         return localBuffer;
     }
 
@@ -117,6 +121,7 @@ public final class FastCharStream implements CharStream {
 
     @Override
     public final void backup(int amount) {
+        streamPosition -= amount;
         bufferPosition -= amount;
     }
 
@@ -184,5 +189,9 @@ public final class FastCharStream implements CharStream {
     @Override
     public void setTrackLineColumn(boolean trackLineColumn) {
 
+    }
+
+    public long getStreamPosition() {
+        return streamPosition;
     }
 }

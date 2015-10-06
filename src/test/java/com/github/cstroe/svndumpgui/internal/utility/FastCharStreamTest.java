@@ -29,22 +29,69 @@ public class FastCharStreamTest {
         charStream = new FastCharStream(new InputStreamReader(inputStream));
 
         int number;
-        READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
+        READ();
+        assertThat(charStream.getStreamPosition(), is(4l));
+
+        COLON();
+        assertThat(charStream.getStreamPosition(), is(5l));
+
+        SPACE();
+        assertThat(charStream.getStreamPosition(), is(6l));
+
+        number = NUMBER();
+        assertThat(charStream.getStreamPosition(), is(8l));
         assertThat(number, is(16));
 
+        NEWLINE();
+        assertThat(charStream.getStreamPosition(), is(9l));
+
         assertThat(readData(number), is(equalTo("abcdefghijklmnop")));
+        assertThat(charStream.getStreamPosition(), is(25l));
 
         NEWLINE();
-        READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
+        assertThat(charStream.getStreamPosition(), is(26l));
+
+        READ();
+        assertThat(charStream.getStreamPosition(), is(30l));
+
+        COLON();
+        assertThat(charStream.getStreamPosition(), is(31l));
+
+        SPACE();
+        assertThat(charStream.getStreamPosition(), is(32l));
+
+        number = NUMBER();
+        assertThat(charStream.getStreamPosition(), is(33l));
         assertThat(number, is(3));
 
-        assertThat(readData(number), is(equalTo("abc")));
         NEWLINE();
+        assertThat(charStream.getStreamPosition(), is(34l));
 
-        READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
+        assertThat(readData(number), is(equalTo("abc")));
+        assertThat(charStream.getStreamPosition(), is(37l));
+
+        NEWLINE();
+        assertThat(charStream.getStreamPosition(), is(38l));
+
+        READ();
+        assertThat(charStream.getStreamPosition(), is(42l));
+
+        COLON();
+        assertThat(charStream.getStreamPosition(), is(43l));
+
+        SPACE();
+        assertThat(charStream.getStreamPosition(), is(44l));
+
+        number = NUMBER();
         assertThat(number, is(5));
+        assertThat(charStream.getStreamPosition(), is(45l));
+
+        NEWLINE();
+        assertThat(charStream.getStreamPosition(), is(46l));
+
 
         assertThat(readData(number), is(equalTo("abcde")));
+        assertThat(charStream.getStreamPosition(), is(51l));
 
         assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
     }
@@ -112,18 +159,21 @@ public class FastCharStreamTest {
         assertThat(number, is(16));
 
         assertThat(new String(charStream.readChars(number)), is(equalTo("abcdefghijklmnop")));
+        assertThat(charStream.getStreamPosition(), is(25l));
 
         NEWLINE();
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(3));
 
         assertThat(new String(charStream.readChars(number)), is(equalTo("abc")));
+        assertThat(charStream.getStreamPosition(), is(37l));
         NEWLINE();
 
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(5));
 
         assertThat(new String(charStream.readChars(number)), is(equalTo("abcde")));
+        assertThat(charStream.getStreamPosition(), is(51l));
 
         assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
     }
@@ -172,8 +222,11 @@ public class FastCharStreamTest {
         {
             READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
             assertThat(number, is(8192));
+            assertThat(charStream.getStreamPosition(), is(11l));
 
             char[] firstBuffer = charStream.readChars(number);
+            assertThat(charStream.getStreamPosition(), is(11l + 8192l));
+
             assertThat(firstBuffer.length, is(8192));
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] md5sum_firstBuffer = md5.digest(convert(firstBuffer));
@@ -182,8 +235,11 @@ public class FastCharStreamTest {
             NEWLINE();
             READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
             assertThat(number, is(10000));
+            assertThat(charStream.getStreamPosition(), is(8216l));
 
             char[] secondBuffer = charStream.readChars(number);
+            assertThat(charStream.getStreamPosition(), is(18216l));
+
             assertThat(secondBuffer.length, is(10000));
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] md5sum_secondbuffer = md5.digest(convert(secondBuffer));
@@ -193,8 +249,10 @@ public class FastCharStreamTest {
 
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(4));
+        assertThat(charStream.getStreamPosition(), is(18225l));
 
         assertThat(new String(charStream.readChars(number)), is(equalTo("abcd")));
+        assertThat(charStream.getStreamPosition(), is(18229l));
 
         assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
     }
