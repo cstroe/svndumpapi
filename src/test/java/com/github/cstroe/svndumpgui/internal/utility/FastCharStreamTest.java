@@ -45,6 +45,8 @@ public class FastCharStreamTest {
         assertThat(number, is(5));
 
         assertThat(readData(number), is(equalTo("abcde")));
+
+        assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
     }
 
     private void READ() throws IOException {
@@ -122,6 +124,8 @@ public class FastCharStreamTest {
         assertThat(number, is(5));
 
         assertThat(new String(charStream.readChars(number)), is(equalTo("abcde")));
+
+        assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
     }
 
     @Test
@@ -191,6 +195,8 @@ public class FastCharStreamTest {
         assertThat(number, is(4));
 
         assertThat(new String(charStream.readChars(number)), is(equalTo("abcd")));
+
+        assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
     }
 
     private byte[] convert(char[] array) {

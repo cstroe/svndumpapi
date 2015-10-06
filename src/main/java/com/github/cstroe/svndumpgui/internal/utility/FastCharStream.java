@@ -31,6 +31,7 @@ import java.io.*;
  * org.apache.lucene.analysis.Token API.
  * */
 public final class FastCharStream implements CharStream {
+    public static final int INITAL_BUFFER_LENGTH = 2048;
     char[] buffer = null;
 
     int bufferLength = 0;          // end of valid chars
@@ -85,7 +86,7 @@ public final class FastCharStream implements CharStream {
 
         if (tokenStart == 0) {        // token won't fit in buffer
             if (buffer == null) {        // first time: alloc buffer
-                buffer = new char[2048];
+                buffer = new char[INITAL_BUFFER_LENGTH];
             } else if (bufferLength == buffer.length) { // grow buffer
                 char[] newBuffer = new char[Math.max(buffer.length*2, Integer.MAX_VALUE - 5)];
                 System.arraycopy(buffer, 0, newBuffer, 0, bufferLength);
