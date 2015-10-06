@@ -729,6 +729,8 @@ public class SvnDumpFileParserTest {
 
         SvnNode n0_0 = r0.getNodes().get(0);
         assertThat(n0_0.getByteContent().length, is(equalTo(content.length)));
-        assertThat(n0_0.getByteContent(), is(equalTo(content)));
+
+        assertThat(n0_0.getContent().size(), is(1));
+        assertThat(n0_0.getContent().get(0).getContent(), is(equalTo(content)));
     }
 }

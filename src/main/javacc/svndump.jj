@@ -102,7 +102,7 @@ PARSER_BEGIN(SvnDumpFileParser)
     }
 
     public static void consume(InputStream inputStream, SvnDumpConsumer consumer) throws ParseException {
-        consume(new InputStreamReader(inputStream), consumer);
+        consume(new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1), consumer);
     }
 
     public static void consume(Reader reader, SvnDumpConsumer consumer) throws ParseException {
