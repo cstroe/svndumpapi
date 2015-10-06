@@ -203,4 +203,39 @@ public class FastCharStreamTest {
         return new String(array).getBytes(StandardCharsets.US_ASCII);
     }
 
+    @Test
+    public void parse_tokens_and_two_consecutive_read_chars() throws IOException {
+        StringBuilder builder = new StringBuilder();
+
+        char[] firstHalf = new char[8192/2];
+        char[] secondHalf = new char[8192/2];
+        {
+            builder.append("READ: 8192\n");
+            for (int i = 0; i < 8192; i++) {
+                char nextChar = (char)('a' + i % 8);
+                if( i < 8192/2) {
+                    firstHalf[i] = nextChar;
+                } else {
+                    secondHalf[i - (8192/2)] = nextChar;
+                }
+                builder.append(nextChar);
+            }
+            builder.append("\n");
+        }
+
+        charStream = new FastCharStream(new StringReader(builder.toString()));
+
+        int number;
+        READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
+
+        assertThat(number, is(8192));
+
+        char[] readChars = charStream.readChars(8192/2);
+        assertTrue(Arrays.equals(firstHalf, readChars));
+
+        readChars = charStream.readChars(8192/2);
+        assertTrue(Arrays.equals(secondHalf, readChars));
+
+        NEWLINE();
+    }
 }
