@@ -53,6 +53,33 @@ public final class FastCharStream implements CharStream {
         return buffer[bufferPosition++];
     }
 
+    public char[] readChars(int length) throws IOException {
+        char[] localBuffer = new char[length];
+
+        // the number of chars already in the buffer
+        int bufferedCharsLength = bufferLength - bufferPosition;
+
+        if(bufferedCharsLength >= length) {
+            System.arraycopy(buffer, bufferPosition, localBuffer, 0, length);
+            bufferPosition += length;
+            tokenStart = bufferPosition;
+        } else {
+            System.arraycopy(buffer, bufferPosition, localBuffer, 0, bufferedCharsLength);
+
+            // clear buffer
+            tokenStart = 0;
+            bufferPosition = 0;
+            bufferLength = 0;
+
+            int charsRead = input.read(localBuffer, bufferedCharsLength, length - bufferedCharsLength);
+            if (charsRead == -1) {
+                throw new IOException("read past eof");
+            }
+        }
+
+        return localBuffer;
+    }
+
     private void refill() throws IOException {
         int newPosition = bufferLength - tokenStart;
 
