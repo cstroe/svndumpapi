@@ -496,16 +496,26 @@ public class SvnDumpFileParserTest {
 
         final Sequence consumerSequence = context.sequence("consumerSequence");
         context.checking(new Expectations() {{
-            oneOf(consumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
-            oneOf(consumer).endChunks(); inSequence(consumerSequence);
-            oneOf(consumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
-            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).finish(); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnDumpPreamble.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnNode.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).endChunks();
+            inSequence(consumerSequence);
+            oneOf(consumer).endNode(with(any(SvnNode.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).finish();
+            inSequence(consumerSequence);
         }});
 
         final InputStream is = Thread.currentThread().getContextClassLoader()
@@ -629,19 +639,31 @@ public class SvnDumpFileParserTest {
         Sequence consumerSequence = context.sequence("consumerSequence");
 
         context.checking(new Expectations() {{
-            oneOf(consumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnDumpPreamble.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(SvnNode.class)));
+            inSequence(consumerSequence);
             // 256 / 64 = 4 chunks
-            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
-            oneOf(consumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
-            oneOf(consumer).endChunks(); inSequence(consumerSequence);
-            oneOf(consumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
-            oneOf(consumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
-            oneOf(consumer).finish(); inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).consume(with(any(FileContentChunk.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).endChunks();
+            inSequence(consumerSequence);
+            oneOf(consumer).endNode(with(any(SvnNode.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).endRevision(with(any(SvnRevision.class)));
+            inSequence(consumerSequence);
+            oneOf(consumer).finish();
+            inSequence(consumerSequence);
         }});
 
         parser.Start(consumer);
@@ -658,5 +680,55 @@ public class SvnDumpFileParserTest {
         assertThat(chunks.get(0).getContent().length, is(100));
         assertThat(chunks.get(1).getContent().length, is(100));
         assertThat(chunks.get(2).getContent().length, is(56));
+    }
+
+    @Test
+    public void parse_binary_files() throws NoSuchAlgorithmException, ParseException {
+        SvnDumpImpl dump = new SvnDumpImpl();
+        byte[] content;
+        {
+            dump.setPreamble(new SvnDumpPreambleImpl("d3449ea3-e53b-4243-ab5a-b67b5a26103a"));
+
+            SvnRevision r0 = new SvnRevisionImpl(0);
+
+            content = new byte[1024];
+
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            byte currentByte = (byte) -128;
+            for (int i = 0; i < content.length; i++) {
+                currentByte++;
+                content[i] = currentByte;
+                md5.update(currentByte);
+            }
+
+            SvnNodeImpl binaryFile1 = new SvnNodeImpl(r0);
+            binaryFile1.getHeaders().put(SvnNodeHeader.ACTION, "add");
+            binaryFile1.getHeaders().put(SvnNodeHeader.KIND, "file");
+            binaryFile1.getHeaders().put(SvnNodeHeader.PATH, "binaryFile1");
+            binaryFile1.getHeaders().put(SvnNodeHeader.TEXT_CONTENT_LENGTH, String.valueOf(content.length));
+            binaryFile1.getHeaders().put(SvnNodeHeader.MD5, md5sum(md5.digest()));
+            binaryFile1.addFileContentChunk(new FileContentChunk(content));
+
+            r0.addNode(binaryFile1);
+            dump.addRevision(r0);
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        writer.writeTo(baos);
+        SvnDumpFileParserDoppelganger.consume(dump, writer);
+
+        SvnDumpInMemory inMemory = new SvnDumpInMemory();
+
+        SvnDumpFileParser.consume(new ByteArrayInputStream(baos.toByteArray()), inMemory);
+
+        SvnDump recreatedDump = inMemory.getDump();
+        assertThat(recreatedDump.getRevisions().size(), is(1));
+
+        SvnRevision r0 = recreatedDump.getRevisions().get(0);
+        assertThat(r0.getNodes().size(), is(1));
+
+        SvnNode n0_0 = r0.getNodes().get(0);
+        assertThat(n0_0.getByteContent().length, is(equalTo(content.length)));
+        assertThat(n0_0.getByteContent(), is(equalTo(content)));
     }
 }
