@@ -69,15 +69,19 @@ public final class SvnDumpFileCharStream implements CharStream {
             tokenStart = bufferPosition;
         } else {
             System.arraycopy(buffer, bufferPosition, localBuffer, 0, bufferedCharsLength);
+            int totalBytesRead = bufferedCharsLength;
 
             // clear buffer
             tokenStart = 0;
             bufferPosition = 0;
             bufferLength = 0;
 
-            int charsRead = inputStream.read(localBuffer, bufferedCharsLength, length - bufferedCharsLength);
-            if (charsRead == -1) {
-                throw new IOException("read past eof");
+            while(totalBytesRead < length) {
+                int bytesRead = inputStream.read(localBuffer, totalBytesRead, length - totalBytesRead);
+                if (bytesRead == -1) {
+                    throw new IOException("read past eof");
+                }
+                totalBytesRead += bytesRead;
             }
         }
 
