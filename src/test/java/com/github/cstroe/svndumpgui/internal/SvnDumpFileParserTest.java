@@ -9,21 +9,25 @@ import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.generated.CharStream;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.Sequence;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -33,9 +37,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class SvnDumpFileParserTest {
 
@@ -47,14 +49,7 @@ public class SvnDumpFileParserTest {
     }
 
     public static SvnDump parse(InputStream is) throws ParseException {
-        InputStreamReader reader;
-        try {
-            reader = new InputStreamReader(is, "ISO-8859-1");
-        } catch (UnsupportedEncodingException ex) {
-            throw new ParseException(ex.getMessage());
-        }
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(reader));
+        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(is));
         SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
         parser.Start(dumpInMemory);
         return dumpInMemory.getDump();
@@ -74,17 +69,10 @@ public class SvnDumpFileParserTest {
      * @return The SvnDump after it's been modified by the consumer.
      */
     public static SvnDump consume(InputStream is, SvnDumpConsumer consumer) throws ParseException {
-        InputStreamReader reader;
-        try {
-            reader = new InputStreamReader(is, "ISO-8859-1");
-        } catch (UnsupportedEncodingException ex) {
-            throw new ParseException(ex.getMessage());
-        }
-
         SvnDumpInMemory saveDump = new SvnDumpInMemory();
         consumer.continueTo(saveDump);
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(reader));
+        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(is));
         parser.Start(consumer);
 
         return saveDump.getDump();
@@ -106,7 +94,7 @@ public class SvnDumpFileParserTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/partial/simple_property.fragment");
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(s)));
+        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
 
         SvnRevisionImpl revision = new SvnRevisionImpl(0);
         Map properties = parser.Property();
@@ -121,7 +109,7 @@ public class SvnDumpFileParserTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/partial/empty_revision.fragment");
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(s)));
+        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
         SvnRevision revision = parser.Revision();
 
         assertNotNull(revision);
@@ -555,7 +543,7 @@ public class SvnDumpFileParserTest {
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
 
         Mockery context = new Mockery();
@@ -585,7 +573,7 @@ public class SvnDumpFileParserTest {
 
         // actually record the FileContentChunks this time
         bais = new ByteArrayInputStream(baos.toByteArray());
-        parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
         SvnDumpInMemory inMemoryDump = new SvnDumpInMemory();
         parser.Start(inMemoryDump);
@@ -629,7 +617,7 @@ public class SvnDumpFileParserTest {
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
 
         Mockery context = new Mockery();
@@ -670,7 +658,7 @@ public class SvnDumpFileParserTest {
 
         // actually record the FileContentChunks this time
         bais = new ByteArrayInputStream(baos.toByteArray());
-        parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(bais, "ISO-8859-1")));
+        parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
         SvnDumpInMemory inMemoryDump = new SvnDumpInMemory();
         parser.Start(inMemoryDump);
@@ -732,5 +720,21 @@ public class SvnDumpFileParserTest {
 
         assertThat(n0_0.getContent().size(), is(1));
         assertThat(n0_0.getContent().get(0).getContent(), is(equalTo(content)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void only_allow_SvnDumpFileCharStream() throws ParseException {
+        Mockery mockery = new Mockery();
+        CharStream fakeStream = mockery.mock(CharStream.class);
+        SvnDumpConsumer consumer = mockery.mock(SvnDumpConsumer.class);
+        new SvnDumpFileParser(fakeStream).Start(consumer);
+    }
+
+    @Test
+    @Ignore
+    public void parse_this_file() throws FileNotFoundException, ParseException {
+        SvnDumpSummary debug = new SvnDumpSummary();
+        debug.writeTo(System.out);
+        SvnDumpFileParser.consume(new FileInputStream("/home/cosmin/Zoo/svndumpgui/DUMP"), debug);
     }
 }

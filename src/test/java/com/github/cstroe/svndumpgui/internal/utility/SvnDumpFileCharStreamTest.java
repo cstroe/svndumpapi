@@ -2,11 +2,10 @@ package com.github.cstroe.svndumpgui.internal.utility;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -16,9 +15,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class FastCharStreamTest {
+public class SvnDumpFileCharStreamTest {
 
-    private FastCharStream charStream;
+    private SvnDumpFileCharStream charStream;
 
     @Test
     public void parse_tokens() throws IOException {
@@ -26,7 +25,7 @@ public class FastCharStreamTest {
         final InputStream inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("FastCharStreamTokens.txt");
 
-        charStream = new FastCharStream(new InputStreamReader(inputStream));
+        charStream = new SvnDumpFileCharStream(inputStream);
 
         int number;
         READ();
@@ -93,7 +92,7 @@ public class FastCharStreamTest {
         assertThat(readData(number), is(equalTo("abcde")));
         assertThat(charStream.getStreamPosition(), is(51l));
 
-        assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
+        assertThat(charStream.buffer.length, is(SvnDumpFileCharStream.INITAL_BUFFER_LENGTH));
     }
 
     private void READ() throws IOException {
@@ -152,30 +151,30 @@ public class FastCharStreamTest {
         final InputStream inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("FastCharStreamTokens.txt");
 
-        charStream = new FastCharStream(new InputStreamReader(inputStream));
+        charStream = new SvnDumpFileCharStream(inputStream);
 
         int number;
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(16));
 
-        assertThat(new String(charStream.readChars(number)), is(equalTo("abcdefghijklmnop")));
+        assertThat(new String(charStream.readBytes(number)), is(equalTo("abcdefghijklmnop")));
         assertThat(charStream.getStreamPosition(), is(25l));
 
         NEWLINE();
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(3));
 
-        assertThat(new String(charStream.readChars(number)), is(equalTo("abc")));
+        assertThat(new String(charStream.readBytes(number)), is(equalTo("abc")));
         assertThat(charStream.getStreamPosition(), is(37l));
         NEWLINE();
 
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(5));
 
-        assertThat(new String(charStream.readChars(number)), is(equalTo("abcde")));
+        assertThat(new String(charStream.readBytes(number)), is(equalTo("abcde")));
         assertThat(charStream.getStreamPosition(), is(51l));
 
-        assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
+        assertThat(charStream.buffer.length, is(SvnDumpFileCharStream.INITAL_BUFFER_LENGTH));
     }
 
     @Test
@@ -215,7 +214,7 @@ public class FastCharStreamTest {
         builder.append("\n");
 
 
-        charStream = new FastCharStream(new StringReader(builder.toString()));
+        charStream = new SvnDumpFileCharStream(new ByteArrayInputStream(builder.toString().getBytes()));
 
         int number;
 
@@ -224,12 +223,12 @@ public class FastCharStreamTest {
             assertThat(number, is(8192));
             assertThat(charStream.getStreamPosition(), is(11l));
 
-            char[] firstBuffer = charStream.readChars(number);
+            byte[] firstBuffer = charStream.readBytes(number);
             assertThat(charStream.getStreamPosition(), is(11l + 8192l));
 
             assertThat(firstBuffer.length, is(8192));
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] md5sum_firstBuffer = md5.digest(convert(firstBuffer));
+            byte[] md5sum_firstBuffer = md5.digest(firstBuffer);
             assertTrue(Arrays.equals(md5sum_8192, md5sum_firstBuffer));
         } {
             NEWLINE();
@@ -237,12 +236,12 @@ public class FastCharStreamTest {
             assertThat(number, is(10000));
             assertThat(charStream.getStreamPosition(), is(8216l));
 
-            char[] secondBuffer = charStream.readChars(number);
+            byte[] secondBuffer = charStream.readBytes(number);
             assertThat(charStream.getStreamPosition(), is(18216l));
 
             assertThat(secondBuffer.length, is(10000));
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] md5sum_secondbuffer = md5.digest(convert(secondBuffer));
+            byte[] md5sum_secondbuffer = md5.digest(secondBuffer);
             assertTrue(Arrays.equals(md5sum_10000, md5sum_secondbuffer));
             NEWLINE();
         }
@@ -251,48 +250,46 @@ public class FastCharStreamTest {
         assertThat(number, is(4));
         assertThat(charStream.getStreamPosition(), is(18225l));
 
-        assertThat(new String(charStream.readChars(number)), is(equalTo("abcd")));
+        assertThat(new String(charStream.readBytes(number)), is(equalTo("abcd")));
         assertThat(charStream.getStreamPosition(), is(18229l));
 
-        assertThat(charStream.buffer.length, is(FastCharStream.INITAL_BUFFER_LENGTH));
-    }
-
-    private byte[] convert(char[] array) {
-        return new String(array).getBytes(StandardCharsets.US_ASCII);
+        assertThat(charStream.buffer.length, is(SvnDumpFileCharStream.INITAL_BUFFER_LENGTH));
     }
 
     @Test
     public void parse_tokens_and_two_consecutive_read_chars() throws IOException {
-        StringBuilder builder = new StringBuilder();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        char[] firstHalf = new char[8192/2];
-        char[] secondHalf = new char[8192/2];
+        byte[] fullBuffer = new byte[8192];
+        byte[] firstHalf = new byte[8192/2];
+        byte[] secondHalf = new byte[8192/2];
         {
-            builder.append("READ: 8192\n");
+            baos.write("READ: 8192\n".getBytes());
             for (int i = 0; i < 8192; i++) {
-                char nextChar = (char)('a' + i % 8);
+                byte nextChar = (byte)('a' + i % 8);
+                fullBuffer[i] = nextChar;
                 if( i < 8192/2) {
                     firstHalf[i] = nextChar;
                 } else {
                     secondHalf[i - (8192/2)] = nextChar;
                 }
-                builder.append(nextChar);
             }
-            builder.append("\n");
+            baos.write(fullBuffer);
+            baos.write("\n".getBytes());
         }
 
-        charStream = new FastCharStream(new StringReader(builder.toString()));
+        charStream = new SvnDumpFileCharStream(new ByteArrayInputStream(baos.toByteArray()));
 
         int number;
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
 
         assertThat(number, is(8192));
 
-        char[] readChars = charStream.readChars(8192/2);
-        assertTrue(Arrays.equals(firstHalf, readChars));
+        byte[] readChars = charStream.readBytes(8192 / 2);
+        assertThat(firstHalf, is(equalTo(readChars)));
 
-        readChars = charStream.readChars(8192/2);
-        assertTrue(Arrays.equals(secondHalf, readChars));
+        readChars = charStream.readBytes(8192 / 2);
+        assertThat(secondHalf, is(equalTo(readChars)));
 
         NEWLINE();
     }

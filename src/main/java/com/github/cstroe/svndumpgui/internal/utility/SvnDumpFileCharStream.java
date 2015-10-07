@@ -30,9 +30,9 @@ import java.io.*;
  * character position of the token in the input, as required by Lucene's
  * org.apache.lucene.analysis.Token API.
  * */
-public final class FastCharStream implements CharStream {
+public final class SvnDumpFileCharStream implements CharStream {
     public static final int INITAL_BUFFER_LENGTH = 2048;
-    char[] buffer = null;
+    byte[] buffer = null;
 
     int bufferLength = 0;          // end of valid chars
     int bufferPosition = 0;        // next char to read
@@ -42,11 +42,11 @@ public final class FastCharStream implements CharStream {
 
     long streamPosition = 0;
 
-    Reader input;            // source of chars
+    InputStream inputStream;            // source of bytes
 
     /** Constructs from a Reader. */
-    public FastCharStream(Reader r) {
-        input = r;
+    public SvnDumpFileCharStream(InputStream stream) {
+        inputStream = stream;
     }
 
     @Override
@@ -54,11 +54,11 @@ public final class FastCharStream implements CharStream {
         if (bufferPosition >= bufferLength)
             refill();
         streamPosition++;
-        return buffer[bufferPosition++];
+        return (char) buffer[bufferPosition++];
     }
 
-    public char[] readChars(int length) throws IOException {
-        char[] localBuffer = new char[length];
+    public byte[] readBytes(int length) throws IOException {
+        byte[] localBuffer = new byte[length];
 
         // the number of chars already in the buffer
         int bufferedCharsLength = bufferLength - bufferPosition;
@@ -75,7 +75,7 @@ public final class FastCharStream implements CharStream {
             bufferPosition = 0;
             bufferLength = 0;
 
-            int charsRead = input.read(localBuffer, bufferedCharsLength, length - bufferedCharsLength);
+            int charsRead = inputStream.read(localBuffer, bufferedCharsLength, length - bufferedCharsLength);
             if (charsRead == -1) {
                 throw new IOException("read past eof");
             }
@@ -90,9 +90,9 @@ public final class FastCharStream implements CharStream {
 
         if (tokenStart == 0) {        // token won't fit in buffer
             if (buffer == null) {        // first time: alloc buffer
-                buffer = new char[INITAL_BUFFER_LENGTH];
+                buffer = new byte[INITAL_BUFFER_LENGTH];
             } else if (bufferLength == buffer.length) { // grow buffer
-                char[] newBuffer = new char[Math.max(buffer.length*2, Integer.MAX_VALUE - 5)];
+                byte[] newBuffer = new byte[Math.max(buffer.length*2, Integer.MAX_VALUE - 5)];
                 System.arraycopy(buffer, 0, newBuffer, 0, bufferLength);
                 buffer = newBuffer;
             }
@@ -106,7 +106,7 @@ public final class FastCharStream implements CharStream {
         tokenStart = 0;
 
         int charsRead =          // fill space in buffer
-                input.read(buffer, newPosition, buffer.length-newPosition);
+                inputStream.read(buffer, newPosition, buffer.length-newPosition);
         if (charsRead == -1)
             throw new IOException("read past eof");
         else
@@ -123,6 +123,8 @@ public final class FastCharStream implements CharStream {
     public final void backup(int amount) {
         streamPosition -= amount;
         bufferPosition -= amount;
+        assert bufferPosition > 0;
+        assert streamPosition > 0;
     }
 
     @Override
@@ -132,15 +134,15 @@ public final class FastCharStream implements CharStream {
 
     @Override
     public final char[] GetSuffix(int len) {
-        char[] value = new char[len];
+        byte[] value = new byte[len];
         System.arraycopy(buffer, bufferPosition - len, value, 0, len);
-        return value;
+        return new String(value).toCharArray();
     }
 
     @Override
     public final void Done() {
         try {
-            input.close();
+            inputStream.close();
         } catch (IOException e) {
             // nothing
         }
