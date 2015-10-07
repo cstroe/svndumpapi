@@ -64,7 +64,7 @@ PARSER_BEGIN(SvnDumpFileParser)
       return sb.toString();
     }
 
-    private void readChunks(Long length, SvnDumpConsumer consumer, String md5sum, String sha1sum) {
+    private void readChunks(Long length, SvnDumpConsumer consumer, String md5sum, String sha1sum, String path) throws ParseException {
         if(length == null || length == 0) {
             return;
         }
@@ -108,11 +108,11 @@ PARSER_BEGIN(SvnDumpFileParser)
         String computedSha1Sum = toHex(sha1.digest(), 40);
 
         if(md5sum != null && !md5sum.equals(computedMd5Sum)) {
-            throw new AssertionError("MD5 sum is incorrect! Expected: " + md5sum + ", Actual: " + computedMd5Sum);
+            throw new ParseException("MD5 sum is incorrect! Expected: " + md5sum + ", Actual: " + computedMd5Sum);
         }
 
         if(sha1sum != null && !sha1sum.equals(computedSha1Sum)) {
-            throw new AssertionError("SHA1 sum is incorrect! Expected: " + sha1sum + ", Actual: " + computedSha1Sum);
+            throw new ParseException("SHA1 sum is incorrect! Expected: " + sha1sum + ", Actual: " + computedSha1Sum);
         }
 
         // reset token source
@@ -213,7 +213,7 @@ public void Start(SvnDumpConsumer consumer):
                 String md5sum = node.get(SvnNodeHeader.MD5);
                 String sha1sum = node.get(SvnNodeHeader.SHA1);
                 if(textContentLength != null) {
-                    readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum);
+                    readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum, node.get(SvnNodeHeader.PATH));
                 }
 
                 consumer.endNode(node);
