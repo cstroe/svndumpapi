@@ -24,14 +24,18 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -732,9 +736,26 @@ public class SvnDumpFileParserTest {
 
     @Test
     @Ignore
-    public void parse_this_file() throws FileNotFoundException, ParseException {
-        SvnDumpSummary debug = new SvnDumpSummary();
-        debug.writeTo(System.out);
-        SvnDumpFileParser.consume(new FileInputStream("/home/cosmin/Zoo/svndumpgui/DUMP"), debug);
+    public void parse_this_file() throws IOException, ParseException {
+        ProcessBuilder processBuilder = new ProcessBuilder("/bin/cat", "/home/cosmin/Zoo/svndumpgui/DUMP");
+        Process process = processBuilder.start();
+        SvnDumpWriter writer = new SvnDumpSummary();
+        OutputStream os = new FileOutputStream(new File("/home/cosmin/Zoo/svndumpgui/runs/" + generateFileName()));
+        writer.writeTo(os);
+
+        SvnDumpFileCharStream charStream = new SvnDumpFileCharStream(process.getInputStream());
+        PrintStream debugStream = new PrintStream(os);
+
+        try {
+            new SvnDumpFileParser(charStream).Start(writer);
+        } catch(ParseException ex) {
+            debugStream.println(ex.getMessage());
+            fail(ex.getMessage());
+        }
+        System.out.flush();
+    }
+
+    private String generateFileName() {
+        return new SimpleDateFormat("yyyyMMddhhmmss'.log'").format(new Date());
     }
 }
