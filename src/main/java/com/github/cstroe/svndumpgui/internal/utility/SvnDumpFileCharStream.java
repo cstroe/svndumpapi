@@ -30,8 +30,9 @@ import java.io.*;
  * character position of the token in the input, as required by Lucene's
  * org.apache.lucene.analysis.Token API.
  * */
-public final class FastCharStream implements CharStream {
-    char[] buffer = null;
+public final class SvnDumpFileCharStream implements CharStream {
+    public static final int INITAL_BUFFER_LENGTH = 2048;
+    byte[] buffer = null;
 
     int bufferLength = 0;          // end of valid chars
     int bufferPosition = 0;        // next char to read
@@ -39,18 +40,53 @@ public final class FastCharStream implements CharStream {
     int tokenStart = 0;          // offset in buffer
     int bufferStart = 0;          // position in file of buffer
 
-    Reader input;            // source of chars
+    long streamPosition = 0;
+
+    InputStream inputStream;            // source of bytes
 
     /** Constructs from a Reader. */
-    public FastCharStream(Reader r) {
-        input = r;
+    public SvnDumpFileCharStream(InputStream stream) {
+        inputStream = stream;
     }
 
     @Override
     public final char readChar() throws IOException {
         if (bufferPosition >= bufferLength)
             refill();
-        return buffer[bufferPosition++];
+        streamPosition++;
+        return (char) buffer[bufferPosition++];
+    }
+
+    public byte[] readBytes(int length) throws IOException {
+        byte[] localBuffer = new byte[length];
+
+        // the number of chars already in the buffer
+        int bufferedCharsLength = bufferLength - bufferPosition;
+
+        if(bufferedCharsLength >= length) {
+            System.arraycopy(buffer, bufferPosition, localBuffer, 0, length);
+            bufferPosition += length;
+            tokenStart = bufferPosition;
+        } else {
+            System.arraycopy(buffer, bufferPosition, localBuffer, 0, bufferedCharsLength);
+            int totalBytesRead = bufferedCharsLength;
+
+            // clear buffer
+            tokenStart = 0;
+            bufferPosition = 0;
+            bufferLength = 0;
+
+            while(totalBytesRead < length) {
+                int bytesRead = inputStream.read(localBuffer, totalBytesRead, length - totalBytesRead);
+                if (bytesRead == -1) {
+                    throw new IOException("read past eof");
+                }
+                totalBytesRead += bytesRead;
+            }
+        }
+
+        streamPosition += length;
+        return localBuffer;
     }
 
     private void refill() throws IOException {
@@ -58,9 +94,9 @@ public final class FastCharStream implements CharStream {
 
         if (tokenStart == 0) {        // token won't fit in buffer
             if (buffer == null) {        // first time: alloc buffer
-                buffer = new char[2048];
+                buffer = new byte[INITAL_BUFFER_LENGTH];
             } else if (bufferLength == buffer.length) { // grow buffer
-                char[] newBuffer = new char[Math.max(buffer.length*2, Integer.MAX_VALUE - 5)];
+                byte[] newBuffer = new byte[Math.max(buffer.length*2, Integer.MAX_VALUE - 5)];
                 System.arraycopy(buffer, 0, newBuffer, 0, bufferLength);
                 buffer = newBuffer;
             }
@@ -74,7 +110,7 @@ public final class FastCharStream implements CharStream {
         tokenStart = 0;
 
         int charsRead =          // fill space in buffer
-                input.read(buffer, newPosition, buffer.length-newPosition);
+                inputStream.read(buffer, newPosition, buffer.length-newPosition);
         if (charsRead == -1)
             throw new IOException("read past eof");
         else
@@ -89,7 +125,10 @@ public final class FastCharStream implements CharStream {
 
     @Override
     public final void backup(int amount) {
+        streamPosition -= amount;
         bufferPosition -= amount;
+        assert bufferPosition > 0;
+        assert streamPosition > 0;
     }
 
     @Override
@@ -99,15 +138,15 @@ public final class FastCharStream implements CharStream {
 
     @Override
     public final char[] GetSuffix(int len) {
-        char[] value = new char[len];
+        byte[] value = new byte[len];
         System.arraycopy(buffer, bufferPosition - len, value, 0, len);
-        return value;
+        return new String(value).toCharArray();
     }
 
     @Override
     public final void Done() {
         try {
-            input.close();
+            inputStream.close();
         } catch (IOException e) {
             // nothing
         }
@@ -156,5 +195,9 @@ public final class FastCharStream implements CharStream {
     @Override
     public void setTrackLineColumn(boolean trackLineColumn) {
 
+    }
+
+    public long getStreamPosition() {
+        return streamPosition;
     }
 }

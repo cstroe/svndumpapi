@@ -4,9 +4,9 @@ package com.github.cstroe.svndumpgui.internal.utility;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 
-import java.io.InputStreamReader;
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -17,13 +17,10 @@ import java.io.UnsupportedEncodingException;
  */
 public class PipeThrough {
 
-    public static void main(final String[] args) throws ParseException, UnsupportedEncodingException {
-        SvnDumpWriter writer = new SvnDumpWriterImpl();
+    public static void main(final String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException {
+        SvnDumpWriter writer = new SvnDumpSummary();
         writer.writeTo(System.out);
-
-        SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(System.in, "ISO-8859-1")));
-        parser.Start(writer);
-
+        SvnDumpFileParser.consume(System.in, writer);
         System.out.flush();
     }
 }

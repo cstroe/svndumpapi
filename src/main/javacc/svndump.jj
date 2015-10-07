@@ -13,13 +13,19 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.io.IOException;
   import java.io.ByteArrayOutputStream;
   import java.io.UnsupportedEncodingException;
+  import java.math.BigInteger;
+  import java.nio.ByteBuffer;
+  import java.nio.CharBuffer;
+  import java.nio.charset.StandardCharsets;
   import java.util.Map;
   import java.util.LinkedHashMap;
+  import java.security.MessageDigest;
 
   import com.github.cstroe.svndumpgui.api.FileContentChunk;
   import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
   import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
   import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
+  import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -27,20 +33,20 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
   import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
-  import com.github.cstroe.svndumpgui.internal.utility.FastCharStream;
+  import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 
   public class SvnDumpFileParser {
     public static void main(String[] args)
     throws ParseException, TokenMgrError, UnsupportedEncodingException {
-      SvnDumpFileParser parser = new SvnDumpFileParser(new FastCharStream(new InputStreamReader(System.in, "ISO-8859-1")));
+      SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(System.in));
       SvnDumpWriter writer = new SvnDumpWriterImpl();
       writer.writeTo(System.out);
       parser.Start(writer);
     }
 
-    private long fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
+    private int fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
 
-    public void setFileContentChunkSize(long size) {
+    public void setFileContentChunkSize(int size) {
         this.fileContentChunkSize = size;
     }
 
@@ -58,35 +64,75 @@ PARSER_BEGIN(SvnDumpFileParser)
       return sb.toString();
     }
 
-    private void readChunks(Long length, SvnDumpConsumer consumer) {
+    private void readChunks(Long length, SvnDumpConsumer consumer, String md5sum, String sha1sum, String path) throws ParseException {
         if(length == null || length == 0) {
             return;
         }
 
+        MessageDigest md5;
+        MessageDigest sha1;
+
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+            sha1 = MessageDigest.getInstance("SHA1");
+        } catch(java.security.NoSuchAlgorithmException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        SvnDumpFileCharStream stream = (SvnDumpFileCharStream) token_source.input_stream;
         long lengthLeft = length;
         while(lengthLeft > 0) {
-            long chunkSize = Math.min(fileContentChunkSize, lengthLeft);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(length.intValue());
-            for(long i = 0; i < chunkSize; i++) {
-                try {
-                  baos.write(token_source.input_stream.readChar());
-                  lengthLeft--;
+            int chunkSize = (int) Math.min((long)fileContentChunkSize, lengthLeft);
+
+            FileContentChunk chunk = null;
+            try {
+                byte[] freshBytes = stream.readBytes(chunkSize);
+                if(md5sum != null) {
+                    md5.update(freshBytes);
                 }
-                catch(IOException ex) {}
+                if(sha1sum != null) {
+                    sha1.update(freshBytes);
+                }
+                chunk = new FileContentChunk(freshBytes);
+                lengthLeft -= chunkSize;
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
 
-            FileContentChunk chunk = new FileContentChunk(baos.toByteArray());
+            assert chunk != null;
             consumer.consume(chunk);
         }
         consumer.endChunks();
+
+        String computedMd5Sum = toHex(md5.digest(), 32);
+        String computedSha1Sum = toHex(sha1.digest(), 40);
+
+        if(md5sum != null && !md5sum.equals(computedMd5Sum)) {
+            throw new ParseException("MD5 sum is incorrect! Expected: " + md5sum + ", Actual: " + computedMd5Sum);
+        }
+
+        if(sha1sum != null && !sha1sum.equals(computedSha1Sum)) {
+            throw new ParseException("SHA1 sum is incorrect! Expected: " + sha1sum + ", Actual: " + computedSha1Sum);
+        }
+
+        // reset token source
+        token_source.ReInit(stream);
+    }
+
+    // swiped from http://stackoverflow.com/questions/415953
+    private String toHex(byte[] digest, int length) {
+        BigInteger bitInt = new BigInteger(1, digest);
+        String hashText = bitInt.toString(16);
+
+        while(hashText.length() < length) {
+            hashText = "0" + hashText;
+        }
+
+        return hashText;
     }
 
     public static void consume(InputStream inputStream, SvnDumpConsumer consumer) throws ParseException {
-        consume(new InputStreamReader(inputStream), consumer);
-    }
-
-    public static void consume(Reader reader, SvnDumpConsumer consumer) throws ParseException {
-        new SvnDumpFileParser(new FastCharStream(reader)).Start(consumer);
+        new SvnDumpFileParser(new SvnDumpFileCharStream(inputStream)).Start(consumer);
     }
   }
 PARSER_END(SvnDumpFileParser)
@@ -136,6 +182,11 @@ public void Start(SvnDumpConsumer consumer):
   SvnNode node;
 }
 {
+    {
+        if(!(token_source.input_stream instanceof SvnDumpFileCharStream)) {
+            throw new IllegalArgumentException("SvnDumpFileParser expects only an SvnDumpFileCharStream as the input stream.");
+        }
+    }
     <VERSION_KEY> <COLON> dumpVersion = <NUMBER> <EOL>
     <EOL>
 
@@ -159,8 +210,10 @@ public void Start(SvnDumpConsumer consumer):
                 consumer.consume(node);
 
                 String textContentLength = node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH);
+                String md5sum = node.get(SvnNodeHeader.MD5);
+                String sha1sum = node.get(SvnNodeHeader.SHA1);
                 if(textContentLength != null) {
-                    readChunks(Long.parseLong(textContentLength), consumer);
+                    readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum, node.get(SvnNodeHeader.PATH));
                 }
 
                 consumer.endNode(node);
