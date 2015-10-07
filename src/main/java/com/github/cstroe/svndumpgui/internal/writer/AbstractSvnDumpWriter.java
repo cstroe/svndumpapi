@@ -22,6 +22,7 @@ public abstract class AbstractSvnDumpWriter extends AbstractSvnDumpConsumer impl
     }
 
     public PrintStream ps() {
+        assert ps != null;
         return ps;
     }
 }
