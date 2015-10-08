@@ -1,26 +1,77 @@
 options {
-        STATIC = false;
-        JAVA_UNICODE_ESCAPE = false;
-        USER_CHAR_STREAM = true;
-        }
+    STATIC = false;
+    JAVA_UNICODE_ESCAPE = false;
+    USER_CHAR_STREAM = true;
+}
+
+// Header
 
 PARSER_BEGIN(MergeInfoParser)
 package com.github.cstroe.svndumpgui.generated;
 
-public class MergeInfoParser {
+import com.github.cstroe.svndumpgui.internal.transform.property.MergeInfoData;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 
+import java.io.ByteArrayInputStream;
+
+public class MergeInfoParser {
+    public static MergeInfoData parse(String string) throws ParseException {
+        MergeInfoParser parser = new MergeInfoParser(new SvnDumpFileCharStream(new ByteArrayInputStream(string.getBytes())));
+        return parser.Start();
+    }
 }
 PARSER_END(MergeInfoParser)
 
 // Lexer
 
-TOKEN: { <MERGE_PATH_VALUE: (~[":"])*> : REVISIONS }
+TOKEN: { <MERGE_PATH: (~[":"])*> : REVISIONS }
 
+<REVISIONS> TOKEN: { <COLON: ":"> }
 <REVISIONS> TOKEN: { <NUMBER: (["0"-"9"])+> }
 <REVISIONS> TOKEN: { <DASH: "-"> }
 <REVISIONS> TOKEN: { <COMMA: ","> }
-<REVISIONS> TOKEN: { <NL: "\n"> : DEFAULT }
+<REVISIONS> TOKEN: { <NEWLINE: "\n"> : DEFAULT }
 
 // Parser
 
-public void Start()
+public MergeInfoData Start():
+{
+    Token mergePath;
+    Token fromNumber;
+    Token toNumber;
+    MergeInfoData data = new MergeInfoData();
+    MergeInfoData.Path path;
+}
+{
+    (
+        mergePath = <MERGE_PATH> <COLON>
+        {
+            path = new MergeInfoData.Path(mergePath.image);
+            data.addPath(path);
+            fromNumber = null;
+            toNumber = null;
+        }
+        (
+
+            fromNumber = <NUMBER>
+            ( <DASH> toNumber = <NUMBER> )?
+
+            (
+                <COMMA>
+            |
+                <NEWLINE>
+            )
+
+            {
+                int from = Integer.parseInt(fromNumber.image);
+                if(toNumber != null) {
+                    int to = Integer.parseInt(toNumber.image);
+                    path.addRange(new MergeInfoData.Range(from, to));
+                } else {
+                    path.addRange(new MergeInfoData.Range(from));
+                }
+            }
+        )+
+    )*
+    { return data; }
+}
