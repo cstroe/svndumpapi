@@ -70,6 +70,20 @@ Some useful validators:
 
 # Usage
 
+## Command Line Interface
+
+The `bin/run-java` shell script will run the `CliConsumer`.  
+The current usage pattern is to modify the `CliConsumer` and create your chain programmatically, then do:
+
+    mvn clean install
+    cat file.dump | ./bin/run-java > output.dump
+
+or, if your repository is too large for a single file:
+
+    mvn clean install
+    svnadmin create /path/to/newrepo
+    svnadmin dump /path/to/repo | ./bin/run-java | svnadmin load -q /path/to/newrepo
+
 ## Example: AgreementMaker
 
 To see how all these pieces fit together to allow you to edit SVN history,
