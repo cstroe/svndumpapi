@@ -4,8 +4,8 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
-import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImplTest;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImplTest;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import org.junit.Test;
 

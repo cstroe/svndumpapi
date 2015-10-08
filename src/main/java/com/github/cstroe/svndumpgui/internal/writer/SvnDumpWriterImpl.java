@@ -1,4 +1,4 @@
-package com.github.cstroe.svndumpgui.internal;
+package com.github.cstroe.svndumpgui.internal.writer;
 
 import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;

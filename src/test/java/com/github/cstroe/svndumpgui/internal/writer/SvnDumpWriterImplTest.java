@@ -1,9 +1,13 @@
-package com.github.cstroe.svndumpgui.internal;
+package com.github.cstroe.svndumpgui.internal.writer;
 
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
+import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
+import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;

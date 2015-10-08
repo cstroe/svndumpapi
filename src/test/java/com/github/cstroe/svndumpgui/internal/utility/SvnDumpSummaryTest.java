@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
-import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImplTest;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImplTest;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import org.junit.Test;
 
