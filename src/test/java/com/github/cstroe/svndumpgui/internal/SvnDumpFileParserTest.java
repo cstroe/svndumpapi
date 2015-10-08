@@ -16,6 +16,7 @@ import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.Sequence;

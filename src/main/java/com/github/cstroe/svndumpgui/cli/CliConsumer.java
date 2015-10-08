@@ -3,7 +3,7 @@ package com.github.cstroe.svndumpgui.cli;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;

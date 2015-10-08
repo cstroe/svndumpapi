@@ -17,6 +17,7 @@ import com.github.cstroe.svndumpgui.internal.validate.TerminatingValidator;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import com.github.cstroe.svndumpgui.internal.validate.PathCollision;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
