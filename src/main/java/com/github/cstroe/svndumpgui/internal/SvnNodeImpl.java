@@ -37,7 +37,7 @@ public class SvnNodeImpl implements SvnNode {
         List<FileContentChunk> nodeContent = node.getContent();
         content = new ArrayList<>(nodeContent.size());
         for(FileContentChunk nodeChunk : nodeContent) {
-            content.add(new FileContentChunk(nodeChunk));
+            content.add(new FileContentChunkImpl(nodeChunk));
         }
     }
 
@@ -97,7 +97,7 @@ public class SvnNodeImpl implements SvnNode {
             String copyFromRevision = headers.get(SvnNodeHeader.COPY_FROM_REV);
             copyInfo += " -- copied from: " + headers.get(SvnNodeHeader.COPY_FROM_PATH) + "@" + copyFromRevision;
             if(headers.containsKey(SvnNodeHeader.SOURCE_MD5)) {
-                copyInfo += " " + headers.containsKey(SvnNodeHeader.SOURCE_MD5);
+                copyInfo += " " + headers.get(SvnNodeHeader.SOURCE_MD5);
             }
         }
         if(headers.containsKey(SvnNodeHeader.KIND)) {

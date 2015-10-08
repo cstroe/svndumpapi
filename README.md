@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/cstroe/svndumpgui.svg?branch=master)](https://travis-ci.org/cstroe/svndumpgui)
+[![Coverage Status](https://coveralls.io/repos/cstroe/svndumpgui/badge.svg?branch=master&service=github)](https://coveralls.io/github/cstroe/svndumpgui?branch=master)
 
 # SVN Dump GUI
 
@@ -28,7 +29,7 @@ classes in this project.
 ## Svn dump summary
 
 To get an `svn log`-like summary of your dump file, you can use the 
-[`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/utility/SvnDumpSummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
+[`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/writer/SvnDumpSummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
 
 ## Consumers
 
@@ -68,6 +69,20 @@ Some useful validators:
 * [`PathCollision`](src/main/java/com/github/cstroe/svndumpgui/internal/validate/PathCollision.java) - checks that file operations are valid (don't delete non-existent files, don't double add files, check that files exist when making copies)
 
 # Usage
+
+## Command Line Interface
+
+The `bin/run-java` shell script will run the `CliConsumer`.  
+The current usage pattern is to modify the `CliConsumer` and create your chain programmatically, then do:
+
+    mvn clean install
+    cat file.dump | ./bin/run-java > output.dump
+
+or, if your repository is too large for a single file:
+
+    mvn clean install
+    svnadmin create /path/to/newrepo
+    svnadmin dump /path/to/repo | ./bin/run-java | svnadmin load -q /path/to/newrepo
 
 ## Example: AgreementMaker
 

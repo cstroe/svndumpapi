@@ -10,19 +10,8 @@ public interface SvnDumpConsumer {
     void endChunks();
     void finish();
 
-    /**
-     * This enables "chained consumers".  A consumer will inherently
-     * know how to pass information on to the next consumer.
-     *
-     * This allows multiple consumers to operate on a stream
-     * in one pass, instead of requiring a pass for each consumer.
-     *
-     * @param nextConsumer the consumer that should process
-     *                     the stream after this consumer.
-     */
-    void continueTo(SvnDumpConsumer nextConsumer);
-
     SvnDumpConsumer getNextConsumer();
+    void setNextConsumer(SvnDumpConsumer consumer);
 
     /**
      * A fluent-style method to create the consumer chain.
@@ -42,25 +31,22 @@ public interface SvnDumpConsumer {
         return this;
     }
 
+
     /**
-     * A fluent-style method to get the last consumer in the current chain.
+     * This enables "chained consumers".  A consumer will inherently
+     * know how to pass information on to the next consumer.
      *
-     * Example usage:
+     * This allows multiple consumers to operate on a stream
+     * in one pass, instead of requiring a pass for each consumer.
      *
-     * <pre>
-     *     SvnDumpConsumer head = new SvnDumpConsumer();
-     *     head.tail().continueTo(new SvnDumpConsumer());
-     *     head.tail().continueTo(new SvnDumpConsumer());
-     *     ...
-     * </pre>
-     *
-     * @return The tail end of the current consumer chain.
+     * @param nextConsumer the consumer that should process
+     *                     the stream after this consumer.
      */
-    default SvnDumpConsumer tail() {
-        SvnDumpConsumer currentConsumer = this;
-        while(this.getNextConsumer() != null) {
-            currentConsumer = this.getNextConsumer();
+    default void continueTo(SvnDumpConsumer nextConsumer) {
+        SvnDumpConsumer lastConsumer = this;
+        while(lastConsumer.getNextConsumer() != null) {
+            lastConsumer = lastConsumer.getNextConsumer();
         }
-        return currentConsumer;
+        lastConsumer.setNextConsumer(nextConsumer);
     }
 }

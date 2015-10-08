@@ -29,6 +29,7 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
+  import com.github.cstroe.svndumpgui.internal.FileContentChunkImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpWriterImpl;
   import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
@@ -36,14 +37,6 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 
   public class SvnDumpFileParser {
-    public static void main(String[] args)
-    throws ParseException, TokenMgrError, UnsupportedEncodingException {
-      SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(System.in));
-      SvnDumpWriter writer = new SvnDumpWriterImpl();
-      writer.writeTo(System.out);
-      parser.Start(writer);
-    }
-
     private int fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
 
     public void setFileContentChunkSize(int size) {
@@ -93,7 +86,7 @@ PARSER_BEGIN(SvnDumpFileParser)
                 if(sha1sum != null) {
                     sha1.update(freshBytes);
                 }
-                chunk = new FileContentChunk(freshBytes);
+                chunk = new FileContentChunkImpl(freshBytes);
                 lengthLeft -= chunkSize;
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
