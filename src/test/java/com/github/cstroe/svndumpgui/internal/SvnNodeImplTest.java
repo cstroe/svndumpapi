@@ -5,6 +5,7 @@ import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -102,5 +103,22 @@ public class SvnNodeImplTest {
         SvnNodeImpl node = new SvnNodeImpl();
         assertNotNull(node.getProperties());
         assertTrue(node.getProperties().isEmpty());
+    }
+
+    @Test
+    public void toString_works() {
+        SvnNodeImpl node = new SvnNodeImpl();
+
+        Map<SvnNodeHeader, String> headers = new HashMap<>();
+        headers.put(SvnNodeHeader.MD5, "eff2191c7e5abb19d79e8bcb2f1b7f38");
+        headers.put(SvnNodeHeader.COPY_FROM_PATH, "some/old/path.txt");
+        headers.put(SvnNodeHeader.COPY_FROM_REV, "2");
+        headers.put(SvnNodeHeader.SOURCE_MD5, "eff2191c7e5abb19d79e8bcb2f1b7f38");
+        headers.put(SvnNodeHeader.ACTION, "add");
+        headers.put(SvnNodeHeader.KIND, "file");
+        headers.put(SvnNodeHeader.PATH, "new/path.txt");
+        node.setHeaders(headers);
+
+        assertThat(node.toString(), is(equalTo("add file new/path.txt eff2191c7e5abb19d79e8bcb2f1b7f38 -- copied from: some/old/path.txt@2 eff2191c7e5abb19d79e8bcb2f1b7f38")));
     }
 }
