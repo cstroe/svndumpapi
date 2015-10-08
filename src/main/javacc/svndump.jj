@@ -37,14 +37,6 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 
   public class SvnDumpFileParser {
-    public static void main(String[] args)
-    throws ParseException, TokenMgrError, UnsupportedEncodingException {
-      SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(System.in));
-      SvnDumpWriter writer = new SvnDumpWriterImpl();
-      writer.writeTo(System.out);
-      parser.Start(writer);
-    }
-
     private int fileContentChunkSize = 1024 * 1024 * 4; // 4 MB buffer for file content chunks by default
 
     public void setFileContentChunkSize(int size) {
