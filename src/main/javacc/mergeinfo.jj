@@ -1,0 +1,26 @@
+options {
+        STATIC = false;
+        JAVA_UNICODE_ESCAPE = false;
+        USER_CHAR_STREAM = true;
+        }
+
+PARSER_BEGIN(MergeInfoParser)
+package com.github.cstroe.svndumpgui.generated;
+
+public class MergeInfoParser {
+
+}
+PARSER_END(MergeInfoParser)
+
+// Lexer
+
+TOKEN: { <MERGE_PATH_VALUE: (~[":"])*> : REVISIONS }
+
+<REVISIONS> TOKEN: { <NUMBER: (["0"-"9"])+> }
+<REVISIONS> TOKEN: { <DASH: "-"> }
+<REVISIONS> TOKEN: { <COMMA: ","> }
+<REVISIONS> TOKEN: { <NL: "\n"> : DEFAULT }
+
+// Parser
+
+public void Start()
