@@ -29,7 +29,7 @@ classes in this project.
 ## Svn dump summary
 
 To get an `svn log`-like summary of your dump file, you can use the 
-[`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/utility/SvnDumpSummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
+[`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/writer/SvnDumpSummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
 
 ## Consumers
 
