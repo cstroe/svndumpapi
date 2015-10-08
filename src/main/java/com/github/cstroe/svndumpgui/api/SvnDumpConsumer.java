@@ -14,25 +14,6 @@ public interface SvnDumpConsumer {
     void setNextConsumer(SvnDumpConsumer consumer);
 
     /**
-     * A fluent-style method to create the consumer chain.
-     *
-     * Example usage:
-     *
-     * <pre>
-     *     SvnDumpConsumer firstConsumer = new SvnDumpConsumer();
-     *     SvnDumpConsumer secondConsumer = new SvnDumpConsumer().after(firstConsumer);
-     * </pre>
-     *
-     * @param previousSvnDumpConsumer the SvnDumpConsumer before the current one.
-     * @return the current SvnDumpConsumer
-     */
-    default SvnDumpConsumer after(SvnDumpConsumer previousSvnDumpConsumer) {
-        previousSvnDumpConsumer.continueTo(this);
-        return this;
-    }
-
-
-    /**
      * This enables "chained consumers".  A consumer will inherently
      * know how to pass information on to the next consumer.
      *
@@ -40,7 +21,7 @@ public interface SvnDumpConsumer {
      * in one pass, instead of requiring a pass for each consumer.
      *
      * @param nextConsumer the consumer that should process
-     *                     the stream after this consumer.
+     *                     the stream after the last consumer in this chain.
      */
     default void continueTo(SvnDumpConsumer nextConsumer) {
         SvnDumpConsumer lastConsumer = this;
