@@ -24,6 +24,11 @@ public class AbstractSvnDumpConsumer implements SvnDumpConsumer {
     }
 
     @Override
+    public void setNextConsumer(SvnDumpConsumer consumer) {
+        this.nextConsumer = consumer;
+    }
+
+    @Override
     public void consume(SvnDumpPreamble preamble) {
         if(nextConsumer != null) {
             nextConsumer.consume(preamble);

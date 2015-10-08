@@ -61,104 +61,104 @@ public class AMDump {
         SvnDumpConsumer chain = new NodeAdd(4, trunkAgreementMaker);
 
         // IM commits
-        chain.tail().continueTo(new ClearRevision(1007,1101));
+        chain.continueTo(new ClearRevision(1007,1101));
 
         // AM-Core
-        chain.tail().continueTo(new ClearRevision(1));
-        chain.tail().continueTo(new ClearRevision(1119));
+        chain.continueTo(new ClearRevision(1));
+        chain.continueTo(new ClearRevision(1119));
 
         // AgreementMaker-tags/AM1
-        chain.tail().continueTo(new ClearRevision(1116, 1117));
+        chain.continueTo(new ClearRevision(1116, 1117));
 
         // AgreementMakerCVS
-        chain.tail().continueTo(new ClearRevision(1850, 1851));
+        chain.continueTo(new ClearRevision(1850, 1851));
 
         // workingBranch
-        chain.tail().continueTo(new ClearRevision(2037));
-        chain.tail().continueTo(new ClearRevision(2041, 2044));
-        chain.tail().continueTo(new ClearRevision(2048,2049));
-        chain.tail().continueTo(new ClearRevision(2066));
-        chain.tail().continueTo(new ClearRevision(2069,2070));
+        chain.continueTo(new ClearRevision(2037));
+        chain.continueTo(new ClearRevision(2041, 2044));
+        chain.continueTo(new ClearRevision(2048,2049));
+        chain.continueTo(new ClearRevision(2066));
+        chain.continueTo(new ClearRevision(2069,2070));
 
         // Ontologies
-        chain.tail().continueTo(new ClearRevision(1847,1848));
-        chain.tail().continueTo(new ClearRevision(2031));
-        chain.tail().continueTo(new ClearRevision(2134));
+        chain.continueTo(new ClearRevision(1847,1848));
+        chain.continueTo(new ClearRevision(2031));
+        chain.continueTo(new ClearRevision(2134));
 
         // BSM
-        chain.tail().continueTo(new ClearRevision(2161,2162));
-        chain.tail().continueTo(new ClearRevision(2169));
-        chain.tail().continueTo(new ClearRevision(3069));
+        chain.continueTo(new ClearRevision(2161,2162));
+        chain.continueTo(new ClearRevision(2169));
+        chain.continueTo(new ClearRevision(3069));
 
         // Matcher-Hierarchy
-        chain.tail().continueTo(new ClearRevision(2769,2770));
+        chain.continueTo(new ClearRevision(2769,2770));
 
         // Double AgreementMaker-OSGi
-        chain.tail().continueTo(new ClearRevision(3057));
-        chain.tail().continueTo(new ClearRevision(3244));
+        chain.continueTo(new ClearRevision(3057));
+        chain.continueTo(new ClearRevision(3244));
 
         // Remove double readme
-        chain.tail().continueTo(new ClearRevision(434));
+        chain.continueTo(new ClearRevision(434));
 
-        chain.tail().continueTo(new ClearRevision(2346));
-        chain.tail().continueTo(new ClearRevision(1199));
-        chain.tail().continueTo(new ClearRevision(1567));
+        chain.continueTo(new ClearRevision(2346));
+        chain.continueTo(new ClearRevision(1199));
+        chain.continueTo(new ClearRevision(1567));
 
         // remove accidental deletion
         // (this was discovered after the release to GitHub, so those commits are still there)
-        chain.tail().continueTo(new ClearRevision(2835));
-        chain.tail().continueTo(new ClearRevision(2837));
+        chain.continueTo(new ClearRevision(2835));
+        chain.continueTo(new ClearRevision(2837));
 
-        chain.tail().continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker"));
-        chain.tail().continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images"));
-        chain.tail().continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/aboutImage.gif"));
-        chain.tail().continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/advis.png"));
-        chain.tail().continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/agreementMaker.png"));
-        chain.tail().continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/fileImage.gif"));
+        chain.continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker"));
+        chain.continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images"));
+        chain.continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/aboutImage.gif"));
+        chain.continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/advis.png"));
+        chain.continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/agreementMaker.png"));
+        chain.continueTo(new NodeRemove(440, "add", "trunk/AgreementMaker/images/fileImage.gif"));
 
         // put everything under trunk
-        chain.tail().continueTo(new PathChange("AgreementMaker", "trunk/AgreementMaker"));
-        chain.tail().continueTo(new PathChange("NYTInstanceMatcher", "trunk/AgreementMaker/NYTInstanceMatcher"));
-        chain.tail().continueTo(new PathChange("MyInstanceMatcher", "trunk/AgreementMaker/MyInstanceMatcher"));
-        chain.tail().continueTo(new PathChange("AgreementMaker-SEALSBridge", "trunk/AgreementMaker/AgreementMaker-SEALSBridge"));
-        chain.tail().continueTo(new PathChange("AgreementMaker-Matchers", "trunk/AgreementMaker/AgreementMaker-Matchers"));
-        chain.tail().continueTo(new PathChange("AM_ROOT", "trunk/AgreementMaker/AM_ROOT"));
-        chain.tail().continueTo(new PathChange("AgreementMaker-OSGi", "trunk/AgreementMaker-OSGi"));
-        chain.tail().continueTo(new PathChange("AgreementMaker-CollaborationServer", "trunk/AgreementMaker-CollaborationServer"));
+        chain.continueTo(new PathChange("AgreementMaker", "trunk/AgreementMaker"));
+        chain.continueTo(new PathChange("NYTInstanceMatcher", "trunk/AgreementMaker/NYTInstanceMatcher"));
+        chain.continueTo(new PathChange("MyInstanceMatcher", "trunk/AgreementMaker/MyInstanceMatcher"));
+        chain.continueTo(new PathChange("AgreementMaker-SEALSBridge", "trunk/AgreementMaker/AgreementMaker-SEALSBridge"));
+        chain.continueTo(new PathChange("AgreementMaker-Matchers", "trunk/AgreementMaker/AgreementMaker-Matchers"));
+        chain.continueTo(new PathChange("AM_ROOT", "trunk/AgreementMaker/AM_ROOT"));
+        chain.continueTo(new PathChange("AgreementMaker-OSGi", "trunk/AgreementMaker-OSGi"));
+        chain.continueTo(new PathChange("AgreementMaker-CollaborationServer", "trunk/AgreementMaker-CollaborationServer"));
 
         // fix initial history :(
-        chain.tail().continueTo(new PathChange("trunk/ScratchPad.txt", "trunk/AgreementMaker/ScratchPad.txt"));
-        chain.tail().continueTo(new PathChange("trunk/archives", "trunk/AgreementMaker/archives"));
-        chain.tail().continueTo(new PathChange("trunk/ciao", "trunk/AgreementMaker/ciao"));
-        chain.tail().continueTo(new PathChange("trunk/images", "trunk/AgreementMaker/images"));
-        chain.tail().continueTo(new PathChange("trunk/src", "trunk/AgreementMaker/src"));
-        chain.tail().continueTo(new PathChange("trunk/README.txt", "trunk/AgreementMaker/README.txt"));
-        chain.tail().continueTo(new PathChange("trunk/AMreminder", "trunk/AgreementMaker/AMreminder"));
-        chain.tail().continueTo(new PathChange("trunk/look_and_feel", "trunk/AgreementMaker/look_and_feel"));
-        chain.tail().continueTo(new PathChange("trunk/sounds", "trunk/AgreementMaker/sounds"));
+        chain.continueTo(new PathChange("trunk/ScratchPad.txt", "trunk/AgreementMaker/ScratchPad.txt"));
+        chain.continueTo(new PathChange("trunk/archives", "trunk/AgreementMaker/archives"));
+        chain.continueTo(new PathChange("trunk/ciao", "trunk/AgreementMaker/ciao"));
+        chain.continueTo(new PathChange("trunk/images", "trunk/AgreementMaker/images"));
+        chain.continueTo(new PathChange("trunk/src", "trunk/AgreementMaker/src"));
+        chain.continueTo(new PathChange("trunk/README.txt", "trunk/AgreementMaker/README.txt"));
+        chain.continueTo(new PathChange("trunk/AMreminder", "trunk/AgreementMaker/AMreminder"));
+        chain.continueTo(new PathChange("trunk/look_and_feel", "trunk/AgreementMaker/look_and_feel"));
+        chain.continueTo(new PathChange("trunk/sounds", "trunk/AgreementMaker/sounds"));
 
         // other fixes, probably came from the svndumpfilter output
-        chain.tail().continueTo(new NodeRemove(1843, "add", "branches"));
-        chain.tail().continueTo(new NodeRemove(2875, "delete", "trunk/AgreementMaker/AM_ROOT"));
+        chain.continueTo(new NodeRemove(1843, "add", "branches"));
+        chain.continueTo(new NodeRemove(2875, "delete", "trunk/AgreementMaker/AM_ROOT"));
 
-        chain.tail().continueTo(new NodeHeaderChange(2875, "add", "trunk/AgreementMaker-OSGi/AM_ROOT", SvnNodeHeader.COPY_FROM_REV, "2874", "2814"));
+        chain.continueTo(new NodeHeaderChange(2875, "add", "trunk/AgreementMaker-OSGi/AM_ROOT", SvnNodeHeader.COPY_FROM_REV, "2874", "2814"));
 
-        chain.tail().continueTo(new UpdateAuthorForEmptyRevisions("cosmin"));
+        chain.continueTo(new UpdateAuthorForEmptyRevisions("cosmin"));
 
         SvnDumpValidator pathCollisionValidator = new PathCollision();
         SvnDumpValidator terminator = new TerminatingValidator(pathCollisionValidator);
-        chain.tail().continueTo(terminator);
+        chain.continueTo(terminator);
 
         // save the dump
         FileOutputStream fos = new FileOutputStream("/tmp/am_good.dump");
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
         dumpWriter.writeTo(fos);
-        chain.tail().continueTo(dumpWriter);
+        chain.continueTo(dumpWriter);
 
         FileOutputStream summaryOs = new FileOutputStream("/tmp/am_good.summary");
         SvnDumpWriter summaryWriter = new SvnDumpSummary();
         summaryWriter.writeTo(summaryOs);
-        chain.tail().continueTo(summaryWriter);
+        chain.continueTo(summaryWriter);
 
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/onestep.dump");
         SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
