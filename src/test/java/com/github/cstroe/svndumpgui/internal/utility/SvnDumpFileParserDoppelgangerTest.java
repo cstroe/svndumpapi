@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.internal.FileContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
 import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
@@ -51,9 +52,9 @@ public class SvnDumpFileParserDoppelgangerTest {
             bytes2[0] = 'o';
             bytes2[1] = 'n';
             bytes2[2] = 'e';
-            c1 = new FileContentChunk(bytes1);
+            c1 = new FileContentChunkImpl(bytes1);
             n2_1.addFileContentChunk(c1);
-            c2 = new FileContentChunk(bytes2);
+            c2 = new FileContentChunkImpl(bytes2);
             n2_1.addFileContentChunk(c2);
 
             n2_2.getHeaders().put(SvnNodeHeader.ACTION, "add");

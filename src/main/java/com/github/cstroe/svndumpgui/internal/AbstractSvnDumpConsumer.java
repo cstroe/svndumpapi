@@ -8,8 +8,9 @@ import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 /**
  * Responsible for continuing the consumer chain processing.
+ * Uses Abstract prefix in name to follow the naming scheme.
  */
-public abstract class AbstractSvnDumpConsumer implements SvnDumpConsumer {
+public class AbstractSvnDumpConsumer implements SvnDumpConsumer {
     private SvnDumpConsumer nextConsumer;
 
     @Override

@@ -37,7 +37,7 @@ public class SvnNodeImpl implements SvnNode {
         List<FileContentChunk> nodeContent = node.getContent();
         content = new ArrayList<>(nodeContent.size());
         for(FileContentChunk nodeChunk : nodeContent) {
-            content.add(new FileContentChunk(nodeChunk));
+            content.add(new FileContentChunkImpl(nodeChunk));
         }
     }
 

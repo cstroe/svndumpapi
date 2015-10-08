@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.api;
 
+import com.github.cstroe.svndumpgui.internal.FileContentChunkImpl;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -16,8 +17,8 @@ public class FileContentChunkTest {
         content[3] = 'a';
         content[4] = 't';
 
-        FileContentChunk chunk = new FileContentChunk(content);
-        FileContentChunk chunkCopy = new FileContentChunk(chunk);
+        FileContentChunk chunk = new FileContentChunkImpl(content);
+        FileContentChunk chunkCopy = new FileContentChunkImpl(chunk);
 
         content[0] = 'X';
         content[1] = 'X';
