@@ -1,6 +1,5 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class SvnNodeImplTest {
         content[3] = 'd';
         content[4] = 'e';
 
-        firstNode.addFileContentChunk(new FileContentChunk(content));
+        firstNode.addFileContentChunk(new FileContentChunkImpl(content));
 
         SvnNodeImpl secondNode = new SvnNodeImpl(firstNode);
 

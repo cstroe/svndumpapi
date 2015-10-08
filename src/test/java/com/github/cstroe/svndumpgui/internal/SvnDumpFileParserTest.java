@@ -535,7 +535,7 @@ public class SvnDumpFileParserTest {
             for (int i = 0; i < 256; i++) {
                 content[i] = 'a';
             }
-            FileContentChunk chunk = new FileContentChunk(content);
+            FileContentChunk chunk = new FileContentChunkImpl(content);
             n1_1.addFileContentChunk(chunk);
             r1.addNode(n1_1);
             dump.addRevision(r1);
@@ -610,7 +610,7 @@ public class SvnDumpFileParserTest {
             for (int i = 0; i < 256; i++) {
                 content[i] = 'a';
             }
-            FileContentChunk chunk = new FileContentChunk(content);
+            FileContentChunk chunk = new FileContentChunkImpl(content);
             n1_1.addFileContentChunk(chunk);
             r1.addNode(n1_1);
             dump.addRevision(r1);
@@ -699,7 +699,7 @@ public class SvnDumpFileParserTest {
             binaryFile1.getHeaders().put(SvnNodeHeader.PATH, "binaryFile1");
             binaryFile1.getHeaders().put(SvnNodeHeader.TEXT_CONTENT_LENGTH, String.valueOf(content.length));
             binaryFile1.getHeaders().put(SvnNodeHeader.MD5, md5sum(md5.digest()));
-            binaryFile1.addFileContentChunk(new FileContentChunk(content));
+            binaryFile1.addFileContentChunk(new FileContentChunkImpl(content));
 
             r0.addNode(binaryFile1);
             dump.addRevision(r0);
