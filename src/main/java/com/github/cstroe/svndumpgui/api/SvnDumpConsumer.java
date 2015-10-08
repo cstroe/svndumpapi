@@ -58,8 +58,8 @@ public interface SvnDumpConsumer {
      */
     default SvnDumpConsumer tail() {
         SvnDumpConsumer currentConsumer = this;
-        while(this.getNextConsumer() != null) {
-            currentConsumer = this.getNextConsumer();
+        while(currentConsumer.getNextConsumer() != null) {
+            currentConsumer = currentConsumer.getNextConsumer();
         }
         return currentConsumer;
     }

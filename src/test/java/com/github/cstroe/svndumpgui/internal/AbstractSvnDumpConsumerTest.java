@@ -37,6 +37,8 @@ public class AbstractSvnDumpConsumerTest {
 
 
         AbstractSvnDumpConsumer consumer = new AbstractSvnDumpConsumer();
+        AbstractSvnDumpConsumer intermetiateConsumer = new AbstractSvnDumpConsumer(); //  an intermediate consumer
+        intermetiateConsumer.after(consumer);
         consumer.tail().continueTo(mockConsumer);
 
         consumer.consume(mockPreamble);
