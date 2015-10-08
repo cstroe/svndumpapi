@@ -4,7 +4,6 @@ import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
-import com.github.cstroe.svndumpgui.internal.SvnDumpValidationErrorImpl;
 import com.github.cstroe.svndumpgui.internal.utility.Pair;
 
 import java.util.HashMap;
