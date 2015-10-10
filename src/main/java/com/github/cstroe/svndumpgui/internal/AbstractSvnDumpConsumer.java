@@ -14,11 +14,6 @@ public class AbstractSvnDumpConsumer implements SvnDumpConsumer {
     private SvnDumpConsumer nextConsumer;
 
     @Override
-    public void continueTo(SvnDumpConsumer nextConsumer) {
-        this.nextConsumer = nextConsumer;
-    }
-
-    @Override
     public SvnDumpConsumer getNextConsumer() {
         return nextConsumer;
     }
