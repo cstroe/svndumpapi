@@ -1,0 +1,89 @@
+options {
+    STATIC = false;
+    JAVA_UNICODE_ESCAPE = false;
+    USER_CHAR_STREAM = true;
+}
+
+// Header
+
+PARSER_BEGIN(MergeInfoParser)
+package com.github.cstroe.svndumpgui.generated;
+
+import com.github.cstroe.svndumpgui.internal.transform.property.MergeInfoData;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
+
+import java.io.ByteArrayInputStream;
+
+public class MergeInfoParser {
+    public static MergeInfoData parse(String string) throws ParseException {
+        MergeInfoParser parser = new MergeInfoParser(new SvnDumpFileCharStream(new ByteArrayInputStream(string.getBytes())));
+        return parser.Start();
+    }
+}
+PARSER_END(MergeInfoParser)
+
+// Lexer
+
+TOKEN: { <MERGE_PATH: (~[":"])*> : REVISIONS }
+
+<REVISIONS> TOKEN: { <COLON: ":"> }
+<REVISIONS> TOKEN: { <NUMBER: (["0"-"9"])+> }
+<REVISIONS> TOKEN: { <DASH: "-"> }
+<REVISIONS> TOKEN: { <COMMA: ","> }
+<REVISIONS> TOKEN: { <NEWLINE: "\n"> : DEFAULT }
+
+// Parser
+
+public MergeInfoData Start():
+{
+    MergeInfoData data = new MergeInfoData();
+}
+{
+    (
+        Path(data)
+    )*
+
+    { return data; }
+}
+
+public void Path(MergeInfoData data):
+{
+    Token mergePath;
+    MergeInfoData.Path path;
+}
+{
+    mergePath = <MERGE_PATH> <COLON>
+    {
+        path = new MergeInfoData.Path(mergePath.image);
+    }
+
+    Range(path)
+    ( <COMMA> Range(path) )*
+
+    ( <NEWLINE> )?
+
+    {
+        data.addPath(path);
+    }
+}
+
+public void Range(MergeInfoData.Path path):
+{
+    Token fromNumber;
+    Token toNumber = null;
+    int from;
+    int to;
+}
+{
+    fromNumber = <NUMBER>
+    ( <DASH> toNumber = <NUMBER> )?
+    {
+        from = Integer.parseInt(fromNumber.image);
+        if(toNumber != null) {
+            to = Integer.parseInt(toNumber.image);
+            path.addRange(new MergeInfoData.Range(from, to));
+        } else {
+            path.addRange(new MergeInfoData.Range(from));
+        }
+    }
+}

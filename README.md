@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/cstroe/svndumpgui.svg?branch=master)](https://travis-ci.org/cstroe/svndumpgui)
-[![Coverage Status](https://coveralls.io/repos/cstroe/svndumpgui/badge.svg?branch=master&service=github)](https://coveralls.io/github/cstroe/svndumpgui?branch=master)
+[![Build Status](https://travis-ci.org/cstroe/svndumpapi.svg?branch=master)](https://travis-ci.org/cstroe/svndumpapi)
+[![Coverage Status](https://coveralls.io/repos/cstroe/svndumpapi/badge.svg?branch=master&service=github)](https://coveralls.io/github/cstroe/svndumpapi?branch=master)
 
 # SVN Dump API
 
