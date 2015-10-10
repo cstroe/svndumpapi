@@ -1,8 +1,17 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
+import com.github.cstroe.svndumpgui.internal.transform.property.MergeInfoReplaceRevision;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import org.junit.Test;
 
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -71,6 +80,27 @@ public class SvnPropertyChangeTest {
         assertThat(currentEntry.getValue(), is(equalTo("val3")));
 
         assertFalse(propIter.hasNext());
+    }
+
+    @Test
+    public void property_should_be_changed_and_dump_should_be_unchanged() throws ParseException {
+        SvnDumpConsumer propChange =
+            new SvnPropertyChange("svn:mergeinfo"::equals, new MergeInfoReplaceRevision("/branches/mybranch", 2, 1));
+
+        SvnDumpInMemory inMemoryDump = new SvnDumpInMemory();
+        propChange.continueTo(inMemoryDump);
+
+        final InputStream s = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/simple_branch_and_merge.dump");
+
+        SvnDumpFileParser.consume(s, propChange);
+
+        SvnDump dump = inMemoryDump.getDump();
+
+        assertThat(dump.getRevisions().size(), is(6));
+        SvnRevision r4 = dump.getRevisions().get(4);
+        assertThat(r4.getNodes().size(), is(2));
+        assertThat(r4.getNodes().get(0).getProperties().get(SvnProperty.MERGEINFO), is("/branches/mybranch:1-3\n"));
     }
 
 }

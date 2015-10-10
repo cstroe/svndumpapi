@@ -36,42 +36,54 @@ TOKEN: { <MERGE_PATH: (~[":"])*> : REVISIONS }
 
 public MergeInfoData Start():
 {
-    Token mergePath;
-    Token fromNumber;
-    Token toNumber;
     MergeInfoData data = new MergeInfoData();
-    MergeInfoData.Path path;
 }
 {
     (
-        mergePath = <MERGE_PATH> <COLON>
-        {
-            path = new MergeInfoData.Path(mergePath.image);
-            data.addPath(path);
-            fromNumber = null;
-            toNumber = null;
-        }
-        (
-
-            fromNumber = <NUMBER>
-            ( <DASH> toNumber = <NUMBER> )?
-
-            (
-                <COMMA>
-            |
-                <NEWLINE>
-            )
-
-            {
-                int from = Integer.parseInt(fromNumber.image);
-                if(toNumber != null) {
-                    int to = Integer.parseInt(toNumber.image);
-                    path.addRange(new MergeInfoData.Range(from, to));
-                } else {
-                    path.addRange(new MergeInfoData.Range(from));
-                }
-            }
-        )+
+        Path(data)
     )*
+
     { return data; }
+}
+
+public void Path(MergeInfoData data):
+{
+    Token mergePath;
+    MergeInfoData.Path path;
+}
+{
+    mergePath = <MERGE_PATH> <COLON>
+    {
+        path = new MergeInfoData.Path(mergePath.image);
+    }
+
+    Range(path)
+    ( <COMMA> Range(path) )*
+
+    ( <NEWLINE> )?
+
+    {
+        data.addPath(path);
+    }
+}
+
+public void Range(MergeInfoData.Path path):
+{
+    Token fromNumber;
+    Token toNumber = null;
+    int from;
+    int to;
+}
+{
+    fromNumber = <NUMBER>
+    ( <DASH> toNumber = <NUMBER> )?
+    {
+        from = Integer.parseInt(fromNumber.image);
+        if(toNumber != null) {
+            to = Integer.parseInt(toNumber.image);
+            path.addRange(new MergeInfoData.Range(from, to));
+        } else {
+            path.addRange(new MergeInfoData.Range(from));
+        }
+    }
 }

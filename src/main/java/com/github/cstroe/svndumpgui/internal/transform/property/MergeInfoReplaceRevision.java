@@ -7,10 +7,16 @@ import java.util.function.Function;
 
 public class MergeInfoReplaceRevision implements Function<String, String> {
 
+    private final String mergePath;
     private final int oldRevision;
     private final int newRevision;
 
     public MergeInfoReplaceRevision(int oldRevision, int newRevision) {
+        this(null, oldRevision, newRevision);
+    }
+
+    public MergeInfoReplaceRevision(String mergePath, int oldRevision, int newRevision) {
+        this.mergePath = mergePath;
         this.oldRevision = oldRevision;
         this.newRevision = newRevision;
     }
@@ -25,6 +31,11 @@ public class MergeInfoReplaceRevision implements Function<String, String> {
         }
 
         for(MergeInfoData.Path path : data.getPaths()) {
+            if(mergePath != null) {
+                if(!mergePath.equals(path.getPath())) {
+                    continue;
+                }
+            }
             for(MergeInfoData.Range range : path.getRanges()) {
                 if(range.getFromRange() == oldRevision) {
                     range.setFromRange(newRevision);
