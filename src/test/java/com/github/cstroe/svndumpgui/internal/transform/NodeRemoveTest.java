@@ -1,11 +1,20 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
+import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.Sequence;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -73,5 +82,62 @@ public class NodeRemoveTest {
             assertThat(nodeAfter.get(SvnNodeHeader.PATH), is(equalTo("README.txt")));
             assertThat(updatedDump.getRevisions().get(4).getNodes().size(), is(0));
         }
+    }
+
+    @Test
+    public void should_accept_valid_actions() {
+        new NodeRemove(1, "add", "path/to/file.txt");
+        new NodeRemove(1, "delete", "path/to/file.txt");
+        new NodeRemove(1, "change", "path/to/file.txt");
+        new NodeRemove(1, "replace", "path/to/file.txt");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void should_reject_invalid_action() {
+        new NodeRemove(1, "someaction", "path/to/file.txt");
+    }
+
+    @Test
+    public void chain_should_not_continue_for_removed_nodes() throws ParseException {
+        Mockery context = new Mockery();
+        Sequence consumerSequence = context.sequence("consumerSequence");
+
+        SvnDumpConsumer mockConsumer = context.mock(SvnDumpConsumer.class, "mockConsumer");
+
+        context.checking(new Expectations() {{
+            oneOf(mockConsumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+
+            // revision 0
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 1
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endChunks(); inSequence(consumerSequence);
+            oneOf(mockConsumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endChunks(); inSequence(consumerSequence);
+            oneOf(mockConsumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 2
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            oneOf(mockConsumer).finish(); inSequence(consumerSequence);
+        }});
+
+        NodeRemove nr = new NodeRemove(1, "add", "README.txt");
+        nr.continueTo(new NodeRemove(2, "delete", "README.txt"));
+        nr.continueTo(mockConsumer);
+
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/svn_multi_file_delete.dump"), nr);
     }
 }
