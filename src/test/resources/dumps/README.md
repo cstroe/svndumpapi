@@ -25,21 +25,6 @@ They also use the same `EXPORT CODE`, shown below:
 
 Replace `output.dump` with the name of the dump file you're creating.
 
-## empty.dump
-
-    mkdir -p svn-test/repos/testrepo
-    cd svn-test/repos
-    svnadmin create testrepo
-    svnadmin dump testrepo > empty.dump
-    
-## firstcommit.dump
-
-    <SETUP CODE>
-    touch firstFile.txt
-    svn add firstFile.txt
-    svn commit -m "Added a first file."
-    <EXPORT CODE>
-
 ## add_file.dump
 
     <SETUP CODE>
