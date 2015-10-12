@@ -17,7 +17,11 @@ public class NodeRemove extends AbstractSvnDumpMutator {
 
     public NodeRemove(int targetRevision, String action, String nodePath) {
         this.targetRevision = targetRevision;
-        this.action = action;
+        if("add".equals(action) || "delete".equals(action) || "change".equals(action) || "replace".equals(action)) {
+            this.action = action;
+        } else {
+            throw new RuntimeException("Cannot match on invalid action. Found '" + String.valueOf(action) + "' but expecting (\"change\" | \"add\" | \"delete\" | \"replace\")");
+        }
         this.path = nodePath;
     }
 
@@ -67,8 +71,11 @@ public class NodeRemove extends AbstractSvnDumpMutator {
 
     @Override
     public void endNode(SvnNode node) {
-        inRemovedNode = false;
-        super.endNode(node);
+        if(inRemovedNode) {
+            inRemovedNode = false;
+        } else {
+            super.endNode(node);
+        }
     }
 
     @Override
