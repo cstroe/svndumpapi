@@ -1,8 +1,8 @@
-empty: empty.dump
+empty:
 	svnadmin dump svn-test/repos/testrepo > empty.dump
 
-firstcommit: firstcommit.dump
+firstcommit:
 	./scripts/firstcommit.sh > firstcommit.dump
 
-svn_replace: svn_replace.dump
+svn_replace:
 	./scripts/svn_replace.sh > svn_replace.dump
