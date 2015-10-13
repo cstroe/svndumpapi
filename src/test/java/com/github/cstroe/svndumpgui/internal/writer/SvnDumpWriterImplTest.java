@@ -15,8 +15,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -147,5 +145,10 @@ public class SvnDumpWriterImplTest {
         if(!Arrays.equals(expectedBytes, actualBytes)) {
             throw new ComparisonFailure("Streams differ.", new String(expectedBytes), new String(actualBytes));
         }
+    }
+
+    @Test
+    public void recreate_svn_replace() throws ParseException, IOException {
+        recreateDumpFile("dumps/svn_replace.dump");
     }
 }
