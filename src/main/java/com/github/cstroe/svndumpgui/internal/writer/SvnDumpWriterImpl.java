@@ -86,15 +86,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void endNode(SvnNode node) {
-        if(!"delete".equals(node.get(SvnNodeHeader.ACTION))) {
-            ps().println();
-        }
-
-        if(node.get(SvnNodeHeader.SOURCE_MD5) != null) {
-            ps().println();
-            ps().println();
-        }
-
+        ps().println();
         super.endNode(node);
     }
 

@@ -11,6 +11,7 @@ import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.google.common.io.ByteStreams;
 import junit.framework.ComparisonFailure;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -148,6 +149,7 @@ public class SvnDumpWriterImplTest {
     }
 
     @Test
+    @Ignore
     public void recreate_svn_replace() throws ParseException, IOException {
         recreateDumpFile("dumps/svn_replace.dump");
     }
