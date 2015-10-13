@@ -56,16 +56,6 @@ of the other node headers.  Moral of the story, the order of the headers should 
     svn commit -m "Adding binary file."
     <EXPORT CODE>
 
-## svn_rename.dump
-
-    <SETUP CODE>
-    echo "this is a test file" > README.txt
-    svn add README.txt
-    svn commit -m "Committed README.txt"
-    svn mv README.txt README-new.txt
-    svn commit -m "Renamed README.txt to README-new.txt"
-    <EXPORT CODE>
-
 ## svn_rename_no_copy_hashes.dump
 
 Same as `svn_rename.dump` but without the copy hashes.
