@@ -5,7 +5,6 @@ import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
-import com.github.cstroe.svndumpgui.internal.writer.AbstractSvnDumpWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -87,7 +86,15 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void endNode(SvnNode node) {
-        ps().println();
+        if(!"delete".equals(node.get(SvnNodeHeader.ACTION))) {
+            ps().println();
+        }
+
+        if(node.get(SvnNodeHeader.SOURCE_MD5) != null) {
+            ps().println();
+            ps().println();
+        }
+
         super.endNode(node);
     }
 
