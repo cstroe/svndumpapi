@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
 import java.io.ByteArrayOutputStream;
@@ -86,7 +87,14 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void endNode(SvnNode node) {
-        ps().println();
+        if(node.getProperties().containsKey(SvnProperty.HACK_TRAILING_NEWLINE)) {
+            int numNewlines = Integer.parseInt(node.getProperties().get(SvnProperty.HACK_TRAILING_NEWLINE));
+            for(int i = 1; i < numNewlines; i++) {
+                ps().println();
+            }
+        } else {
+            ps().println();
+        }
         super.endNode(node);
     }
 

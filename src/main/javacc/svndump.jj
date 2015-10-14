@@ -28,6 +28,7 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
   import com.github.cstroe.svndumpgui.api.SvnNode;
   import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+  import com.github.cstroe.svndumpgui.api.SvnProperty;
   import com.github.cstroe.svndumpgui.api.SvnRevision;
   import com.github.cstroe.svndumpgui.internal.FileContentChunkImpl;
   import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
@@ -209,11 +210,24 @@ public void Start(SvnDumpConsumer consumer):
                 if(textContentLength != null && Long.parseLong(textContentLength) != 0) {
                     readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum, node.get(SvnNodeHeader.PATH));
                 }
-
+            }
+            (
+                <EOL>
+                {
+                    // really bad hack to know how many EOLs are in the stream
+                    String currentValueRaw = node.getProperties().get(SvnProperty.HACK_TRAILING_NEWLINE);
+                    if(currentValueRaw != null) {
+                        int currentValue = Integer.parseInt(currentValueRaw);
+                        currentValue++;
+                        node.getProperties().put(SvnProperty.HACK_TRAILING_NEWLINE, Integer.toString(currentValue));
+                    } else {
+                        node.getProperties().put(SvnProperty.HACK_TRAILING_NEWLINE, "1");
+                    }
+                }
+            )+
+            {
                 consumer.endNode(node);
             }
-            <EOL>
-            <EOL>
         )*
         {
             consumer.endRevision(revision);
