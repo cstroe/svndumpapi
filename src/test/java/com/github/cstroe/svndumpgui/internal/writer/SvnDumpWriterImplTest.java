@@ -108,11 +108,19 @@ public class SvnDumpWriterImplTest {
 
     @Test
     public void rewrite_file() throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserDoppelganger.parse("dumps/simple_branch_and_merge.dump");
+        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
+        SvnDump dump = dumpInMemory.getDump();
+
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
         writer.writeTo(firstStream);
         SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+
+        final InputStream s1 = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/simple_branch_and_merge.dump");
+
+        assertEqualStreams(s1, new ByteArrayInputStream(firstStream.toByteArray()));
 
         SvnDump readDump = SvnDumpFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
 
@@ -123,7 +131,7 @@ public class SvnDumpWriterImplTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
 
-        SvnDumpWriterImplTest.assertEqualStreams(s, new ByteArrayInputStream(secondStream.toByteArray()));
+        assertEqualStreams(s, new ByteArrayInputStream(secondStream.toByteArray()));
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
