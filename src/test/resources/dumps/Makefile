@@ -9,3 +9,6 @@ svn_replace:
 
 svn_rename:
 	./scripts/svn_rename.sh > svn_rename.dump
+
+svn_multi_file_delete:
+	./scripts/svn_multi_file_delete.sh > svn_multi_file_delete.dump

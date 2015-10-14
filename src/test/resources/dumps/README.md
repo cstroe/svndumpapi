@@ -107,18 +107,6 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn rm testdir3
     svn commit -m "Deleted 3 dirs."
     
-## svn_multi_file_delete.dump
-
-    <SETUP CODE>
-    echo "this is a test file" > README.txt
-    echo "this is a test file" > README2.txt
-    echo "this is a test file" > README3.txt
-    svn add README.txt README2.txt README3.txt 
-    svn commit -m "Added 3 files."
-    svn rm README.txt README2.txt README3.txt 
-    svn commit -m "Deleted 3 files."
-    <EXPORT CODE>
-    
 ##  svn_copy_file.dump
 
     <SETUP CODE>
