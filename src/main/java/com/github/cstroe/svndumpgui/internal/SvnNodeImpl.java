@@ -100,13 +100,19 @@ public class SvnNodeImpl implements SvnNode {
                 copyInfo += " " + headers.get(SvnNodeHeader.SOURCE_MD5);
             }
         }
+
+        String sizeInfo = "";
+        if(headers.containsKey(SvnNodeHeader.TEXT_CONTENT_LENGTH)) {
+            sizeInfo = " Size: " + headers.get(SvnNodeHeader.TEXT_CONTENT_LENGTH);
+        }
+
         if(headers.containsKey(SvnNodeHeader.KIND)) {
             return  headers.get(SvnNodeHeader.ACTION) + " " +
                     headers.get(SvnNodeHeader.KIND) + " " +
-                    headers.get(SvnNodeHeader.PATH) + copyInfo;
+                    headers.get(SvnNodeHeader.PATH) + copyInfo + sizeInfo;
         } else {
             return  headers.get(SvnNodeHeader.ACTION) + " " +
-                    headers.get(SvnNodeHeader.PATH) + copyInfo;
+                    headers.get(SvnNodeHeader.PATH) + copyInfo + sizeInfo;
         }
     }
 }
