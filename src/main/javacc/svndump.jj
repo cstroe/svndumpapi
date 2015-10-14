@@ -108,8 +108,7 @@ PARSER_BEGIN(SvnDumpFileParser)
             throw new ParseException("SHA1 sum is incorrect! Expected: " + sha1sum + ", Actual: " + computedSha1Sum);
         }
 
-        // reset token source
-        token_source.ReInit(stream);
+        token.next = null; // we've advanced in the stream, we don't know what the next token is.
     }
 
     // swiped from http://stackoverflow.com/questions/415953
@@ -172,7 +171,7 @@ public void Start(SvnDumpConsumer consumer):
   Token dumpVersion;
   Token uuid;
   SvnRevision revision;
-  SvnNode node;
+  SvnNode node = null;
 }
 {
     {
@@ -197,6 +196,8 @@ public void Start(SvnDumpConsumer consumer):
         revision = Revision()
         { consumer.consume(revision); }
 
+        <EOL>
+
         (
             node = Node(revision)
             {
@@ -205,16 +206,15 @@ public void Start(SvnDumpConsumer consumer):
                 String textContentLength = node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH);
                 String md5sum = node.get(SvnNodeHeader.MD5);
                 String sha1sum = node.get(SvnNodeHeader.SHA1);
-                if(textContentLength != null) {
+                if(textContentLength != null && Long.parseLong(textContentLength) != 0) {
                     readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum, node.get(SvnNodeHeader.PATH));
                 }
 
                 consumer.endNode(node);
             }
-            |
+            <EOL>
             <EOL>
         )*
-
         {
             consumer.endRevision(revision);
             revision = null;
@@ -230,7 +230,6 @@ public SvnRevision Revision():
 {
     SvnRevisionImpl revision;
     Token revisionNumber;
-    Token contentLength;
     Map properties;
 }
 {
@@ -238,7 +237,7 @@ public SvnRevision Revision():
 
     ( <PROP_CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL> )?
 
-    <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
+    <CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL>
     <EOL>
 
     { revision = new SvnRevisionImpl(Integer.parseInt(revisionNumber.image)); }
@@ -355,14 +354,13 @@ public SvnNode Node(SvnRevision revision):
         }
     )+
 
-    <EOL>
-
     {
         svnNode = new SvnNodeImpl(revision);
         svnNode.setHeaders(headers);
         headers = null;
 
         if(propContentLength != null) {
+            jj_consume_token(EOL);
             svnNode.setProperties(Property());
         }
     }
