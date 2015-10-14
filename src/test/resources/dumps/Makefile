@@ -15,3 +15,6 @@ svn_multi_file_delete:
 
 simple_branch_and_merge:
 	./scripts/simple_branch_and_merge.sh > simple_branch_and_merge.dump
+
+utf8_log_message:
+	./scripts/utf8_log_message.sh > utf8_log_message.dump

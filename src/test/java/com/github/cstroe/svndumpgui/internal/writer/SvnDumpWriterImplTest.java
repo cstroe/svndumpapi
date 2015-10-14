@@ -159,4 +159,9 @@ public class SvnDumpWriterImplTest {
     public void recreate_svn_replace() throws ParseException, IOException {
         recreateDumpFile("dumps/svn_replace.dump");
     }
+
+    @Test
+    public void recreate_utf8_log_message() throws ParseException, IOException {
+        recreateDumpFile("dumps/utf8_log_message.dump");
+    }
 }

@@ -54,10 +54,10 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         }
         for(Map.Entry<String, String> entry : properties.entrySet()) {
             ps.print("K ");
-            ps.println(entry.getKey().length());
+            ps.println(entry.getKey().getBytes().length);
             ps.println(entry.getKey());
             ps.print("V ");
-            ps.println(entry.getValue().length());
+            ps.println(entry.getValue().getBytes().length);
             ps.println(entry.getValue());
         }
         ps.println("PROPS-END");

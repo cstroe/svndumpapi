@@ -44,18 +44,17 @@ PARSER_BEGIN(SvnDumpFileParser)
         this.fileContentChunkSize = size;
     }
 
-    private String readCharacters(Integer number) {
-      if(number == null) {
-        return null;
-      }
-      StringBuilder sb = new StringBuilder();
-      for(int i = 0; i < number; i++) {
-          try {
-            sb.append(token_source.input_stream.readChar());
-          }
-          catch(IOException ex) {}
-      }
-      return sb.toString();
+    private String readCharacters(Integer numberOfBytes) {
+        if(numberOfBytes == null) {
+            return null;
+        }
+
+        try {
+            byte[] bytes = ((SvnDumpFileCharStream) token_source.input_stream).readBytes(numberOfBytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch(IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void readChunks(Long length, SvnDumpConsumer consumer, String md5sum, String sha1sum, String path) throws ParseException {
