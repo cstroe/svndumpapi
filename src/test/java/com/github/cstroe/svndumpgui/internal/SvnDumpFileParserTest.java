@@ -83,16 +83,6 @@ public class SvnDumpFileParserTest {
         return saveDump.getDump();
     }
 
-    public static SvnDump consume(SvnDump dump, SvnDumpConsumer consumer) throws ParseException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        SvnDumpWriter writer = new SvnDumpWriterImpl();
-        writer.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
-
-        return consume(new ByteArrayInputStream(baos.toByteArray()), consumer);
-    }
-
     @SuppressWarnings("unchecked")
     @Test
     public void simple_property_is_parsed() throws ParseException {
