@@ -3,6 +3,7 @@ package com.github.cstroe.svndumpgui.internal.utility;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
@@ -61,12 +62,15 @@ public class SvnDumpSummaryTest {
         dump.setPreamble(preamble);
         SvnRevision r0 = new SvnRevisionImpl(0);
         dump.addRevision(r0);
-        SvnRevision r1 = new SvnRevisionImpl(0);
+        SvnRevision r1 = new SvnRevisionImpl(1);
         dump.addRevision(r1);
-        SvnRevision r2 = new SvnRevisionImpl(0);
+        SvnRevision r2 = new SvnRevisionImpl(2);
         dump.addRevision(r2);
-        SvnRevision r3 = new SvnRevisionImpl(0);
+        SvnRevision r3 = new SvnRevisionImpl(3);
         dump.addRevision(r3);
+        r3.getProperties().put(SvnProperty.AUTHOR, "cosmin");
+        r3.getProperties().put(SvnProperty.LOG, "a log message");
+        r3.getProperties().put(SvnProperty.DATE, "2015-08-28T03:38:50.644836Z");
 
         SvnNodeImpl n3_1 = new SvnNodeImpl(r3);
         r3.addNode(n3_1);

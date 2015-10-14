@@ -1,0 +1,6 @@
+r0-2: **empty**
+
+r3: a log message - cosmin 2015-08-28
+
+	add dir directory1
+
