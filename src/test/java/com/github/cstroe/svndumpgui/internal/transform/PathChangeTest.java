@@ -4,6 +4,9 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImplTest;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
@@ -23,7 +26,9 @@ public class PathChangeTest {
     public void file_name_change() throws Exception {
         final String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            SvnDump dump = SvnDumpFileParserDoppelganger.parse(dumpFilePath);
+            SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), dumpInMemory);
+            SvnDump dump = dumpInMemory.getDump();
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -36,9 +41,11 @@ public class PathChangeTest {
         }
         {
             SvnDumpMutator pathChange = new PathChange("README.txt", "README-changed.txt");
-            SvnDump dump = SvnDumpFileParserDoppelganger.consume(dumpFilePath, pathChange);
+            SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+            pathChange.continueTo(dumpInMemory);
+            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), pathChange);
+            SvnDump dump = dumpInMemory.getDump();
 
-            assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
             assertThat(dump.getRevisions().get(1).getNodes().size(), is(3));
             assertThat(dump.getRevisions().get(1).getNodes().get(0).get(SvnNodeHeader.PATH),
@@ -53,7 +60,9 @@ public class PathChangeTest {
     public void file_name_change_of_copy_path() throws Exception {
         String dumpFilePath = "dumps/svn_copy_file.dump";
         {
-            SvnDump dump = SvnDumpFileParserDoppelganger.parse(dumpFilePath);
+            SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), dumpInMemory);
+            SvnDump dump = dumpInMemory.getDump();
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -68,7 +77,10 @@ public class PathChangeTest {
         }
         {
             SvnDumpMutator pathChange = new PathChange("README.txt", "README-changed.txt");
-            SvnDump dump = SvnDumpFileParserDoppelganger.consume(dumpFilePath, pathChange);
+            SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+            pathChange.continueTo(dumpInMemory);
+            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), pathChange);
+            SvnDump dump = dumpInMemory.getDump();
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -86,7 +98,10 @@ public class PathChangeTest {
     @Test
     public void update_mergeinfo() throws Exception {
         SvnDumpMutator pathChange = new PathChange("branches", "custom_branches");
-        SvnDump dump = SvnDumpFileParserDoppelganger.consume("dumps/simple_branch_and_merge.dump", pathChange);
+        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+        pathChange.continueTo(dumpInMemory);
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), pathChange);
+        SvnDump dump = dumpInMemory.getDump();
 
         ByteArrayOutputStream changedDump = new ByteArrayOutputStream();
         SvnDumpWriter writer = new SvnDumpWriterImpl();

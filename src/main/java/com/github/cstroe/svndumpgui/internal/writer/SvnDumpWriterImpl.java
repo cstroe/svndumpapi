@@ -4,8 +4,8 @@ import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
-import com.github.cstroe.svndumpgui.internal.writer.AbstractSvnDumpWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -77,7 +77,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
             writeProperties(ps(), node.getProperties());
 
             // write an extra newline when there is no content and properties were written.
-            if(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) == null) {
+            if(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) == null || Long.parseLong(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH)) == 0) {
                 ps().println();
             }
         }
@@ -87,7 +87,14 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void endNode(SvnNode node) {
-        ps().println();
+        if(node.getProperties().containsKey(SvnProperty.TRAILING_NEWLINE_HINT)) {
+            int numNewlines = Integer.parseInt(node.getProperties().get(SvnProperty.TRAILING_NEWLINE_HINT));
+            for(int i = 1; i < numNewlines; i++) {
+                ps().println();
+            }
+        } else {
+            ps().println();
+        }
         super.endNode(node);
     }
 

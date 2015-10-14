@@ -4,20 +4,22 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
+import com.google.common.io.ByteStreams;
 import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
@@ -105,11 +107,19 @@ public class SvnDumpWriterImplTest {
 
     @Test
     public void rewrite_file() throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserDoppelganger.parse("dumps/simple_branch_and_merge.dump");
+        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
+        SvnDump dump = dumpInMemory.getDump();
+
         SvnDumpWriter writer = new SvnDumpWriterImpl();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
         writer.writeTo(firstStream);
         SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+
+        final InputStream s1 = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/simple_branch_and_merge.dump");
+
+        assertEqualStreams(s1, new ByteArrayInputStream(firstStream.toByteArray()));
 
         SvnDump readDump = SvnDumpFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
 
@@ -120,16 +130,14 @@ public class SvnDumpWriterImplTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
 
-        SvnDumpWriterImplTest.assertEqualStreams(s, new ByteArrayInputStream(secondStream.toByteArray()));
+        assertEqualStreams(s, new ByteArrayInputStream(secondStream.toByteArray()));
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserDoppelganger.parse(dumpFile);
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
         dumpWriter.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, dumpWriter);
+        SvnDumpFileParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStream s = Thread.currentThread().getContextClassLoader()
@@ -138,38 +146,17 @@ public class SvnDumpWriterImplTest {
         assertEqualStreams(s, bais);
     }
 
-    // adapted from: http://stackoverflow.com/questions/4245863
-    public static void assertEqualStreams(InputStream expectedStream, InputStream actualStream) throws IOException {
-        byte[] buf1 = new byte[64 *1024];
-        byte[] buf2 = new byte[64 *1024];
-        boolean readingD2 = false;
-        try {
-            DataInputStream d2 = new DataInputStream(actualStream);
-            long filePosition = 0;
-            int len;
-            while ((len = expectedStream.read(buf1)) > 0) {
-                readingD2 = true;
-                d2.readFully(buf2,0,len);
-                readingD2 = false;
-                for(int i=0;i<len;i++, filePosition++)
-                    if(buf1[i] != buf2[i]) {
-                        throw new ComparisonFailure("Streams differ." + buf1[i] + " != " + buf2[i], new String(buf1), new String(buf2));
-                    }
-            }
-            int d2r = d2.read();
-            if(!(d2r < 0)) { // is the end of the second file also?
-                throw new ComparisonFailure("Actual stream is longer than expected. (The extra character is tacked on at the end)",
-                        new String(buf1), new String(buf2) + String.valueOf((char)d2r));
-            }
-        } catch(EOFException ioe) {
-            if(!readingD2) {
-                throw new ComparisonFailure("Actual stream is longer than expected.", new String(buf1), new String(buf2));
-            } else {
-                throw new ComparisonFailure("Actual stream is shorter than expected.", new String(buf1), new String(buf2));
-            }
-        } finally {
-            expectedStream.close();
-            actualStream.close();
+    public static void assertEqualStreams(InputStream expected, InputStream actual) throws IOException {
+        byte[] expectedBytes = ByteStreams.toByteArray(expected);
+        byte[] actualBytes = ByteStreams.toByteArray(actual);
+
+        if(!Arrays.equals(expectedBytes, actualBytes)) {
+            throw new ComparisonFailure("Streams differ.", new String(expectedBytes), new String(actualBytes));
         }
+    }
+
+    @Test
+    public void recreate_svn_replace() throws ParseException, IOException {
+        recreateDumpFile("dumps/svn_replace.dump");
     }
 }

@@ -154,27 +154,27 @@ public final class SvnDumpFileCharStream implements CharStream {
 
     @Override
     public final int getColumn() {
-        return bufferStart + bufferPosition;
+        return (int)streamPosition;
     }
     @Override
     public final int getLine() {
-        return 1;
+        return (int)streamPosition;
     }
     @Override
     public final int getEndColumn() {
-        return bufferStart + bufferPosition;
+        return (int)streamPosition;
     }
     @Override
     public final int getEndLine() {
-        return 1;
+        return (int)streamPosition;
     }
     @Override
     public final int getBeginColumn() {
-        return bufferStart + tokenStart;
+        return (int)streamPosition;
     }
     @Override
     public final int getBeginLine() {
-        return 1;
+        return (int)streamPosition;
     }
 
     @Override

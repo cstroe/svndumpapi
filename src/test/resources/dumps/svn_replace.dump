@@ -1,0 +1,159 @@
+SVN-fs-dump-format-version: 2
+
+UUID: f8d465a6-acbf-494a-897a-af74eb65fc72
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-10-13T19:13:41.055076Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-13T19:13:41.199195Z
+K 7
+svn:log
+V 15
+Initial commit.
+PROPS-END
+
+Node-path: branches
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: trunk
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: trunk/dir1
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: trunk/dir1/file1.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 20
+Text-content-md5: 4221d002ceb5d3c9e9137e495ceaa647
+Text-content-sha1: 804d716fc5844f1cc5516c8f0be7a480517fdea2
+Content-length: 30
+
+PROPS-END
+this is a test file
+
+
+Revision-number: 2
+Prop-content-length: 115
+Content-length: 115
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-13T19:13:41.316292Z
+K 7
+svn:log
+V 14
+Create branch.
+PROPS-END
+
+Node-path: branches/branch1
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 1
+Node-copyfrom-path: trunk
+
+
+Revision-number: 3
+Prop-content-length: 118
+Content-length: 118
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-13T19:13:41.514572Z
+K 7
+svn:log
+V 17
+Copy from branch.
+PROPS-END
+
+Node-path: trunk/dir1/file1.txt
+Node-kind: file
+Node-action: delete
+
+Node-path: trunk/dir1/file1.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 2
+Node-copyfrom-path: branches/branch1/dir1/file1.txt
+Text-copy-source-md5: 4221d002ceb5d3c9e9137e495ceaa647
+Text-copy-source-sha1: 804d716fc5844f1cc5516c8f0be7a480517fdea2
+
+
+
+
+Revision-number: 4
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-13T19:13:41.617718Z
+K 7
+svn:log
+V 13
+Changed file.
+PROPS-END
+
+Node-path: trunk/dir1/file1.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 13
+Text-content-md5: 5af7ab1f6a22ddd4f590664a39ce1004
+Text-content-sha1: 56cc699ada54eca15d2cd5592b6d7d9f970b2554
+Content-length: 13
+
+changed file
+
+

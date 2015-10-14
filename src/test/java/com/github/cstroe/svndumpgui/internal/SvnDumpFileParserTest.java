@@ -83,16 +83,6 @@ public class SvnDumpFileParserTest {
         return saveDump.getDump();
     }
 
-    public static SvnDump consume(SvnDump dump, SvnDumpConsumer consumer) throws ParseException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        SvnDumpWriter writer = new SvnDumpWriterImpl();
-        writer.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
-
-        return consume(new ByteArrayInputStream(baos.toByteArray()), consumer);
-    }
-
     @SuppressWarnings("unchecked")
     @Test
     public void simple_property_is_parsed() throws ParseException {
@@ -154,10 +144,10 @@ public class SvnDumpFileParserTest {
         assertThat("The repository dump contains two revisions.", dump.getRevisions().size(), is(2));
 
         assertThat(dump.getRevisions().get(0).getNumber(), is(0));
-        assertThat(dump.getRevisions().get(0).get(SvnProperty.DATE), is(equalTo("2015-08-27T02:50:19.465543Z")));
+        assertThat(dump.getRevisions().get(0).get(SvnProperty.DATE), is(equalTo("2015-10-14T08:38:32.304465Z")));
 
         assertThat(dump.getRevisions().get(1).getNumber(), is(1));
-        assertThat(dump.getRevisions().get(1).get(SvnProperty.DATE), is(equalTo("2015-08-27T05:38:16.553074Z")));
+        assertThat(dump.getRevisions().get(1).get(SvnProperty.DATE), is(equalTo("2015-10-14T08:38:32.462239Z")));
         assertThat(dump.getRevisions().get(1).get(SvnProperty.AUTHOR), is(equalTo("cosmin")));
         assertThat(dump.getRevisions().get(1).get(SvnProperty.LOG), is(equalTo("Added a first file.")));
 

@@ -1,17 +1,17 @@
-
-setup:
-	rm -fR svn-test
-	mkdir -p svn-test/repos/testrepo
-	mkdir -p svn-test/checkout
-	cd svn-test/repos
-	svnadmin create svn-test/repos/testrepo
-	cd svn-test/checkout; svn checkout "file:///$(CURDIR)/svn-test/repos/testrepo" testrepo
-
-empty: setup empty.dump
+empty:
 	svnadmin dump svn-test/repos/testrepo > empty.dump
 
-firstcommit: setup firstcommit.dump
-	touch svn-test/checkout/testrepo/firstFile.txt
-	cd svn-test/checkout/testrepo; svn add firstFile.txt
-	cd svn-test/checkout/testrepo; svn commit -m "Added a first file."
-	svnadmin dump svn-test/repos/testrepo > firstcommit.dump
+firstcommit:
+	./scripts/firstcommit.sh > firstcommit.dump
+
+svn_replace:
+	./scripts/svn_replace.sh > svn_replace.dump
+
+svn_rename:
+	./scripts/svn_rename.sh > svn_rename.dump
+
+svn_multi_file_delete:
+	./scripts/svn_multi_file_delete.sh > svn_multi_file_delete.dump
+
+simple_branch_and_merge:
+	./scripts/simple_branch_and_merge.sh > simple_branch_and_merge.dump

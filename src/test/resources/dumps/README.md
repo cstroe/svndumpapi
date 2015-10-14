@@ -56,16 +56,6 @@ of the other node headers.  Moral of the story, the order of the headers should 
     svn commit -m "Adding binary file."
     <EXPORT CODE>
 
-## svn_rename.dump
-
-    <SETUP CODE>
-    echo "this is a test file" > README.txt
-    svn add README.txt
-    svn commit -m "Committed README.txt"
-    svn mv README.txt README-new.txt
-    svn commit -m "Renamed README.txt to README-new.txt"
-    <EXPORT CODE>
-
 ## svn_rename_no_copy_hashes.dump
 
 Same as `svn_rename.dump` but without the copy hashes.
@@ -116,18 +106,6 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn rm testdir2
     svn rm testdir3
     svn commit -m "Deleted 3 dirs."
-    
-## svn_multi_file_delete.dump
-
-    <SETUP CODE>
-    echo "this is a test file" > README.txt
-    echo "this is a test file" > README2.txt
-    echo "this is a test file" > README3.txt
-    svn add README.txt README2.txt README3.txt 
-    svn commit -m "Added 3 files."
-    svn rm README.txt README2.txt README3.txt 
-    svn commit -m "Deleted 3 files."
-    <EXPORT CODE>
     
 ##  svn_copy_file.dump
 
@@ -200,28 +178,6 @@ Same as `svn_rename.dump` but without the copy hashes.
 A variation on `undelete.dump` but instead of undeleting the file 
 from revision 1 we undelete it from revision 2, where it doesn't exist.
 It's an invalid svn dump, meant to verify that the validator throws an error.
-
-## simple_branch_and_merge.dump
-
-    <SETUP CODE>
-    mkdir -p trunk/innerdir branches
-    echo "this is a test file" > trunk/innerdir/README.txt
-    svn add trunk branches
-    svn commit -m "Initial commit."
-    svn copy trunk branches/mybranch
-    svn commit -m "Creating branch."
-    cd ..
-    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo/branches/mybranch" mybranch'
-    cd mybranch
-    echo "branch work" >> innerdir/README.txt
-    svn commit -m "Branch work."
-    cd ..
-    bash -c 'svn checkout "file:///$(dirname $(pwd))/repos/testrepo/trunk" trunk'
-    cd trunk
-    bash -c 'svn merge --reintegrate ^/branches/mybranch'
-    svn commit -m "Merge branch back into trunk."
-    bash -c  'svn delete ^/branches/mybranch -m "Removing branch."'
-    <EXPORT CODE>
 
 ## simple_branch_and_merge_renamed.dump
 
