@@ -87,8 +87,8 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void endNode(SvnNode node) {
-        if(node.getProperties().containsKey(SvnProperty.HACK_TRAILING_NEWLINE)) {
-            int numNewlines = Integer.parseInt(node.getProperties().get(SvnProperty.HACK_TRAILING_NEWLINE));
+        if(node.getProperties().containsKey(SvnProperty.TRAILING_NEWLINE_HINT)) {
+            int numNewlines = Integer.parseInt(node.getProperties().get(SvnProperty.TRAILING_NEWLINE_HINT));
             for(int i = 1; i < numNewlines; i++) {
                 ps().println();
             }

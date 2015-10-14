@@ -215,13 +215,13 @@ public void Start(SvnDumpConsumer consumer):
                 <EOL>
                 {
                     // really bad hack to know how many EOLs are in the stream
-                    String currentValueRaw = node.getProperties().get(SvnProperty.HACK_TRAILING_NEWLINE);
+                    String currentValueRaw = node.getProperties().get(SvnProperty.TRAILING_NEWLINE_HINT);
                     if(currentValueRaw != null) {
                         int currentValue = Integer.parseInt(currentValueRaw);
                         currentValue++;
-                        node.getProperties().put(SvnProperty.HACK_TRAILING_NEWLINE, Integer.toString(currentValue));
+                        node.getProperties().put(SvnProperty.TRAILING_NEWLINE_HINT, Integer.toString(currentValue));
                     } else {
-                        node.getProperties().put(SvnProperty.HACK_TRAILING_NEWLINE, "1");
+                        node.getProperties().put(SvnProperty.TRAILING_NEWLINE_HINT, "1");
                     }
                 }
             )+

@@ -16,5 +16,5 @@ public interface SvnProperty {
      * Had to resort to this "hack" because the SVN dump file description is not specific enough
      * and it was too hard to decypher the behavior of "svnadmin dump" with regards to new lines.
      */
-    String HACK_TRAILING_NEWLINE = "HACK_TRAILING_NEWLINE";
+    String TRAILING_NEWLINE_HINT = "TRAILING_NEWLINE_HINT";
 }
