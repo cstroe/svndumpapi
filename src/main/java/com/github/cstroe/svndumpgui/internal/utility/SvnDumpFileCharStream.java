@@ -24,6 +24,7 @@ package com.github.cstroe.svndumpgui.internal.utility;
 import com.github.cstroe.svndumpgui.generated.CharStream;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /** An efficient implementation of JavaCC's CharStream interface.  <p>Note that
  * this does not do line-number counting, but instead keeps track of the
@@ -53,8 +54,20 @@ public final class SvnDumpFileCharStream implements CharStream {
     public final char readChar() throws IOException {
         if (bufferPosition >= bufferLength)
             refill();
-        streamPosition++;
-        return (char) buffer[bufferPosition++];
+
+        byte currentByte = buffer[bufferPosition];
+        int expectedUtf8Length = getUTF8ExpectedLength(currentByte);
+        if(expectedUtf8Length == 0) {
+            throw new UnsupportedEncodingException("Svn log message is not UTF8 or ASCII encoded.");
+        }
+
+        byte[] rawBytes = new byte[expectedUtf8Length];
+        System.arraycopy(buffer, bufferPosition, rawBytes, 0, expectedUtf8Length);
+        char c = new String(rawBytes, StandardCharsets.UTF_8).charAt(0);
+
+        streamPosition += expectedUtf8Length;
+        bufferPosition += expectedUtf8Length;
+        return c;
     }
 
     public byte[] readBytes(int length) throws IOException {
@@ -87,6 +100,25 @@ public final class SvnDumpFileCharStream implements CharStream {
 
         streamPosition += length;
         return localBuffer;
+    }
+
+    // Adapted from: http://stackoverflow.com/a/28892327
+    private static int getUTF8ExpectedLength(byte firstByte) {
+        int expectedLength = 0;
+        if ((firstByte & 0b10000000) == 0b00000000) {
+            expectedLength = 1;
+        } else if ((firstByte & 0b11100000) == 0b11000000) {
+            expectedLength = 2;
+        } else if ((firstByte & 0b11110000) == 0b11100000) {
+            expectedLength = 3;
+        } else if ((firstByte & 0b11111000) == 0b11110000) {
+            expectedLength = 4;
+        } else if ((firstByte & 0b11111100) == 0b11111000) {
+            expectedLength = 5;
+        } else if ((firstByte & 0b11111110) == 0b11111100) {
+            expectedLength = 6;
+        }
+        return expectedLength;
     }
 
     private void refill() throws IOException {
