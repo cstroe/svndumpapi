@@ -4,11 +4,13 @@ import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.SvnDumpImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.google.common.io.ByteStreams;
 import junit.framework.ComparisonFailure;
 import org.junit.Ignore;
@@ -125,12 +127,10 @@ public class SvnDumpWriterImplTest {
     }
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
-        SvnDump dump = SvnDumpFileParserDoppelganger.parse(dumpFile);
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
         dumpWriter.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, dumpWriter);
+        SvnDumpFileParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStream s = Thread.currentThread().getContextClassLoader()
