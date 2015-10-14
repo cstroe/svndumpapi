@@ -76,7 +76,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
             writeProperties(ps(), node.getProperties());
 
             // write an extra newline when there is no content and properties were written.
-            if(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) == null) {
+            if(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) == null || Long.parseLong(node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH)) == 0) {
                 ps().println();
             }
         }
