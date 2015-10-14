@@ -15,6 +15,12 @@ revision contains a list of nodes (see [`SvnNode`](src/main/java/com/github/cstr
 Revisions can have properties such as author, date, and commit message.  Nodes 
 can have properties too, which are maintained on a node by node basis.
 
+## Related Work
+
+I'm not the first one to have this idea.  Here are some links:
+* [svndumpfilter](http://svnbook.red-bean.com/en/1.8/svn.ref.svndumpfilter.html): comes with svn, limited functionality
+* [svndumpmultitool](https://github.com/emosenkis/svndumpmultitool): very similar project to this one, written in Python
+
 ## SVNDumpFileParser
 
 The `SvnDumpFileParser` is an auto-generated parser for SVN dump files 
