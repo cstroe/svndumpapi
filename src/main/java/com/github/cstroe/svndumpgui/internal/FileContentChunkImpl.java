@@ -14,13 +14,13 @@ public class FileContentChunkImpl implements FileContentChunk  {
 
     public FileContentChunkImpl(FileContentChunk chunk) {
         byte[] chunkContent = chunk.getContent();
-        if(chunkContent != null) {
-            byte[] copy = new byte[chunkContent.length];
-            System.arraycopy(chunkContent, 0, copy, 0, chunkContent.length);
-            this.content = copy;
-        } else {
+        if(chunkContent == null) {
             throw new IllegalArgumentException("A FileContentChunk must have some content.");
         }
+
+        byte[] copy = new byte[chunkContent.length];
+        System.arraycopy(chunkContent, 0, copy, 0, chunkContent.length);
+        this.content = copy;
     }
 
     @Override
