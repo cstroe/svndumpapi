@@ -10,8 +10,8 @@ public class ClearRevision extends AbstractSvnDumpMutator {
     private final int fromRevision;
     private final int toRevision;
 
-    private SvnRevision currentRevision;
-    private boolean changedSomething = false;
+    private boolean matchedSomething = false;
+    private boolean inClearedRevision = false;
 
     public ClearRevision(int revision) {
         if(revision < 0 ) {
@@ -39,31 +39,50 @@ public class ClearRevision extends AbstractSvnDumpMutator {
 
     @Override
     public void consume(SvnRevision revision) {
-        currentRevision = revision;
+        if(revisionMatches(revision)) {
+            inClearedRevision = true;
+            matchedSomething = true;
+        }
         super.consume(revision);
     }
 
     @Override
     public void consume(SvnNode node) {
-        if(revisionMatches(currentRevision)) {
-            changedSomething = true; // notice we don't call super.consume(node) in this case.
-        } else {
+        if(!inClearedRevision) {
             super.consume(node);
         }
     }
 
     @Override
     public void consume(FileContentChunk chunk) {
-        if(revisionMatches(currentRevision)) {
-            changedSomething = true; // notice we don't call super.consumer(chunk) in this case.
-        } else {
+        if(!inClearedRevision) {
             super.consume(chunk);
         }
     }
 
     @Override
+    public void endNode(SvnNode node) {
+        if(!inClearedRevision) {
+            super.endNode(node);
+        }
+    }
+
+    @Override
+    public void endChunks() {
+        if(!inClearedRevision) {
+            super.endChunks();
+        }
+    }
+
+    @Override
+    public void endRevision(SvnRevision revision) {
+        inClearedRevision = false;
+        super.endRevision(revision);
+    }
+
+    @Override
     public void finish() {
-        if(!changedSomething) {
+        if(!matchedSomething) {
             throw new IllegalArgumentException("No revisions matched: " + toString());
         }
         super.finish();
