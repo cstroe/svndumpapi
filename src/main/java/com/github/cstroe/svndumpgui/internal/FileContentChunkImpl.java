@@ -6,6 +6,9 @@ public class FileContentChunkImpl implements FileContentChunk  {
     private byte[] content;
 
     public FileContentChunkImpl(byte[] content) {
+        if(content == null) {
+            throw new IllegalArgumentException("A FileContentChunk must have some content.");
+        }
         this.content = content;
     }
 
@@ -15,6 +18,8 @@ public class FileContentChunkImpl implements FileContentChunk  {
             byte[] copy = new byte[chunkContent.length];
             System.arraycopy(chunkContent, 0, copy, 0, chunkContent.length);
             this.content = copy;
+        } else {
+            throw new IllegalArgumentException("A FileContentChunk must have some content.");
         }
     }
 
@@ -25,15 +30,14 @@ public class FileContentChunkImpl implements FileContentChunk  {
 
     @Override
     public void setContent(byte[] content) {
+        if(content == null) {
+            throw new IllegalArgumentException("A FileContentChunk must have some content.");
+        }
         this.content = content;
     }
 
     @Override
     public String toString() {
-        if(content == null) {
-            return "null content";
-        } else {
-            return Integer.toString(content.length) + " bytes";
-        }
+        return Integer.toString(content.length) + " bytes";
     }
 }

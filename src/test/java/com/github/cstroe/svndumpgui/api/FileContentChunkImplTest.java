@@ -29,9 +29,59 @@ public class FileContentChunkImplTest {
         assertThat(new String(chunkCopy.getContent()), is(equalTo("great")));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void dont_allow_null_content() {
+        new FileContentChunkImpl((byte[])null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void copy_constructor_with_null_content() {
+        FileContentChunk badChunk = new FileContentChunk() {
+            @Override
+            public byte[] getContent() {
+                return null;
+            }
+
+            @Override
+            public void setContent(byte[] content) {}
+        };
+
+        new FileContentChunkImpl(badChunk);
+    }
+
+    @Test
+    public void set_content_does_what_it_should_do() {
+        byte[] byteArray = new byte[5];
+        byteArray[0] = 'A';
+        byteArray[0] = 'B';
+        byteArray[0] = 'C';
+        byteArray[0] = 'D';
+
+        byte[] byteArray2 = new byte[4];
+        byteArray2[0] = 'a';
+        byteArray2[1] = 'b';
+        byteArray2[2] = 'c';
+        byteArray2[3] = 'd';
+
+        FileContentChunk chunk = new FileContentChunkImpl(byteArray);
+        assertThat(chunk.getContent().length, is(5));
+        assertThat(chunk.getContent(), is(equalTo(byteArray)));
+
+        chunk.setContent(byteArray2);
+        assertThat(chunk.getContent().length, is(4));
+        assertThat(chunk.getContent(), is(equalTo(byteArray2)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void dont_let_anyone_set_null_content() {
+        byte[] byteArray = new byte[16];
+
+        FileContentChunk chunk = new FileContentChunkImpl(byteArray);
+        chunk.setContent(null);
+    }
+
     @Test
     public void toString_should_describe_the_chunk() {
-        assertThat(new FileContentChunkImpl((byte[])null).toString(), is(equalTo("null content")));
         assertThat(new FileContentChunkImpl(new byte[0]).toString(), is(equalTo("0 bytes")));
         assertThat(new FileContentChunkImpl(new byte[5]).toString(), is(equalTo("5 bytes")));
         assertThat(new FileContentChunkImpl(new byte[999]).toString(), is(equalTo("999 bytes")));
