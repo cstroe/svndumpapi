@@ -28,4 +28,12 @@ public class FileContentChunkImpl implements FileContentChunk  {
         this.content = content;
     }
 
+    @Override
+    public String toString() {
+        if(content == null) {
+            return "null content";
+        } else {
+            return Integer.toString(content.length) + " bytes";
+        }
+    }
 }
