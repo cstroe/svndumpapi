@@ -177,6 +177,6 @@ public class SvnNodeImplTest {
         headers.put(SvnNodeHeader.TEXT_CONTENT_LENGTH, "123456");
         node.setHeaders(headers);
 
-        assertThat(node.toString(), is(equalTo("add file new/path.txt eff2191c7e5abb19d79e8bcb2f1b7f38 -- copied from: some/old/path.txt@2 eff2191c7e5abb19d79e8bcb2f1b7f38 Size: 123456")));
+        assertThat(node.toString(), is(equalTo("add file new/path.txt eff2191c7e5abb19d79e8bcb2f1b7f38 -- copied from: some/old/path.txt@2 eff2191c7e5abb19d79e8bcb2f1b7f38 Size: 123456 bytes")));
     }
 }

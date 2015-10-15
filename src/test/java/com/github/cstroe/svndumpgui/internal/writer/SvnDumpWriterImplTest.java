@@ -11,16 +11,14 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
-import com.google.common.io.ByteStreams;
-import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
+import static com.github.cstroe.svndumpgui.internal.utility.TestUtil.assertEqualStreams;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -144,15 +142,6 @@ public class SvnDumpWriterImplTest {
                 .getResourceAsStream(dumpFile);
 
         assertEqualStreams(s, bais);
-    }
-
-    public static void assertEqualStreams(InputStream expected, InputStream actual) throws IOException {
-        byte[] expectedBytes = ByteStreams.toByteArray(expected);
-        byte[] actualBytes = ByteStreams.toByteArray(actual);
-
-        if(!Arrays.equals(expectedBytes, actualBytes)) {
-            throw new ComparisonFailure("Streams differ.", new String(expectedBytes), new String(actualBytes));
-        }
     }
 
     @Test

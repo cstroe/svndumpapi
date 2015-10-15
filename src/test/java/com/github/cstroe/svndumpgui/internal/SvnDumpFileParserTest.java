@@ -14,6 +14,7 @@ import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
@@ -748,5 +749,19 @@ public class SvnDumpFileParserTest {
 
     private String generateFileName() {
         return new SimpleDateFormat("yyyyMMddhhmmss'.log'").format(new Date());
+    }
+
+    @Test(expected = ParseException.class)
+    public void throw_exception_on_missing_nl() throws ParseException {
+        Mockery context = new Mockery();
+        Sequence consumerSequence = context.sequence("consumerSequence");
+        SvnDumpConsumer mockConsumer = context.mock(SvnDumpConsumer.class);
+        context.checking(new Expectations() {{
+            oneOf(mockConsumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+        }});
+
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/invalid/missing_nl.invalid"), mockConsumer);
     }
 }

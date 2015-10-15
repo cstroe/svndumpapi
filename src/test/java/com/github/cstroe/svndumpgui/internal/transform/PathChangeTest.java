@@ -8,7 +8,6 @@ import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
-import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImplTest;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import org.junit.Test;
 
@@ -16,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import static com.github.cstroe.svndumpgui.internal.utility.TestUtil.assertEqualStreams;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -113,6 +113,6 @@ public class PathChangeTest {
 
         ByteArrayInputStream bis = new ByteArrayInputStream(changedDump.toByteArray());
 
-        SvnDumpWriterImplTest.assertEqualStreams(s, bis);
+        assertEqualStreams(s, bis);
     }
 }

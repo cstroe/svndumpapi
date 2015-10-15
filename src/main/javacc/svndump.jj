@@ -186,10 +186,8 @@ public void Start(SvnDumpConsumer consumer):
     <EOL>
 
     {
-        if(uuid != null) {
-            SvnDumpPreamble preamble = new SvnDumpPreambleImpl(uuid.image);
-            consumer.consume(preamble);
-        }
+        SvnDumpPreamble preamble = new SvnDumpPreambleImpl(uuid.image);
+        consumer.consume(preamble);
     }
 
     (
