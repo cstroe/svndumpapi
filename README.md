@@ -45,7 +45,7 @@ An `SvnDumpConsumer` consumes the various pieces of an `SvnDump`.  Specializatio
 * `SvnDumpValidator`: validates the correctness of the SvnDump in some way
 * `SvnDumpWriter`: write the SvnDump in some format
 
-Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files.
+Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files using the `continueTo(SvnDumpConsumer)` method.
 
 ## Mutators
 
