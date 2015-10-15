@@ -82,6 +82,11 @@ public class ClearRevisionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void negative_revision_numbers_not_allowed_in_toRevision() {
+        new ClearRevision(1,-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void exception_with_same_numbers() {
         new ClearRevision(1,1);
     }
