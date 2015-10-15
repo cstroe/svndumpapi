@@ -40,11 +40,11 @@ To get an `svn log`-like summary of your dump file, you can use the
 
 ## Consumers
 
-An `SvnDumpConsumer` consumes the various pieces of an `SvnDump`.  Specializations of a consumer are:
+An [`SvnDumpConsumer`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpConsumer.java) consumes the various pieces of an [`SvnDump`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDump.java).  Specializations of a consumer are:
 
-* `SvnDumpMutator`: changes the SvnDump in some way
-* `SvnDumpValidator`: validates the correctness of the SvnDump in some way
-* `SvnDumpWriter`: write the SvnDump in some format
+* [`SvnDumpMutator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpMutator.java): changes the SvnDump in some way
+* [`SvnDumpValidator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpValidator.java): validates the correctness of the SvnDump in some way
+* [`SvnDumpWriter`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpWriter.java): write the SvnDump in some format
 
 Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files using the `continueTo(SvnDumpConsumer)` method.
 
