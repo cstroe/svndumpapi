@@ -1,11 +1,26 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
+import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
+import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.Sequence;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -80,5 +95,88 @@ public class ClearRevisionTest {
     public void cant_change_non_existent_revision() throws ParseException {
         SvnDumpConsumer cr = new ClearRevision(3);
         SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
+    }
+
+    @Test
+    public void consumer_chaining_works() throws ParseException {
+        Mockery context = new Mockery();
+
+        SvnDumpConsumer mockConsumer = context.mock(SvnDumpConsumer.class, "mockConsumer");
+
+        Sequence consumerSequence = context.sequence("consumerSequence");
+
+        context.checking(new Expectations() {{
+            oneOf(mockConsumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+
+            // revision 0
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 1
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 2
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 3
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 4
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endChunks(); inSequence(consumerSequence);
+            oneOf(mockConsumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            oneOf(mockConsumer).finish();
+        }});
+
+        ClearRevision clearRevision = new ClearRevision(1,3);
+        clearRevision.continueTo(mockConsumer);
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), clearRevision);
+    }
+
+    @Test
+    public void clear_already_empty_revision() throws ParseException {
+        String theDumpWereWorkingWith = "dumps/add_edit_delete_add.dump";
+
+        {
+            SvnDumpInMemory inMemoryDump = new SvnDumpInMemory();
+            SvnDumpFileParser.consume(TestUtil.openResource(theDumpWereWorkingWith), inMemoryDump);
+            SvnDump initialDumpState = inMemoryDump.getDump();
+
+            assertThat(initialDumpState.getRevisions().size(), is(5));
+            assertThat(initialDumpState.getRevisions().get(0).getNodes().size(), is(0));
+            assertThat(initialDumpState.getRevisions().get(1).getNodes().size(), is(1));
+            assertThat(initialDumpState.getRevisions().get(2).getNodes().size(), is(1));
+            assertThat(initialDumpState.getRevisions().get(3).getNodes().size(), is(1));
+            assertThat(initialDumpState.getRevisions().get(4).getNodes().size(), is(1));
+        }
+
+        ByteArrayOutputStream clearedDumpStream = new ByteArrayOutputStream();
+        {
+            ClearRevision clearRevision = new ClearRevision(1, 3);
+            SvnDumpWriter writer = new SvnDumpWriterImpl();
+            writer.writeTo(clearedDumpStream);
+            clearRevision.continueTo(writer);
+            SvnDumpFileParser.consume(TestUtil.openResource(theDumpWereWorkingWith), clearRevision);
+        }
+
+        ClearRevision clearRevisionAgain = new ClearRevision(1,3);
+        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+        clearRevisionAgain.continueTo(dumpInMemory);
+        SvnDumpFileParser.consume(new ByteArrayInputStream(clearedDumpStream.toByteArray()), clearRevisionAgain);
+
+        SvnDump dump = dumpInMemory.getDump();
+        assertThat(dump.getRevisions().size(), is(5));
+        assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
+        assertThat(dump.getRevisions().get(1).getNodes().size(), is(0));
+        assertThat(dump.getRevisions().get(2).getNodes().size(), is(0));
+        assertThat(dump.getRevisions().get(3).getNodes().size(), is(0));
+        assertThat(dump.getRevisions().get(4).getNodes().size(), is(1));
     }
 }
