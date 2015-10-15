@@ -1,10 +1,19 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnDumpMutator;
+import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
+import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.SvnRevision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
+import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.Sequence;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
@@ -80,5 +89,48 @@ public class ClearRevisionTest {
     public void cant_change_non_existent_revision() throws ParseException {
         SvnDumpConsumer cr = new ClearRevision(3);
         SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
+    }
+
+    @Test
+    public void consumer_chaining_works() throws ParseException {
+        Mockery context = new Mockery();
+
+        SvnDumpConsumer mockConsumer = context.mock(SvnDumpConsumer.class, "mockConsumer");
+
+        Sequence consumerSequence = context.sequence("consumerSequence");
+
+        context.checking(new Expectations() {{
+            oneOf(mockConsumer).consume(with(any(SvnDumpPreamble.class))); inSequence(consumerSequence);
+
+            // revision 0
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 1
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 2
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 3
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            // revision 4
+            oneOf(mockConsumer).consume(with(any(SvnRevision.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).consume(with(any(FileContentChunk.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endChunks(); inSequence(consumerSequence);
+            oneOf(mockConsumer).endNode(with(any(SvnNode.class))); inSequence(consumerSequence);
+            oneOf(mockConsumer).endRevision(with(any(SvnRevision.class))); inSequence(consumerSequence);
+
+            oneOf(mockConsumer).finish();
+        }});
+
+        ClearRevision clearRevision = new ClearRevision(1,3);
+        clearRevision.continueTo(mockConsumer);
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), clearRevision);
     }
 }
