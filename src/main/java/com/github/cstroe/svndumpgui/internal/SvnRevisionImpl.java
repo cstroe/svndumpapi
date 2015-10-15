@@ -1,6 +1,5 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -85,11 +84,6 @@ public class SvnRevisionImpl implements SvnRevision {
     @Override
     public Iterator<SvnNode> nodes() {
         return nodes.iterator();
-    }
-
-    @Override
-    public void accept(SvnDumpConsumer consumer) {
-        consumer.consume(this);
     }
 
     @Override
