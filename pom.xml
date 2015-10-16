@@ -2,10 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.cstroe</groupId>
-    <artifactId>svndumpgui</artifactId>
+    <artifactId>svndumpapi</artifactId>
     <packaging>jar</packaging>
     <version>0.1-SNAPSHOT</version>
-    <name>SVN Dump GUI</name>
+    <name>SVN dump API</name>
+    <description>An API for rewriting SVN history by editing SVN dump files.</description>
+    <url>https://github.com/cstroe/svndumpapi</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
