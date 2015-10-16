@@ -1,6 +1,6 @@
 package com.github.cstroe.svndumpgui.api;
 
-public interface SvnDumpPreamble extends SvnVisitable{
+public interface SvnDumpPreamble {
     String getUUID();
     void setUUID(String uuid);
 }

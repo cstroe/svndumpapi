@@ -1,6 +1,5 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
 import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 
 public class SvnDumpPreambleImpl implements SvnDumpPreamble {
@@ -9,9 +8,7 @@ public class SvnDumpPreambleImpl implements SvnDumpPreamble {
     public SvnDumpPreambleImpl() {}
 
     public SvnDumpPreambleImpl(SvnDumpPreamble preamble) {
-        if(preamble != null) {
-            this.uuid = preamble.getUUID();
-        }
+        this.uuid = preamble.getUUID();
     }
 
     public SvnDumpPreambleImpl(String uuid) {
@@ -26,11 +23,6 @@ public class SvnDumpPreambleImpl implements SvnDumpPreamble {
     @Override
     public void setUUID(String uuid) {
         this.uuid = uuid;
-    }
-
-    @Override
-    public void accept(SvnDumpConsumer consumer) {
-        consumer.consume(this);
     }
 
     @Override

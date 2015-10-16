@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.writer;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnDump;
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
@@ -11,16 +12,14 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
-import com.google.common.io.ByteStreams;
-import junit.framework.ComparisonFailure;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
+import static com.github.cstroe.svndumpgui.internal.utility.TestUtil.assertEqualStreams;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -146,15 +145,6 @@ public class SvnDumpWriterImplTest {
         assertEqualStreams(s, bais);
     }
 
-    public static void assertEqualStreams(InputStream expected, InputStream actual) throws IOException {
-        byte[] expectedBytes = ByteStreams.toByteArray(expected);
-        byte[] actualBytes = ByteStreams.toByteArray(actual);
-
-        if(!Arrays.equals(expectedBytes, actualBytes)) {
-            throw new ComparisonFailure("Streams differ.", new String(expectedBytes), new String(actualBytes));
-        }
-    }
-
     @Test
     public void recreate_svn_replace() throws ParseException, IOException {
         recreateDumpFile("dumps/svn_replace.dump");
@@ -163,5 +153,25 @@ public class SvnDumpWriterImplTest {
     @Test
     public void recreate_utf8_log_message() throws ParseException, IOException {
         recreateDumpFile("dumps/utf8_log_message.dump");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void dont_consume_null_chunks(){
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        writer.consume((FileContentChunk)null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void dont_consume_chunks_with_null_content(){
+        SvnDumpWriter writer = new SvnDumpWriterImpl();
+        writer.consume(new FileContentChunk() {
+            @Override
+            public byte[] getContent() {
+                return null;
+            }
+
+            @Override
+            public void setContent(byte[] content) {}
+        });
     }
 }

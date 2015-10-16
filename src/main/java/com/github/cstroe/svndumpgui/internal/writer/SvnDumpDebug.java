@@ -5,53 +5,65 @@ import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
+import java.io.OutputStream;
+
 public class SvnDumpDebug extends AbstractSvnDumpWriter {
+
+    @SuppressWarnings("unused")
+    public SvnDumpDebug() {
+        this(System.err);
+    }
+
+    public SvnDumpDebug(OutputStream outputStream) {
+        super();
+        writeTo(outputStream);
+    }
 
     @Override
     public void consume(SvnDumpPreamble preamble) {
-        System.err.println("consume(" + preamble.toString() + ")");
+        ps().println("consume(" + preamble.toString() + ")");
         super.consume(preamble);
     }
 
     @Override
     public void consume(SvnRevision revision) {
-        System.err.println("consume(" + revision.toString() + ")");
+        ps().println("consume(" + revision.toString() + ")");
         super.consume(revision);
     }
 
     @Override
     public void endRevision(SvnRevision revision) {
-        System.err.println("endRevision(" + revision.toString() + ")");
+        ps().println("endRevision(" + revision.toString() + ")");
         super.endRevision(revision);
     }
 
     @Override
     public void consume(SvnNode node) {
-        System.err.println("consume(" + node.toString() + ")");
+        ps().println("consume(" + node.toString() + ")");
         super.consume(node);
     }
 
     @Override
     public void endNode(SvnNode node) {
-        System.err.println("endNode(" + node.toString() + ")");
+        ps().println("endNode(" + node.toString() + ")");
         super.endNode(node);
     }
 
     @Override
     public void consume(FileContentChunk chunk) {
-        System.err.println("consume(" + chunk.toString() + ") " + chunk.getContent().length);
+        ps().println("consume(" + chunk.toString() + ")");
         super.consume(chunk);
     }
 
     @Override
     public void endChunks() {
-        System.err.println("endChunks()");
+        ps().println("endChunks()");
         super.endChunks();
     }
 
     @Override
     public void finish() {
-        System.err.println("finish()");
+        ps().println("finish()");
         super.finish();
     }
 }

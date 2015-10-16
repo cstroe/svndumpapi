@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/cstroe/svndumpapi.svg?branch=master)](https://travis-ci.org/cstroe/svndumpapi)
 [![Coverage Status](https://coveralls.io/repos/cstroe/svndumpapi/badge.svg?branch=master&service=github)](https://coveralls.io/github/cstroe/svndumpapi?branch=master)
+![GNU Affero GPL v3](https://img.shields.io/badge/license-Affero%20GPL%20v3-blue.svg)
 
 # SVN Dump API
 
@@ -14,6 +15,12 @@ revision contains a list of nodes (see [`SvnNode`](src/main/java/com/github/cstr
 
 Revisions can have properties such as author, date, and commit message.  Nodes 
 can have properties too, which are maintained on a node by node basis.
+
+## Related Work
+
+I'm not the first one to have this idea.  Here are some links:
+* [svndumpfilter](http://svnbook.red-bean.com/en/1.8/svn.ref.svndumpfilter.html): comes with svn, limited functionality
+* [svndumpmultitool](https://github.com/emosenkis/svndumpmultitool): very similar project to this one, written in Python
 
 ## SVNDumpFileParser
 
@@ -33,13 +40,13 @@ To get an `svn log`-like summary of your dump file, you can use the
 
 ## Consumers
 
-An `SvnDumpConsumer` consumes the various pieces of an `SvnDump`.  Specializations of a consumer are:
+An [`SvnDumpConsumer`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpConsumer.java) consumes the various pieces of an [`SvnDump`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDump.java).  Specializations of a consumer are:
 
-* `SvnDumpMutator`: changes the SvnDump in some way
-* `SvnDumpValidator`: validates the correctness of the SvnDump in some way
-* `SvnDumpWriter`: write the SvnDump in some format
+* [`SvnDumpMutator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpMutator.java): changes the SvnDump in some way
+* [`SvnDumpValidator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpValidator.java): validates the correctness of the SvnDump in some way
+* [`SvnDumpWriter`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpWriter.java): write the SvnDump in some format
 
-Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files.
+Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files using the `continueTo(SvnDumpConsumer)` method.
 
 ## Mutators
 

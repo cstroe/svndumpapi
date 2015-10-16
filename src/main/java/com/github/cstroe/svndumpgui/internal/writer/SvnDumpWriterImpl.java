@@ -100,10 +100,14 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
     @Override
     public void consume(FileContentChunk chunk) {
+        if(chunk == null) {
+            throw new IllegalArgumentException("Cannot accept null chunks.");
+        } else if(chunk.getContent() == null) {
+            throw new IllegalArgumentException("Cannot accept chunks with null content.");
+        }
+
         try {
-            if(chunk.getContent() != null && chunk.getContent().length > 0) {
-                ps().write(chunk.getContent());
-            }
+            ps().write(chunk.getContent());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

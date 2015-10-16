@@ -13,7 +13,6 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
 import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
 import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
-import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImplTest;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
 import org.junit.Test;
 
@@ -21,6 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static com.github.cstroe.svndumpgui.internal.utility.TestUtil.assertEqualStreams;
 
 public class SvnDumpSummaryTest {
 
@@ -36,7 +37,7 @@ public class SvnDumpSummaryTest {
         InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");
 
-        SvnDumpWriterImplTest.assertEqualStreams(s, new ByteArrayInputStream(baos.toByteArray()));
+        assertEqualStreams(s, new ByteArrayInputStream(baos.toByteArray()));
     }
 
     @Test
@@ -52,7 +53,7 @@ public class SvnDumpSummaryTest {
         InputStream summaryStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");
 
-        SvnDumpWriterImplTest.assertEqualStreams(summaryStream, new ByteArrayInputStream(baos.toByteArray()));
+        assertEqualStreams(summaryStream, new ByteArrayInputStream(baos.toByteArray()));
     }
 
     @Test
@@ -91,6 +92,6 @@ public class SvnDumpSummaryTest {
         InputStream expectedStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/empty_revisions_at_beginning.txt");
 
-        SvnDumpWriterImplTest.assertEqualStreams(expectedStream, new ByteArrayInputStream(summaryStream.toByteArray()));
+        assertEqualStreams(expectedStream, new ByteArrayInputStream(summaryStream.toByteArray()));
     }
 }

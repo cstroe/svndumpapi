@@ -103,7 +103,7 @@ public class SvnNodeImpl implements SvnNode {
 
         String sizeInfo = "";
         if(headers.containsKey(SvnNodeHeader.TEXT_CONTENT_LENGTH)) {
-            sizeInfo = " Size: " + headers.get(SvnNodeHeader.TEXT_CONTENT_LENGTH);
+            sizeInfo = " Size: " + headers.get(SvnNodeHeader.TEXT_CONTENT_LENGTH) + " bytes";
         }
 
         if(headers.containsKey(SvnNodeHeader.KIND)) {
