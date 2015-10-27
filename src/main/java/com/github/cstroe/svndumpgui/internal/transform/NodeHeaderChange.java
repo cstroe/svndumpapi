@@ -17,6 +17,10 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
     private boolean updatedNode;
 
     public NodeHeaderChange(int targetRevision, String nodeAction, String path, SvnNodeHeader headerToChange, String oldValue, String newValue) {
+        if(oldValue == null) {
+            throw new IllegalArgumentException("Cannot accept null paramter: oldValue");
+        }
+
         this.targetRevision = targetRevision;
         this.nodeAction = nodeAction;
         this.nodePath = path;
@@ -27,12 +31,8 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
     @Override
     public void consume(SvnRevision revision) {
-        if(foundTargetRevision) {
-            if(!updatedNode) {
-                throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);
-            }
-            super.consume(revision);
-            return;
+        if(foundTargetRevision && !updatedNode) {
+            throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);
         }
 
         if(revision.getNumber() == targetRevision) {
@@ -50,7 +50,7 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
 
         if (nodeAction.equals(node.get(SvnNodeHeader.ACTION)) &&
                 nodePath.equals(node.get(SvnNodeHeader.PATH))) {
-            if(oldValue != null && !oldValue.equals(node.get(headerToChange))) {
+            if(!oldValue.equals(node.get(headerToChange))) {
                 throw new IllegalArgumentException("The old value for the " + headerToChange.name() + " property is not \"" + oldValue + "\"");
             }
             node.getHeaders().put(headerToChange, newValue);
