@@ -18,3 +18,6 @@ simple_branch_and_merge:
 
 utf8_log_message:
 	./scripts/utf8_log_message.sh > utf8_log_message.dump
+
+add_and_multiple_change:
+	./scripts/add_and_multiple_change.sh > add_and_multiple_change.dump

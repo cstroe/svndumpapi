@@ -1,0 +1,132 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 26343198-1d6a-4304-a4fe-b7d6fccd44a5
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-10-27T13:32:30.614008Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-27T13:32:30.764656Z
+K 7
+svn:log
+V 15
+Initial commit.
+PROPS-END
+
+Node-path: file1.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 20
+Text-content-md5: 4221d002ceb5d3c9e9137e495ceaa647
+Text-content-sha1: 804d716fc5844f1cc5516c8f0be7a480517fdea2
+Content-length: 30
+
+PROPS-END
+this is a test file
+
+
+Revision-number: 2
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-27T13:32:30.853986Z
+K 7
+svn:log
+V 13
+Changed file.
+PROPS-END
+
+Node-path: file1.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 13
+Text-content-md5: 5af7ab1f6a22ddd4f590664a39ce1004
+Text-content-sha1: 56cc699ada54eca15d2cd5592b6d7d9f970b2554
+Content-length: 13
+
+changed file
+
+
+Revision-number: 3
+Prop-content-length: 120
+Content-length: 120
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-27T13:32:30.966784Z
+K 7
+svn:log
+V 19
+Changed file again.
+PROPS-END
+
+Node-path: file1.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 19
+Text-content-md5: 663c78de3de3fd763a60013140d9596f
+Text-content-sha1: 509d16a72d71207f9312dbab64000c6cd1be2800
+Content-length: 19
+
+changed file again
+
+
+Revision-number: 4
+Prop-content-length: 127
+Content-length: 127
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-10-27T13:32:31.073005Z
+K 7
+svn:log
+V 26
+Changed file a third time.
+PROPS-END
+
+Node-path: file1.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 26
+Text-content-md5: 4b444b45901292ab301d693e525cb996
+Text-content-sha1: 7a685989aec9c1296c42fa05127dff7eee55ebb2
+Content-length: 26
+
+changed file a third time
+
+
