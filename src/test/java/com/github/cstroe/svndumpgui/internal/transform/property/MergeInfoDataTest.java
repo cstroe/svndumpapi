@@ -43,6 +43,18 @@ public class MergeInfoDataTest {
         }{
             MergeInfoData.Range range = new MergeInfoData.Range(1234, 2345);
             assertThat(range.toString(), is(equalTo("1234-2345")));
+        }{
+            MergeInfoData.Range range = new MergeInfoData.Range(2, true);
+            assertThat(range.toString(), is(equalTo("2*")));
+        }{
+            MergeInfoData.Range range = new MergeInfoData.Range(2, 4, true);
+            assertThat(range.toString(), is(equalTo("2-4*")));
+        }{
+            MergeInfoData.Range range = new MergeInfoData.Range(2, false);
+            assertThat(range.toString(), is(equalTo("2")));
+        }{
+            MergeInfoData.Range range = new MergeInfoData.Range(2, 4, false);
+            assertThat(range.toString(), is(equalTo("2-4")));
         }
     }
 
