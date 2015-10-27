@@ -30,6 +30,7 @@ TOKEN: { <MERGE_PATH: (~[":"])*> : REVISIONS }
 <REVISIONS> TOKEN: { <NUMBER: (["0"-"9"])+> }
 <REVISIONS> TOKEN: { <DASH: "-"> }
 <REVISIONS> TOKEN: { <COMMA: ","> }
+<REVISIONS> TOKEN: { <STAR: "*"> }
 <REVISIONS> TOKEN: { <NEWLINE: "\n"> : DEFAULT }
 
 // Parser
@@ -71,19 +72,29 @@ public void Range(MergeInfoData.Path path):
 {
     Token fromNumber;
     Token toNumber = null;
+    Token star = null;
     int from;
     int to;
 }
 {
     fromNumber = <NUMBER>
     ( <DASH> toNumber = <NUMBER> )?
+    [ star = <STAR> ]
     {
         from = Integer.parseInt(fromNumber.image);
         if(toNumber != null) {
             to = Integer.parseInt(toNumber.image);
-            path.addRange(new MergeInfoData.Range(from, to));
+            if(star == null) {
+                path.addRange(new MergeInfoData.Range(from, to));
+            } else {
+                path.addRange(new MergeInfoData.Range(from, to, true));
+            }
         } else {
-            path.addRange(new MergeInfoData.Range(from));
+            if(star == null) {
+                path.addRange(new MergeInfoData.Range(from));
+            } else {
+                path.addRange(new MergeInfoData.Range(from, true));
+            }
         }
     }
 }

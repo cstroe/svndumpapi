@@ -63,14 +63,24 @@ public class MergeInfoData {
         public static final int NOT_SET = -1;
         private int fromRange;
         private int toRange;
+        private final boolean nonInheritable;
 
         public Range(int fromRange) {
             this(fromRange, NOT_SET);
         }
 
+        public Range(int fromRange, boolean nonInheritable) {
+            this(fromRange, NOT_SET, nonInheritable);
+        }
+
         public Range(int fromRange, int toRange) {
+            this(fromRange, toRange, false);
+        }
+
+        public Range(int fromRange, int toRange, boolean nonInheritable) {
             this.fromRange = fromRange;
             this.toRange = toRange;
+            this.nonInheritable = nonInheritable;
         }
 
         public int getFromRange() {
@@ -89,13 +99,24 @@ public class MergeInfoData {
             this.toRange = toRange;
         }
 
+        public boolean isNonInheritable() {
+            return nonInheritable;
+        }
+
         @Override
         public String toString() {
+            StringBuilder builder = new StringBuilder();
             if(toRange == NOT_SET) {
-                return Integer.toString(fromRange);
+                builder.append(Integer.toString(fromRange));
             } else {
-                return fromRange + "-" + toRange;
+                builder.append(fromRange).append("-").append(toRange);
             }
+
+            if(nonInheritable) {
+                builder.append("*");
+            }
+
+            return builder.toString();
         }
     }
 }
