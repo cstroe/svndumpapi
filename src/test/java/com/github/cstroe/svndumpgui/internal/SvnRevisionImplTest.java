@@ -22,9 +22,16 @@ public class SvnRevisionImplTest {
 
     @Test
     public void revision_number() {
-        SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
-        assertThat(svnRevision.getNumber(), is(1));
-        assertNull(svnRevision.get(SvnProperty.DATE));
+        {
+            SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
+            assertThat(svnRevision.getNumber(), is(1));
+            assertNull(svnRevision.get(SvnProperty.DATE));
+        }{
+            SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
+            svnRevision.setNumber(2);
+            assertThat(svnRevision.getNumber(), is(2));
+            assertNull(svnRevision.get(SvnProperty.DATE));
+        }
     }
 
     @Test
