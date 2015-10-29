@@ -13,6 +13,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <licenses>
+      <license>
+        <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3, 19 November 2007</name>
+        <url>http://www.gnu.org/licenses/agpl-3.0.en.html</url>
+      </license>
+    </licenses>
+
     <build>
         <plugins>
             <plugin>
