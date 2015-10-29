@@ -14,7 +14,7 @@ public interface SvnProperty {
      * can produce the matching number of new lines.
      *
      * Had to resort to this "hack" because the SVN dump file description is not specific enough
-     * and it was too hard to decypher the behavior of "svnadmin dump" with regards to new lines.
+     * and it was too hard to decipher the behavior of "svnadmin dump" with regards to new lines.
      */
     String TRAILING_NEWLINE_HINT = "TRAILING_NEWLINE_HINT";
 }
