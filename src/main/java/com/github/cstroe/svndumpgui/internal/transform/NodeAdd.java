@@ -18,7 +18,7 @@ public class NodeAdd extends AbstractSvnDumpMutator {
     @Override
     public void consume(SvnRevision revision) {
         super.consume(revision);
-        if(revision.getNumber() == targetRevision && !nodeAdded) {
+        if(revision.getNumber() == targetRevision) {
             node.setRevision(revision);
             super.consume(node);
             if(node.getContent().size() > 0) {
