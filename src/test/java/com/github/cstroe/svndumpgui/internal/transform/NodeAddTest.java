@@ -145,4 +145,27 @@ public class NodeAddTest {
         SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
 
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void throw_exception_when_node_not_added() throws ParseException, NoSuchAlgorithmException {
+        SvnNode nodeToAdd;
+        {
+            StringWriter stringWriter = new StringWriter();
+            stringWriter.append("This is some file content.");
+            byte[] fileContent = stringWriter.toString().getBytes();
+
+            SvnNodeImpl newFileNode = new SvnNodeImpl();
+            newFileNode.addFileContentChunk(new FileContentChunkImpl(fileContent));
+            newFileNode.getHeaders().put(SvnNodeHeader.ACTION, "add");
+            newFileNode.getHeaders().put(SvnNodeHeader.KIND, "file");
+            newFileNode.getHeaders().put(SvnNodeHeader.PATH, "FILE.txt");
+            newFileNode.getHeaders().put(SvnNodeHeader.TEXT_CONTENT_LENGTH, Integer.toString(fileContent.length));
+            newFileNode.getHeaders().put(SvnNodeHeader.CONTENT_LENGTH, Integer.toString(fileContent.length));
+            newFileNode.getHeaders().put(SvnNodeHeader.MD5, TestUtil.md5sum(fileContent));
+            nodeToAdd = newFileNode;
+        }
+
+        NodeAdd nodeAdd = new NodeAdd(6, nodeToAdd);
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
+    }
 }
