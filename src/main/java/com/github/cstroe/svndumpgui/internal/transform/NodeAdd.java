@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
+import com.github.cstroe.svndumpgui.api.FileContentChunk;
 import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
 
@@ -16,10 +17,17 @@ public class NodeAdd extends AbstractSvnDumpMutator {
 
     @Override
     public void consume(SvnRevision revision) {
-        getNextConsumer().consume(revision);
-        if(revision.getNumber() == targetRevision && !nodeAdded) {
+        super.consume(revision);
+        if(revision.getNumber() == targetRevision) {
             node.setRevision(revision);
-            getNextConsumer().consume(node);
+            super.consume(node);
+            if(node.getContent().size() > 0) {
+                for (FileContentChunk chunk : node.getContent()) {
+                    super.consume(chunk);
+                }
+                super.endChunks();
+            }
+            super.endNode(node);
             nodeAdded = true;
         }
     }
