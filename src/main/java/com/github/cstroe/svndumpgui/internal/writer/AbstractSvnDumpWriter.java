@@ -2,20 +2,22 @@ package com.github.cstroe.svndumpgui.internal.writer;
 
 import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.internal.AbstractSvnDumpConsumer;
+import com.github.cstroe.svndumpgui.internal.SimplePrintStream;
 
 import java.io.OutputStream;
-import java.io.PrintStream;
 
 public abstract class AbstractSvnDumpWriter extends AbstractSvnDumpConsumer implements SvnDumpWriter {
-    private PrintStream ps;
+    private SimplePrintStream ps;
 
     @Override
     public void writeTo(OutputStream os) {
-        this.ps = new PrintStream(os);
+        if(os == null) {
+            throw new IllegalArgumentException("Cannot write to null output stream.");
+        }
+        this.ps = new SimplePrintStream(os);
     }
 
-    public PrintStream ps() {
-        assert ps != null;
+    public SimplePrintStream ps() {
         return ps;
     }
 }

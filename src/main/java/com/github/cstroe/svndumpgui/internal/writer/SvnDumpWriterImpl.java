@@ -6,10 +6,10 @@ import com.github.cstroe.svndumpgui.api.SvnNode;
 import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
 import com.github.cstroe.svndumpgui.api.SvnProperty;
 import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.internal.SimplePrintStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Map;
 
 public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
@@ -33,7 +33,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
 
         // properties are created here so that we can fill in the header values correctly
         ByteArrayOutputStream properties = new ByteArrayOutputStream();
-        writeProperties(new PrintStream(properties, true), revision.getProperties());
+        writeProperties(new SimplePrintStream(properties), revision.getProperties());
         int propertiesLength = properties.size();
 
         ps().print("Prop-content-length: ");
@@ -48,7 +48,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
         super.consume(revision);
     }
 
-    private void writeProperties(PrintStream ps, Map<String, String> properties) {
+    private void writeProperties(SimplePrintStream ps, Map<String, String> properties) {
         if(properties == null) {
             return;
         }
@@ -61,6 +61,7 @@ public class SvnDumpWriterImpl extends AbstractSvnDumpWriter {
             ps.println(entry.getValue());
         }
         ps.println("PROPS-END");
+        ps.flush();
     }
 
     @Override
