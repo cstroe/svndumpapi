@@ -23,7 +23,7 @@ I'm not the first one to have this idea.  Here are some links:
 * [svndumpmultitool](https://github.com/emosenkis/svndumpmultitool): very similar project to this one, written in Python
 
 ## Model
-<img src="src/site/resources/model.svg"/>
+<img src="https://raw.githubusercontent.com/cstroe/svndumpapi/master/src/site/resources/model.svg"/>
 
 ## SVNDumpFileParser
 
