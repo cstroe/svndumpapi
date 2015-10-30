@@ -1,10 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.Node;
+import com.github.cstroe.svndumpgui.api.NodeHeader;
+import com.github.cstroe.svndumpgui.api.Revision;
 
-public class NodeHeaderChange extends AbstractSvnDumpMutator {
+public class NodeHeaderChange extends AbstractRepositoryMutator {
 
     private int REVISION_NOT_FOUND = 0;
     private int FOUND_REVISION_BUT_DIDNT_UPDATE_NODE = 1;
@@ -13,13 +13,13 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
     private final int targetRevision;
     private final String nodeAction;
     private final String nodePath;
-    private final SvnNodeHeader headerToChange;
+    private final NodeHeader headerToChange;
     private final String oldValue;
     private final String newValue;
 
     private int state = REVISION_NOT_FOUND;
 
-    public NodeHeaderChange(int targetRevision, String nodeAction, String path, SvnNodeHeader headerToChange, String oldValue, String newValue) {
+    public NodeHeaderChange(int targetRevision, String nodeAction, String path, NodeHeader headerToChange, String oldValue, String newValue) {
         if(oldValue == null) {
             throw new IllegalArgumentException("Cannot accept null paramter: oldValue");
         }
@@ -33,7 +33,7 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnRevision revision) {
+    public void consume(Revision revision) {
         if(revision.getNumber() == targetRevision) {
             state = FOUND_REVISION_BUT_DIDNT_UPDATE_NODE;
         }
@@ -41,7 +41,7 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void endRevision(SvnRevision revision) {
+    public void endRevision(Revision revision) {
         if(state == FOUND_REVISION_BUT_DIDNT_UPDATE_NODE) {
             throw new IllegalArgumentException("The node \"" + nodeAction + " " + nodePath + "\" was not found at revision " + targetRevision);
         }
@@ -49,9 +49,9 @@ public class NodeHeaderChange extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnNode node) {
+    public void consume(Node node) {
         if(state == FOUND_REVISION_BUT_DIDNT_UPDATE_NODE) {
-            if (nodeAction.equals(node.get(SvnNodeHeader.ACTION)) && nodePath.equals(node.get(SvnNodeHeader.PATH))) {
+            if (nodeAction.equals(node.get(NodeHeader.ACTION)) && nodePath.equals(node.get(NodeHeader.PATH))) {
                 if(!oldValue.equals(node.get(headerToChange))) {
                     throw new IllegalArgumentException("The old value for the " + headerToChange.name() + " property is not \"" + oldValue + "\"");
                 }

@@ -10,8 +10,8 @@ An API for editing SVN dump files.
 
 SVN dump files are created via the `svnadmin dump` command, and contain all the 
 history of an SVN repository.  An SVN dump file contains a list of revisions 
-(see [`SvnRevision`](src/main/java/com/github/cstroe/svndumpgui/api/SvnRevision.java)), and each
-revision contains a list of nodes (see [`SvnNode`](src/main/java/com/github/cstroe/svndumpgui/api/SvnNode.java)).
+(see [`Revision`](src/main/java/com/github/cstroe/svndumpgui/api/Revision.java)), and each
+revision contains a list of nodes (see [`Node`](src/main/java/com/github/cstroe/svndumpgui/api/Node.java)).
 
 Revisions can have properties such as author, date, and commit message.  Nodes 
 can have properties too, which are maintained on a node by node basis.
@@ -22,36 +22,40 @@ I'm not the first one to have this idea.  Here are some links:
 * [svndumpfilter](http://svnbook.red-bean.com/en/1.8/svn.ref.svndumpfilter.html): comes with svn, limited functionality
 * [svndumpmultitool](https://github.com/emosenkis/svndumpmultitool): very similar project to this one, written in Python
 
+## Model
+[![Model Diagram](src/site/resources/model.svg)](src/site/resources/model.svg)
+
 ## SVNDumpFileParser
 
 The `SvnDumpFileParser` is an auto-generated parser for SVN dump files 
 (files [created with `svnadmin dump`](src/test/resources/dumps)).  It will
-parse SVN dump files into an [`SvnDump`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDump.java) object.  The `SvnDump` representation is
+parse SVN dump files into a [`Repository`](src/main/java/com/github/cstroe/svndumpgui/api/Repository.java) object.
+The `Repository` representation is
 meant to be very light-weight and does minimal validation.
 
 The parser is auto-generated using JavaCC from the [`svndump.jj`](src/main/javacc/svndump.jj) gramar file.
 This grammar generates a parser that is dependenent on the Java interfaces and 
 classes in this project.
 
-## Svn dump summary
+## Repository Summary
 
 To get an `svn log`-like summary of your dump file, you can use the 
-[`SvnDumpSummary`](src/main/java/com/github/cstroe/svndumpgui/internal/writer/SvnDumpSummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
+[`RepositorySummary`](src/main/java/com/github/cstroe/svndumpgui/internal/writer/RepositorySummary.java) (sample output [here](src/test/resources/summary/svn_multi_file_delete.txt)).
 
 ## Consumers
 
-An [`SvnDumpConsumer`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpConsumer.java) consumes the various pieces of an [`SvnDump`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDump.java).  Specializations of a consumer are:
+A [`RepositoryConsumer`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryConsumer.java) consumes the various pieces of an [`Repository`](src/main/java/com/github/cstroe/svndumpgui/api/Repository.java).  Specializations of a consumer are:
 
-* [`SvnDumpMutator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpMutator.java): changes the SvnDump in some way
-* [`SvnDumpValidator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpValidator.java): validates the correctness of the SvnDump in some way
-* [`SvnDumpWriter`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpWriter.java): write the SvnDump in some format
+* [`RepositoryMutator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryMutator.java): changes the SvnDump in some way
+* [`RepositoryValidator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryValidator.java): validates the correctness of the SvnDump in some way
+* [`RepositoryWriter`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryWriter.java): write the Repository in some format
 
-Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files using the `continueTo(SvnDumpConsumer)` method.
+Consumers (and therefore any of its specializations) can be chained together to achieve complex operations on SVN dump files using the `continueTo(RepositoryConsumer)` method.
 
 ## Mutators
 
 The API allows for changing of an SVN dump file via 
-[`SvnDumpMutator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpMutator.java) implementations.
+[`RepositoryMutator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryMutator.java) implementations.
 
 Some useful mutators are:
 * [`ClearRevision`](src/main/java/com/github/cstroe/svndumpgui/internal/transform/ClearRevision.java) - empties a revision (removes all changes, revision is preserved)
@@ -60,14 +64,14 @@ Some useful mutators are:
 * [`NodeAdd`](src/main/java/com/github/cstroe/svndumpgui/internal/transform/NodeAdd.java) - add some newly crafted change to a specific revision
 * [`NodeHeaderChange`](src/main/java/com/github/cstroe/svndumpgui/internal/transform/NodeHeaderChange.java) - change a specific property on an existing SvnNode
 
-To apply multiple mutators in sequence, you can chain them together, using `SvnDumpConsumer.continueTo(SvnDumpConsumer)`.
+To apply multiple mutators in sequence, you can chain them together, using `RepositoryConsumer.continueTo(RepositoryConsumer)`.
 
 ## Validators
 
 When you start messing with your SVN history via the mutators, you can be left
 with an SVN dump file that cannot be imported back into an SVN repository.  To
  make changing SVN history easier the API has the concept of an 
- [`SvnDumpValidator`](src/main/java/com/github/cstroe/svndumpgui/api/SvnDumpValidator.java).
+ [`RepositoryValidator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryValidator.java).
  
 Validation is done while the data is in memory, which is much faster
 than running it through `svnadmin load`.
@@ -101,7 +105,7 @@ All the operations to the SVN dump file are detailed in [this test](src/test/jav
 
 Parsing an SVN dump file is straight forward.  Here's an example that uses a single consumer (writes the SVN dump to STD OUT):
 
-    SvnDumpWriter writer = new SvnDumpWriterImpl();
+    RepositoryWriter writer = new RepositoryWriterImpl();
     writer.writeTo(System.out);
     
     InputStream is = new FileInputStream("svn.dump");

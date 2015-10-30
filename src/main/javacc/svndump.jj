@@ -21,20 +21,20 @@ PARSER_BEGIN(SvnDumpFileParser)
   import java.util.LinkedHashMap;
   import java.security.MessageDigest;
 
-  import com.github.cstroe.svndumpgui.api.FileContentChunk;
-  import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
-  import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
-  import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
+  import com.github.cstroe.svndumpgui.api.ContentChunk;
+  import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
+  import com.github.cstroe.svndumpgui.api.Preamble;
+  import com.github.cstroe.svndumpgui.api.RepositoryWriter;
   import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
-  import com.github.cstroe.svndumpgui.api.SvnNode;
-  import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
-  import com.github.cstroe.svndumpgui.api.SvnProperty;
-  import com.github.cstroe.svndumpgui.api.SvnRevision;
-  import com.github.cstroe.svndumpgui.internal.FileContentChunkImpl;
-  import com.github.cstroe.svndumpgui.internal.SvnDumpPreambleImpl;
-  import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
-  import com.github.cstroe.svndumpgui.internal.SvnNodeImpl;
-  import com.github.cstroe.svndumpgui.internal.SvnRevisionImpl;
+  import com.github.cstroe.svndumpgui.api.Node;
+  import com.github.cstroe.svndumpgui.api.NodeHeader;
+  import com.github.cstroe.svndumpgui.api.Property;
+  import com.github.cstroe.svndumpgui.api.Revision;
+  import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
+  import com.github.cstroe.svndumpgui.internal.PreambleImpl;
+  import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+  import com.github.cstroe.svndumpgui.internal.NodeImpl;
+  import com.github.cstroe.svndumpgui.internal.RevisionImpl;
   import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 
   public class SvnDumpFileParser {
@@ -57,7 +57,7 @@ PARSER_BEGIN(SvnDumpFileParser)
         }
     }
 
-    private void readChunks(Long length, SvnDumpConsumer consumer, String md5sum, String sha1sum, String path) throws ParseException {
+    private void readChunks(Long length, RepositoryConsumer consumer, String md5sum, String sha1sum, String path) throws ParseException {
         if(length == null || length == 0) {
             return;
         }
@@ -77,7 +77,7 @@ PARSER_BEGIN(SvnDumpFileParser)
         while(lengthLeft > 0) {
             int chunkSize = (int) Math.min((long)fileContentChunkSize, lengthLeft);
 
-            FileContentChunk chunk = null;
+            ContentChunk chunk = null;
             try {
                 byte[] freshBytes = stream.readBytes(chunkSize);
                 if(md5sum != null) {
@@ -86,7 +86,7 @@ PARSER_BEGIN(SvnDumpFileParser)
                 if(sha1sum != null) {
                     sha1.update(freshBytes);
                 }
-                chunk = new FileContentChunkImpl(freshBytes);
+                chunk = new ContentChunkImpl(freshBytes);
                 lengthLeft -= chunkSize;
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
@@ -123,7 +123,7 @@ PARSER_BEGIN(SvnDumpFileParser)
         return hashText;
     }
 
-    public static void consume(InputStream inputStream, SvnDumpConsumer consumer) throws ParseException {
+    public static void consume(InputStream inputStream, RepositoryConsumer consumer) throws ParseException {
         new SvnDumpFileParser(new SvnDumpFileCharStream(inputStream)).Start(consumer);
     }
   }
@@ -166,12 +166,12 @@ TOKEN: { <TEXT_COPYSOURCE_SHA1_KEY: "Text-copy-source-sha1"> }
 
 // Parser
 
-public void Start(SvnDumpConsumer consumer):
+public void Start(RepositoryConsumer consumer):
 {
   Token dumpVersion;
   Token uuid;
-  SvnRevision revision;
-  SvnNode node = null;
+  Revision revision;
+  Node node = null;
 }
 {
     {
@@ -186,7 +186,7 @@ public void Start(SvnDumpConsumer consumer):
     <EOL>
 
     {
-        SvnDumpPreamble preamble = new SvnDumpPreambleImpl(uuid.image);
+        Preamble preamble = new PreambleImpl(uuid.image);
         consumer.consume(preamble);
     }
 
@@ -201,24 +201,24 @@ public void Start(SvnDumpConsumer consumer):
             {
                 consumer.consume(node);
 
-                String textContentLength = node.get(SvnNodeHeader.TEXT_CONTENT_LENGTH);
-                String md5sum = node.get(SvnNodeHeader.MD5);
-                String sha1sum = node.get(SvnNodeHeader.SHA1);
+                String textContentLength = node.get(NodeHeader.TEXT_CONTENT_LENGTH);
+                String md5sum = node.get(NodeHeader.MD5);
+                String sha1sum = node.get(NodeHeader.SHA1);
                 if(textContentLength != null && Long.parseLong(textContentLength) != 0) {
-                    readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum, node.get(SvnNodeHeader.PATH));
+                    readChunks(Long.parseLong(textContentLength), consumer, md5sum, sha1sum, node.get(NodeHeader.PATH));
                 }
             }
             (
                 <EOL>
                 {
                     // really bad hack to know how many EOLs are in the stream
-                    String currentValueRaw = node.getProperties().get(SvnProperty.TRAILING_NEWLINE_HINT);
+                    String currentValueRaw = node.getProperties().get(Property.TRAILING_NEWLINE_HINT);
                     if(currentValueRaw != null) {
                         int currentValue = Integer.parseInt(currentValueRaw);
                         currentValue++;
-                        node.getProperties().put(SvnProperty.TRAILING_NEWLINE_HINT, Integer.toString(currentValue));
+                        node.getProperties().put(Property.TRAILING_NEWLINE_HINT, Integer.toString(currentValue));
                     } else {
-                        node.getProperties().put(SvnProperty.TRAILING_NEWLINE_HINT, "1");
+                        node.getProperties().put(Property.TRAILING_NEWLINE_HINT, "1");
                     }
                 }
             )+
@@ -237,9 +237,9 @@ public void Start(SvnDumpConsumer consumer):
     { consumer.finish(); }
 }
 
-public SvnRevision Revision():
+public Revision Revision():
 {
-    SvnRevisionImpl revision;
+    RevisionImpl revision;
     Token revisionNumber;
     Map properties;
 }
@@ -251,7 +251,7 @@ public SvnRevision Revision():
     <CONTENT_LENGTH_KEY> <COLON> <NUMBER> <EOL>
     <EOL>
 
-    { revision = new SvnRevisionImpl(Integer.parseInt(revisionNumber.image)); }
+    { revision = new RevisionImpl(Integer.parseInt(revisionNumber.image)); }
 
     properties = Property()
     { revision.setProperties(properties); }
@@ -285,9 +285,9 @@ public Map Property():
     { return properties; }
 }
 
-public SvnNode Node(SvnRevision revision):
+public Node Node(Revision revision):
 {
-    SvnNodeImpl svnNode;
+    NodeImpl svnNode;
     Token nodePath = null;
     Token nodeKind = null;
     Token nodeAction = null;
@@ -306,67 +306,67 @@ public SvnNode Node(SvnRevision revision):
     (
         <NODE_PATH_KEY> nodePath = <NODE_PATH_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.PATH, nodePath.image);
+            headers.put(NodeHeader.PATH, nodePath.image);
         }
     |
         <NODE_KIND_KEY> <COLON> nodeKind = <NODE_KIND_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.KIND, nodeKind.image);
+            headers.put(NodeHeader.KIND, nodeKind.image);
         }
     |
         <NODE_ACTION_KEY> <COLON> nodeAction = <NODE_ACTION_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.ACTION, nodeAction.image);
+            headers.put(NodeHeader.ACTION, nodeAction.image);
         }
     |
         <PROP_CONTENT_LENGTH_KEY> <COLON> propContentLength = <NUMBER> <EOL>
         {
-            headers.put(SvnNodeHeader.PROP_CONTENT_LENGTH, propContentLength.image);
+            headers.put(NodeHeader.PROP_CONTENT_LENGTH, propContentLength.image);
         }
     |
         <TEXT_CONTENT_LENGTH_KEY> <COLON> textContentLength = <NUMBER> <EOL>
         {
-            headers.put(SvnNodeHeader.TEXT_CONTENT_LENGTH, textContentLength.image);
+            headers.put(NodeHeader.TEXT_CONTENT_LENGTH, textContentLength.image);
         }
     |
         <TEXT_CONTENT_MD5_KEY> <COLON> nodeMd5 = <MD5_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.MD5, nodeMd5.image);
+            headers.put(NodeHeader.MD5, nodeMd5.image);
         }
     |
         <TEXT_CONTENT_SHA1_KEY> <COLON> nodeSha1 = <SHA1_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.SHA1, nodeSha1.image);
+            headers.put(NodeHeader.SHA1, nodeSha1.image);
         }
     |
         <CONTENT_LENGTH_KEY> <COLON> contentLength = <NUMBER> <EOL>
         {
-            headers.put(SvnNodeHeader.CONTENT_LENGTH, contentLength.image);
+            headers.put(NodeHeader.CONTENT_LENGTH, contentLength.image);
         }
     |
         <NODE_COPYFROM_REV_KEY> <COLON> copiedFromRevision = <NUMBER> <EOL>
         {
-            headers.put(SvnNodeHeader.COPY_FROM_REV, copiedFromRevision.image);
+            headers.put(NodeHeader.COPY_FROM_REV, copiedFromRevision.image);
         }
     |
         <NODE_COPYFROM_PATH_KEY> copiedFromPath = <NODE_PATH_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.COPY_FROM_PATH, copiedFromPath.image);
+            headers.put(NodeHeader.COPY_FROM_PATH, copiedFromPath.image);
         }
     |
         <TEXT_COPYSOURCE_MD5_KEY> <COLON> copiedFromMd5 =  <MD5_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.SOURCE_MD5, copiedFromMd5.image);
+            headers.put(NodeHeader.SOURCE_MD5, copiedFromMd5.image);
         }
     |
         <TEXT_COPYSOURCE_SHA1_KEY> <COLON> copiedFromSha1 =  <SHA1_VALUE> <EOL>
         {
-            headers.put(SvnNodeHeader.SOURCE_SHA1, copiedFromSha1.image);
+            headers.put(NodeHeader.SOURCE_SHA1, copiedFromSha1.image);
         }
     )+
 
     {
-        svnNode = new SvnNodeImpl(revision);
+        svnNode = new NodeImpl(revision);
         svnNode.setHeaders(headers);
         headers = null;
 

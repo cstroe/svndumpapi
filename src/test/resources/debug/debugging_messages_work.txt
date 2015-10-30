@@ -1,4 +1,4 @@
-consume(SvnDumpPreambleImpl 5a51dd4d-dd34-4a90-a3be-fb020b1240d3)
+consume(PreambleImpl 5a51dd4d-dd34-4a90-a3be-fb020b1240d3)
 consume(Revision: 0, *** empty message *** - 2015-08-29T04:17:10.627412Z)
 endRevision(Revision: 0, *** empty message *** - 2015-08-29T04:17:10.627412Z)
 consume(Revision: 1, Added 3 files. - superd @ 2015-08-29T04:18:29.357886Z)

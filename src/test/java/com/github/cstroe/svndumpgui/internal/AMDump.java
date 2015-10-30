@@ -1,9 +1,9 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
-import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
-import com.github.cstroe.svndumpgui.api.SvnDumpWriter;
-import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
+import com.github.cstroe.svndumpgui.api.RepositoryValidator;
+import com.github.cstroe.svndumpgui.api.RepositoryWriter;
+import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.transform.ClearRevision;
@@ -14,10 +14,10 @@ import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.transform.UpdateAuthorForEmptyRevisions;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 import com.github.cstroe.svndumpgui.internal.validate.TerminatingValidator;
-import com.github.cstroe.svndumpgui.internal.writer.SvnDumpAuthors;
-import com.github.cstroe.svndumpgui.internal.writer.SvnDumpSummary;
-import com.github.cstroe.svndumpgui.internal.validate.PathCollision;
-import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.RepositoryAuthors;
+import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
+import com.github.cstroe.svndumpgui.internal.validate.PathCollisionValidator;
+import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -51,15 +51,15 @@ public class AMDump {
     public void convert_AgreementMaker_repository() throws ParseException, NoSuchAlgorithmException, IOException {
 
         // add the main branch here
-        SvnNodeImpl trunkAgreementMaker = new SvnNodeImpl();
-        trunkAgreementMaker.getHeaders().put(SvnNodeHeader.ACTION, "add");
-        trunkAgreementMaker.getHeaders().put(SvnNodeHeader.KIND, "dir");
-        trunkAgreementMaker.getHeaders().put(SvnNodeHeader.PATH, "trunk/AgreementMaker");
-        trunkAgreementMaker.getHeaders().put(SvnNodeHeader.PROP_CONTENT_LENGTH, "10");
-        trunkAgreementMaker.getHeaders().put(SvnNodeHeader.CONTENT_LENGTH, "10");
+        NodeImpl trunkAgreementMaker = new NodeImpl();
+        trunkAgreementMaker.getHeaders().put(NodeHeader.ACTION, "add");
+        trunkAgreementMaker.getHeaders().put(NodeHeader.KIND, "dir");
+        trunkAgreementMaker.getHeaders().put(NodeHeader.PATH, "trunk/AgreementMaker");
+        trunkAgreementMaker.getHeaders().put(NodeHeader.PROP_CONTENT_LENGTH, "10");
+        trunkAgreementMaker.getHeaders().put(NodeHeader.CONTENT_LENGTH, "10");
         trunkAgreementMaker.setProperties(new HashMap<>());
 
-        SvnDumpConsumer chain = new NodeAdd(4, trunkAgreementMaker);
+        RepositoryConsumer chain = new NodeAdd(4, trunkAgreementMaker);
 
         // IM commits
         chain.continueTo(new ClearRevision(1007,1101));
@@ -142,22 +142,22 @@ public class AMDump {
         chain.continueTo(new NodeRemove(1843, "add", "branches"));
         chain.continueTo(new NodeRemove(2875, "delete", "trunk/AgreementMaker/AM_ROOT"));
 
-        chain.continueTo(new NodeHeaderChange(2875, "add", "trunk/AgreementMaker-OSGi/AM_ROOT", SvnNodeHeader.COPY_FROM_REV, "2874", "2814"));
+        chain.continueTo(new NodeHeaderChange(2875, "add", "trunk/AgreementMaker-OSGi/AM_ROOT", NodeHeader.COPY_FROM_REV, "2874", "2814"));
 
         chain.continueTo(new UpdateAuthorForEmptyRevisions("cosmin"));
 
-        SvnDumpValidator pathCollisionValidator = new PathCollision();
-        SvnDumpValidator terminator = new TerminatingValidator(pathCollisionValidator);
+        RepositoryValidator pathCollisionValidator = new PathCollisionValidator();
+        RepositoryValidator terminator = new TerminatingValidator(pathCollisionValidator);
         chain.continueTo(terminator);
 
         // save the dump
         FileOutputStream fos = new FileOutputStream("/tmp/am_good.dump");
-        SvnDumpWriter dumpWriter = new SvnDumpWriterImpl();
+        RepositoryWriter dumpWriter = new RepositoryWriterImpl();
         dumpWriter.writeTo(fos);
         chain.continueTo(dumpWriter);
 
         FileOutputStream summaryOs = new FileOutputStream("/tmp/am_good.summary");
-        SvnDumpWriter summaryWriter = new SvnDumpSummary();
+        RepositoryWriter summaryWriter = new RepositorySummary();
         summaryWriter.writeTo(summaryOs);
         chain.continueTo(summaryWriter);
 
@@ -179,7 +179,7 @@ public class AMDump {
     public void list_authors() throws IOException, ParseException {
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/finished.dump");
         SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
-        SvnDumpWriter authorsWriter = new SvnDumpAuthors();
+        RepositoryWriter authorsWriter = new RepositoryAuthors();
         authorsWriter.writeTo(System.out);
 
         parser.Start(authorsWriter);

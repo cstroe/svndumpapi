@@ -1,10 +1,10 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.FileContentChunk;
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.ContentChunk;
+import com.github.cstroe.svndumpgui.api.Node;
+import com.github.cstroe.svndumpgui.api.Revision;
 
-public class ClearRevision extends AbstractSvnDumpMutator {
+public class ClearRevision extends AbstractRepositoryMutator {
 
     private final int NOT_SET = -1;
     private final int fromRevision;
@@ -32,13 +32,13 @@ public class ClearRevision extends AbstractSvnDumpMutator {
         this.toRevision = toRevision;
     }
 
-    private boolean revisionMatches(SvnRevision revision) {
+    private boolean revisionMatches(Revision revision) {
         return (toRevision == NOT_SET && revision.getNumber() == fromRevision) ||
                (revision.getNumber() >= fromRevision && revision.getNumber() <= toRevision);
     }
 
     @Override
-    public void consume(SvnRevision revision) {
+    public void consume(Revision revision) {
         if(revisionMatches(revision)) {
             inClearedRevision = true;
             matchedSomething = true;
@@ -47,21 +47,21 @@ public class ClearRevision extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void consume(SvnNode node) {
+    public void consume(Node node) {
         if(!inClearedRevision) {
             super.consume(node);
         }
     }
 
     @Override
-    public void consume(FileContentChunk chunk) {
+    public void consume(ContentChunk chunk) {
         if(!inClearedRevision) {
             super.consume(chunk);
         }
     }
 
     @Override
-    public void endNode(SvnNode node) {
+    public void endNode(Node node) {
         if(!inClearedRevision) {
             super.endNode(node);
         }
@@ -75,7 +75,7 @@ public class ClearRevision extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void endRevision(SvnRevision revision) {
+    public void endRevision(Revision revision) {
         inClearedRevision = false;
         super.endRevision(revision);
     }
