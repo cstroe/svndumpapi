@@ -1,28 +1,28 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.FileContentChunk;
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.ContentChunk;
+import com.github.cstroe.svndumpgui.api.Node;
+import com.github.cstroe.svndumpgui.api.Revision;
 
-public class NodeAdd extends AbstractSvnDumpMutator {
+public class NodeAdd extends AbstractRepositoryMutator {
     private final int targetRevision;
-    private final SvnNode node;
+    private final Node node;
 
     private boolean nodeAdded = false;
 
-    public NodeAdd(int targetRevision, SvnNode node) {
+    public NodeAdd(int targetRevision, Node node) {
         this.targetRevision = targetRevision;
         this.node = node;
     }
 
     @Override
-    public void consume(SvnRevision revision) {
+    public void consume(Revision revision) {
         super.consume(revision);
         if(revision.getNumber() == targetRevision) {
             node.setRevision(revision);
             super.consume(node);
             if(node.getContent().size() > 0) {
-                for (FileContentChunk chunk : node.getContent()) {
+                for (ContentChunk chunk : node.getContent()) {
                     super.consume(chunk);
                 }
                 super.endChunks();

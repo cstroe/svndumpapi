@@ -1,7 +1,8 @@
 package com.github.cstroe.svndumpgui.internal;
 
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnNodeHeader;
+import com.github.cstroe.svndumpgui.api.Node;
+import com.github.cstroe.svndumpgui.api.NodeHeader;
+import com.github.cstroe.svndumpgui.api.Property;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -12,8 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.cstroe.svndumpgui.api.SvnProperty;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -23,14 +22,14 @@ public class SvnRevisionImplTest {
     @Test
     public void revision_number() {
         {
-            SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
+            RevisionImpl svnRevision = new RevisionImpl(1);
             assertThat(svnRevision.getNumber(), is(1));
-            assertNull(svnRevision.get(SvnProperty.DATE));
+            assertNull(svnRevision.get(Property.DATE));
         }{
-            SvnRevisionImpl svnRevision = new SvnRevisionImpl(1);
+            RevisionImpl svnRevision = new RevisionImpl(1);
             svnRevision.setNumber(2);
             assertThat(svnRevision.getNumber(), is(2));
-            assertNull(svnRevision.get(SvnProperty.DATE));
+            assertNull(svnRevision.get(Property.DATE));
         }
     }
 
@@ -40,108 +39,108 @@ public class SvnRevisionImplTest {
         cal.clear();
         cal.set(2015, Calendar.AUGUST, 26);
 
-        SvnRevisionImpl svnRevision = new SvnRevisionImpl(1, cal.getTime().toString());
+        RevisionImpl svnRevision = new RevisionImpl(1, cal.getTime().toString());
         assertThat(svnRevision.getNumber(), is(1));
-        assertThat(svnRevision.get(SvnProperty.DATE), is(equalTo(cal.getTime().toString())));
+        assertThat(svnRevision.get(Property.DATE), is(equalTo(cal.getTime().toString())));
     }
 
     @Test(expected = NullPointerException.class)
     public void set_null_properties() {
-        SvnRevisionImpl  svnRevision = new SvnRevisionImpl(0);
+        RevisionImpl svnRevision = new RevisionImpl(0);
         svnRevision.setProperties(null);
     }
 
     @Test(expected = NullPointerException.class)
     public void add_null_node() {
-        SvnRevisionImpl  svnRevision = new SvnRevisionImpl(0);
+        RevisionImpl svnRevision = new RevisionImpl(0);
         svnRevision.addNode(null);
     }
 
     @Test
     public void copy_constructor_makes_deep_copy() {
-        SvnRevisionImpl revision = new SvnRevisionImpl(1);
+        RevisionImpl revision = new RevisionImpl(1);
 
         Map<String, String> propertiesMap = new LinkedHashMap<>();
-        propertiesMap.put(SvnProperty.AUTHOR, "someAuthor");
-        propertiesMap.put(SvnProperty.DATE, "someDate");
-        propertiesMap.put(SvnProperty.LOG, "Log message here.");
+        propertiesMap.put(Property.AUTHOR, "someAuthor");
+        propertiesMap.put(Property.DATE, "someDate");
+        propertiesMap.put(Property.LOG, "Log message here.");
 
         revision.setProperties(Collections.unmodifiableMap(propertiesMap));
 
-        SvnNodeImpl n1 = new SvnNodeImpl(revision);
+        NodeImpl n1 = new NodeImpl(revision);
         {
-            Map<SvnNodeHeader, String> headersMap = new LinkedHashMap<>();
-            headersMap.put(SvnNodeHeader.ACTION, "add");
-            headersMap.put(SvnNodeHeader.PATH, "aDir");
-            headersMap.put(SvnNodeHeader.KIND, "dir");
+            Map<NodeHeader, String> headersMap = new LinkedHashMap<>();
+            headersMap.put(NodeHeader.ACTION, "add");
+            headersMap.put(NodeHeader.PATH, "aDir");
+            headersMap.put(NodeHeader.KIND, "dir");
             n1.setHeaders(Collections.unmodifiableMap(headersMap));
         }
-        SvnNodeImpl n2 = new SvnNodeImpl(revision);
+        NodeImpl n2 = new NodeImpl(revision);
         {
-            Map<SvnNodeHeader, String> headersMap = new LinkedHashMap<>();
-            headersMap.put(SvnNodeHeader.ACTION, "add");
-            headersMap.put(SvnNodeHeader.PATH, "anotherDir");
-            headersMap.put(SvnNodeHeader.KIND, "dir");
+            Map<NodeHeader, String> headersMap = new LinkedHashMap<>();
+            headersMap.put(NodeHeader.ACTION, "add");
+            headersMap.put(NodeHeader.PATH, "anotherDir");
+            headersMap.put(NodeHeader.KIND, "dir");
             n2.setHeaders(Collections.unmodifiableMap(headersMap));
         }
-        SvnNodeImpl n3 = new SvnNodeImpl(revision);
+        NodeImpl n3 = new NodeImpl(revision);
         {
-            Map<SvnNodeHeader, String> headersMap = new LinkedHashMap<>();
-            headersMap.put(SvnNodeHeader.ACTION, "add");
-            headersMap.put(SvnNodeHeader.PATH, "dir3");
-            headersMap.put(SvnNodeHeader.KIND, "dir");
+            Map<NodeHeader, String> headersMap = new LinkedHashMap<>();
+            headersMap.put(NodeHeader.ACTION, "add");
+            headersMap.put(NodeHeader.PATH, "dir3");
+            headersMap.put(NodeHeader.KIND, "dir");
             n3.setHeaders(Collections.unmodifiableMap(headersMap));
         }
 
-        List<SvnNode> nodeList = new ArrayList<>();
+        List<Node> nodeList = new ArrayList<>();
         nodeList.add(n1);
         nodeList.add(n2);
         nodeList.add(n3);
 
         revision.setNodes(Collections.unmodifiableList(nodeList));
 
-        SvnRevisionImpl revisionCopy = new SvnRevisionImpl(revision);
+        RevisionImpl revisionCopy = new RevisionImpl(revision);
 
         nodeList.clear();
 
         assertThat(revisionCopy.getNumber(), is(revision.getNumber()));
-        assertThat(revisionCopy.getProperties().get(SvnProperty.AUTHOR), is(equalTo("someAuthor")));
-        assertThat(revisionCopy.getProperties().get(SvnProperty.DATE), is(equalTo("someDate")));
-        assertThat(revisionCopy.getProperties().get(SvnProperty.LOG), is(equalTo("Log message here.")));
+        assertThat(revisionCopy.getProperties().get(Property.AUTHOR), is(equalTo("someAuthor")));
+        assertThat(revisionCopy.getProperties().get(Property.DATE), is(equalTo("someDate")));
+        assertThat(revisionCopy.getProperties().get(Property.LOG), is(equalTo("Log message here.")));
 
-        assertThat(revisionCopy.getNodes().get(0).getHeaders().get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertThat(revisionCopy.getNodes().get(0).getHeaders().get(SvnNodeHeader.PATH), is(equalTo("aDir")));
-        assertThat(revisionCopy.getNodes().get(0).getHeaders().get(SvnNodeHeader.KIND), is(equalTo("dir")));
+        assertThat(revisionCopy.getNodes().get(0).getHeaders().get(NodeHeader.ACTION), is(equalTo("add")));
+        assertThat(revisionCopy.getNodes().get(0).getHeaders().get(NodeHeader.PATH), is(equalTo("aDir")));
+        assertThat(revisionCopy.getNodes().get(0).getHeaders().get(NodeHeader.KIND), is(equalTo("dir")));
 
-        assertThat(revisionCopy.getNodes().get(1).getHeaders().get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertThat(revisionCopy.getNodes().get(1).getHeaders().get(SvnNodeHeader.PATH), is(equalTo("anotherDir")));
-        assertThat(revisionCopy.getNodes().get(1).getHeaders().get(SvnNodeHeader.KIND), is(equalTo("dir")));
+        assertThat(revisionCopy.getNodes().get(1).getHeaders().get(NodeHeader.ACTION), is(equalTo("add")));
+        assertThat(revisionCopy.getNodes().get(1).getHeaders().get(NodeHeader.PATH), is(equalTo("anotherDir")));
+        assertThat(revisionCopy.getNodes().get(1).getHeaders().get(NodeHeader.KIND), is(equalTo("dir")));
 
-        assertThat(revisionCopy.getNodes().get(2).getHeaders().get(SvnNodeHeader.ACTION), is(equalTo("add")));
-        assertThat(revisionCopy.getNodes().get(2).getHeaders().get(SvnNodeHeader.PATH), is(equalTo("dir3")));
-        assertThat(revisionCopy.getNodes().get(2).getHeaders().get(SvnNodeHeader.KIND), is(equalTo("dir")));
+        assertThat(revisionCopy.getNodes().get(2).getHeaders().get(NodeHeader.ACTION), is(equalTo("add")));
+        assertThat(revisionCopy.getNodes().get(2).getHeaders().get(NodeHeader.PATH), is(equalTo("dir3")));
+        assertThat(revisionCopy.getNodes().get(2).getHeaders().get(NodeHeader.KIND), is(equalTo("dir")));
     }
 
     @Test
     public void descriptive_toString() {
         {
-            SvnRevisionImpl revision = new SvnRevisionImpl(2);
+            RevisionImpl revision = new RevisionImpl(2);
             assertThat(revision.toString(), is(equalTo("Revision: 2, *** empty message ***")));
         } {
-            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
+            RevisionImpl revision = new RevisionImpl(2, "someDate");
             assertThat(revision.toString(), is(equalTo("Revision: 2, *** empty message *** - someDate")));
         } {
-            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
-            revision.getProperties().put(SvnProperty.LOG, "A log message.");
+            RevisionImpl revision = new RevisionImpl(2, "someDate");
+            revision.getProperties().put(Property.LOG, "A log message.");
             assertThat(revision.toString(), is(equalTo("Revision: 2, A log message. - someDate")));
         } {
-            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
-            revision.getProperties().put(SvnProperty.LOG, "A log message.");
-            revision.getProperties().put(SvnProperty.AUTHOR, "developer1");
+            RevisionImpl revision = new RevisionImpl(2, "someDate");
+            revision.getProperties().put(Property.LOG, "A log message.");
+            revision.getProperties().put(Property.AUTHOR, "developer1");
             assertThat(revision.toString(), is(equalTo("Revision: 2, A log message. - developer1 @ someDate")));
         } {
-            SvnRevisionImpl revision = new SvnRevisionImpl(2, "someDate");
-            revision.getProperties().put(SvnProperty.AUTHOR, "developer1");
+            RevisionImpl revision = new RevisionImpl(2, "someDate");
+            revision.getProperties().put(Property.AUTHOR, "developer1");
             assertThat(revision.toString(), is(equalTo("Revision: 2, *** empty message *** - developer1 @ someDate")));
         }
     }

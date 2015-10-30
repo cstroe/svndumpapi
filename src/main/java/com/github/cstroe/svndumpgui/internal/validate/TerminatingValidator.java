@@ -1,15 +1,15 @@
 package com.github.cstroe.svndumpgui.internal.validate;
 
-import com.github.cstroe.svndumpgui.api.SvnDumpValidationError;
-import com.github.cstroe.svndumpgui.api.SvnDumpPreamble;
-import com.github.cstroe.svndumpgui.api.SvnDumpValidator;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.RepositoryValidationError;
+import com.github.cstroe.svndumpgui.api.Preamble;
+import com.github.cstroe.svndumpgui.api.RepositoryValidator;
+import com.github.cstroe.svndumpgui.api.Revision;
 
-public class TerminatingValidator extends AbstractSvnDumpValidator {
+public class TerminatingValidator extends AbstractRepositoryValidator {
 
-    private final SvnDumpValidator wrappedValidator;
+    private final RepositoryValidator wrappedValidator;
 
-    public TerminatingValidator(SvnDumpValidator wrappedValidator) {
+    public TerminatingValidator(RepositoryValidator wrappedValidator) {
         this.wrappedValidator = wrappedValidator;
     }
 
@@ -19,18 +19,18 @@ public class TerminatingValidator extends AbstractSvnDumpValidator {
     }
 
     @Override
-    public SvnDumpValidationError getError() {
+    public RepositoryValidationError getError() {
         return wrappedValidator.getError();
     }
 
     @Override
-    public void consume(SvnDumpPreamble preamble) {
+    public void consume(Preamble preamble) {
         wrappedValidator.consume(preamble);
         ensureValid();
     }
 
     @Override
-    public void consume(SvnRevision revision) {
+    public void consume(Revision revision) {
         wrappedValidator.consume(revision);
         ensureValid();
     }

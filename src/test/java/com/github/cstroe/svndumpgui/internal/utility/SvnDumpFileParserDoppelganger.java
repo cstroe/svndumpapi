@@ -1,13 +1,13 @@
 package com.github.cstroe.svndumpgui.internal.utility;
 
-import com.github.cstroe.svndumpgui.api.FileContentChunk;
-import com.github.cstroe.svndumpgui.api.SvnDump;
-import com.github.cstroe.svndumpgui.api.SvnDumpConsumer;
-import com.github.cstroe.svndumpgui.api.SvnNode;
-import com.github.cstroe.svndumpgui.api.SvnRevision;
+import com.github.cstroe.svndumpgui.api.ContentChunk;
+import com.github.cstroe.svndumpgui.api.Repository;
+import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
+import com.github.cstroe.svndumpgui.api.Node;
+import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.writer.SvnDumpInMemory;
+import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 
 import java.io.InputStream;
 
@@ -22,20 +22,20 @@ import java.io.InputStream;
  * Useful in tests.
  */
 public class SvnDumpFileParserDoppelganger {
-    private SvnDump dump;
+    private Repository dump;
 
-    public SvnDumpFileParserDoppelganger(SvnDump dump) {
+    public SvnDumpFileParserDoppelganger(Repository dump) {
         this.dump = dump;
     }
 
-    public void Start(SvnDumpConsumer consumer) {
+    public void Start(RepositoryConsumer consumer) {
         consumer.consume(dump.getPreamble());
-        for(SvnRevision revision : dump.getRevisions()) {
+        for(Revision revision : dump.getRevisions()) {
             consumer.consume(revision);
-            for(SvnNode node : revision.getNodes()) {
+            for(Node node : revision.getNodes()) {
                 consumer.consume(node);
                 boolean wroteChunk = false;
-                for(FileContentChunk chunk : node.getContent()) {
+                for(ContentChunk chunk : node.getContent()) {
                     wroteChunk = true;
                     consumer.consume(chunk);
                 }
@@ -49,39 +49,39 @@ public class SvnDumpFileParserDoppelganger {
         consumer.finish();
     }
 
-    public static SvnDump parse(String fileName) throws ParseException {
-        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+    public static Repository parse(String fileName) throws ParseException {
+        RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consume(fileName, dumpInMemory);
         return dumpInMemory.getDump();
     }
 
-    public static SvnDump consume(SvnDump dump, SvnDumpConsumer consumer) {
-        SvnDumpInMemory dumpInMemory = new SvnDumpInMemory();
+    public static Repository consume(Repository dump, RepositoryConsumer consumer) {
+        RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consumer.continueTo(dumpInMemory);
         new SvnDumpFileParserDoppelganger(dump).Start(consumer);
         return dumpInMemory.getDump();
     }
 
-    public static SvnDump consume(String fileName, SvnDumpConsumer consumer) throws ParseException {
+    public static Repository consume(String fileName, RepositoryConsumer consumer) throws ParseException {
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(fileName);
 
         return consume(is, consumer);
     }
 
-    public static SvnDump consume(InputStream is, SvnDumpConsumer consumer) throws ParseException {
-        SvnDumpInMemory svnDumpInMemory = new SvnDumpInMemory();
+    public static Repository consume(InputStream is, RepositoryConsumer consumer) throws ParseException {
+        RepositoryInMemory svnDumpInMemory = new RepositoryInMemory();
         consumer.continueTo(svnDumpInMemory);
         SvnDumpFileParser.consume(is, consumer);
         return svnDumpInMemory.getDump();
     }
 
     /**
-     * Same as {@link #consume(com.github.cstroe.svndumpgui.api.SvnDump, com.github.cstroe.svndumpgui.api.SvnDumpConsumer)}
+     * Same as {@link #consume(com.github.cstroe.svndumpgui.api.Repository, com.github.cstroe.svndumpgui.api.RepositoryConsumer)}
      * but without adding another consumer to the chain.  Because we don't add another
      * consumer, we have nothing to return.
      */
-    public static void consumeWithoutChaining(SvnDump dump, SvnDumpConsumer consumer) {
+    public static void consumeWithoutChaining(Repository dump, RepositoryConsumer consumer) {
         new SvnDumpFileParserDoppelganger(dump).Start(consumer);
     }
 }
