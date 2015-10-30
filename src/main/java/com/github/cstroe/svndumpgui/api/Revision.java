@@ -3,7 +3,7 @@ package com.github.cstroe.svndumpgui.api;
 import java.util.List;
 import java.util.Map;
 
-public interface Revision extends Property {
+public interface Revision {
     int getNumber();
     void setNumber(int number);
 

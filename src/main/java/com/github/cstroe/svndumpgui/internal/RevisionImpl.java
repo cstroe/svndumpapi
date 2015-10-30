@@ -22,7 +22,7 @@ public class RevisionImpl implements Revision {
     public RevisionImpl(int number, String date) {
         this.number = number;
         if(date != null) {
-            this.properties.put(DATE, date);
+            this.properties.put(Property.DATE, date);
         }
     }
 
