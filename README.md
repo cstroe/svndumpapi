@@ -44,7 +44,7 @@ To get an `svn log`-like summary of your dump file, you can use the
 
 ## Consumers
 
-A [`RepositoryConsumer`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryConsumer.java) consumes the various pieces of an [`Repository`](src/main/java/com/github/cstroe/svndumpgui/api/Repository.java).  Specializations of a consumer are:
+A [`RepositoryConsumer`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryConsumer.java) consumes the various pieces of a [`Repository`](src/main/java/com/github/cstroe/svndumpgui/api/Repository.java).  Specializations of a consumer are:
 
 * [`RepositoryMutator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryMutator.java): changes the SvnDump in some way
 * [`RepositoryValidator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryValidator.java): validates the correctness of the SvnDump in some way
