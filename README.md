@@ -22,6 +22,9 @@ I'm not the first one to have this idea.  Here are some links:
 * [svndumpfilter](http://svnbook.red-bean.com/en/1.8/svn.ref.svndumpfilter.html): comes with svn, limited functionality
 * [svndumpmultitool](https://github.com/emosenkis/svndumpmultitool): very similar project to this one, written in Python
 
+## Model
+[![Model Diagram](src/site/resources/model.svg)](src/site/resources/model.svg)
+
 ## SVNDumpFileParser
 
 The `SvnDumpFileParser` is an auto-generated parser for SVN dump files 
