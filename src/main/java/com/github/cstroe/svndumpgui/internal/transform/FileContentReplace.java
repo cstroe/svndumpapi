@@ -1,29 +1,29 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.FileContentChunk;
-import com.github.cstroe.svndumpgui.api.SvnNode;
+import com.github.cstroe.svndumpgui.api.ContentChunk;
+import com.github.cstroe.svndumpgui.api.Node;
 
 import java.util.List;
 import java.util.function.Predicate;
 
-public class FileContentReplace extends AbstractSvnDumpMutator {
-    private final Predicate<SvnNode> nodeMatcher;
-    private final List<FileContentChunk> contentChunks;
+public class FileContentReplace extends AbstractRepositoryMutator {
+    private final Predicate<Node> nodeMatcher;
+    private final List<ContentChunk> contentChunks;
 
     private boolean skipFileContent = false;
 
-    public FileContentReplace(Predicate<SvnNode> nodeMatcher, List<FileContentChunk> contentChunks) {
+    public FileContentReplace(Predicate<Node> nodeMatcher, List<ContentChunk> contentChunks) {
         this.nodeMatcher = nodeMatcher;
         this.contentChunks = contentChunks;
     }
 
     @Override
-    public void consume(SvnNode node) {
+    public void consume(Node node) {
         super.consume(node);
         if(nodeMatcher.test(node)) {
             skipFileContent = true;
             boolean hasChunks = false;
-            for(FileContentChunk chunk : contentChunks) {
+            for(ContentChunk chunk : contentChunks) {
                 hasChunks = true;
                 super.consume(chunk);
             }
@@ -34,7 +34,7 @@ public class FileContentReplace extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void consume(FileContentChunk chunk) {
+    public void consume(ContentChunk chunk) {
         if(!skipFileContent) {
             super.consume(chunk);
         }
@@ -48,7 +48,7 @@ public class FileContentReplace extends AbstractSvnDumpMutator {
     }
 
     @Override
-    public void endNode(SvnNode node) {
+    public void endNode(Node node) {
         super.endNode(node);
         skipFileContent = false;
     }
