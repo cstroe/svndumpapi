@@ -111,4 +111,4 @@ Parsing an SVN dump file is straight forward.  Here's an example that uses a sin
     InputStream is = new FileInputStream("svn.dump");
     SvnDumpFileParser.consume(is, writer);
 
-See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpFileParserTest.java) for usage patterns of the parser.
+See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/RepositoryFileParserTest.java) for usage patterns of the parser.
