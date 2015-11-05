@@ -70,14 +70,14 @@ To apply multiple mutators in sequence, you can chain them together, using `Repo
 
 When you start messing with your SVN history via the mutators, you can be left
 with an SVN dump file that cannot be imported back into an SVN repository.  To
- make changing SVN history easier the API has the concept of an 
+ make changing SVN history easier the API has the concept of a 
  [`RepositoryValidator`](src/main/java/com/github/cstroe/svndumpgui/api/RepositoryValidator.java).
  
 Validation is done while the data is in memory, which is much faster
 than running it through `svnadmin load`.
 
 Some useful validators:
-* [`PathCollision`](src/main/java/com/github/cstroe/svndumpgui/internal/validate/PathCollision.java) - checks that file operations are valid (don't delete non-existent files, don't double add files, check that files exist when making copies)
+* [`PathCollisionValidator`](src/main/java/com/github/cstroe/svndumpgui/internal/validate/PathCollisionValidator.java) - checks that file operations are valid (don't delete non-existent files, don't double add files, check that files exist when making copies)
 
 # Usage
 
