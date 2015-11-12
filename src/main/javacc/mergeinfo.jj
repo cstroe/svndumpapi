@@ -38,19 +38,24 @@ TOKEN: { <MERGE_PATH: (~[":"])*> : REVISIONS }
 public MergeInfoData Start():
 {
     MergeInfoData data = new MergeInfoData();
+    boolean appendNewLine = false;
 }
 {
     (
-        Path(data)
+        appendNewLine = Path(data)
     )*
 
-    { return data; }
+    {
+        data.setTrailingNewLine(appendNewLine);
+        return data;
+    }
 }
 
-public void Path(MergeInfoData data):
+public boolean Path(MergeInfoData data):
 {
     Token mergePath;
     MergeInfoData.Path path;
+    boolean appendNewLine = false;
 }
 {
     mergePath = <MERGE_PATH> <COLON>
@@ -61,10 +66,14 @@ public void Path(MergeInfoData data):
     Range(path)
     ( <COMMA> Range(path) )*
 
-    ( <NEWLINE> )?
+    (
+        <NEWLINE>
+        { appendNewLine = true; }
+    )?
 
     {
         data.addPath(path);
+        return appendNewLine;
     }
 }
 
