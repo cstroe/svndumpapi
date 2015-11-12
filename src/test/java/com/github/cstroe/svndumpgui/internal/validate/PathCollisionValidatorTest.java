@@ -9,7 +9,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryValidationError;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
@@ -35,7 +35,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void detect_valid_dump() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/svn_copy_file.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/svn_copy_file.dump", validator);
 
         if(!validator.isValid()) {
             falseNegative(validator);
@@ -45,7 +45,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void detect_invalid_dump() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/invalid/svn_add_directory_twice.invalid", validator);
+        SvnDumpFileParserTest.consume("dumps/invalid/svn_add_directory_twice.invalid", validator);
 
         assertFalse("The validator should detect the invalid condition of adding the same directory twice.", validator.isValid());
 
@@ -58,7 +58,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void validate_inner_dir_rm() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/inner_dir.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/inner_dir.dump", validator);
         if(!validator.isValid()) {
             falseNegative(validator);
         }
@@ -67,7 +67,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void validate_file_deletes() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/svn_multi_file_delete.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", validator);
         if(!validator.isValid()) {
             falseNegative(validator);
         }
@@ -76,7 +76,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void validate_dir_deletes() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/svn_multi_dir_delete.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/svn_multi_dir_delete.dump", validator);
         if(!validator.isValid()) {
             falseNegative(validator);
         }
@@ -85,7 +85,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void validate_file_add_delete_add() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/add_edit_delete_add.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/add_edit_delete_add.dump", validator);
         if(!validator.isValid()) {
             falseNegative(validator);
         }
@@ -94,7 +94,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void validate_composite_commit() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/composite_commit.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/composite_commit.dump", validator);
         if(!validator.isValid()) {
             falseNegative(validator);
         }
@@ -103,7 +103,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void validate_undelete() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/undelete.dump", validator);
+        SvnDumpFileParserTest.consume("dumps/undelete.dump", validator);
         if(!validator.isValid()) {
             falseNegative(validator);
         }
@@ -112,7 +112,7 @@ public class PathCollisionValidatorTest {
     @Test
     public void detect_invalid_copy() throws ParseException {
         final RepositoryValidator validator = new PathCollisionValidator();
-        RepositoryFileParserTest.consume("dumps/invalid/undelete.invalid", validator);
+        SvnDumpFileParserTest.consume("dumps/invalid/undelete.invalid", validator);
 
         assertFalse("The validator should detect the invalid condition of copying files from nonexisting location",
             validator.isValid());

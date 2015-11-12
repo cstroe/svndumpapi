@@ -14,7 +14,7 @@ import org.jmock.Mockery;
 import org.jmock.Sequence;
 import org.junit.Test;
 
-public class RepositoryFileParserDoppelgangerTest {
+public class SvnDumpFileParserDoppelgangerTest {
 
     @Test
     public void consume_should_work() {

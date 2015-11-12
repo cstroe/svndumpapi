@@ -10,7 +10,7 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -26,7 +26,7 @@ public class NodeRemoveTest {
 
     @Test
     public void remove_node() throws ParseException {
-        Repository dump = RepositoryFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        Repository dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
 
         assertThat(dump.getRevisions().size(), is(3));
         assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -38,7 +38,7 @@ public class NodeRemoveTest {
         assertThat(node.get(NodeHeader.PATH), is(equalTo("README2.txt")));
 
         RepositoryMutator nodeRemove = new NodeRemove(2, "delete", "README2.txt");
-        Repository updatedDump = RepositoryFileParserTest.consume("dumps/svn_multi_file_delete.dump", nodeRemove);
+        Repository updatedDump = SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", nodeRemove);
 
         assertThat(updatedDump.getRevisions().size(), is(3));
         assertThat(updatedDump.getRevisions().get(0).getNodes().size(), is(0));
@@ -55,7 +55,7 @@ public class NodeRemoveTest {
     public void remove_should_respect_the_target_revision_number() throws ParseException {
         final String dumpFilePath = "dumps/add_edit_delete_add.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(5));
             assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
@@ -72,7 +72,7 @@ public class NodeRemoveTest {
         }
         {
             RepositoryMutator nodeRemove = new NodeRemove(4, "add", "README.txt");
-            Repository updatedDump = RepositoryFileParserTest.consume(dumpFilePath, nodeRemove);
+            Repository updatedDump = SvnDumpFileParserTest.consume(dumpFilePath, nodeRemove);
 
             assertThat(updatedDump.getRevisions().size(), is(5));
             assertThat(updatedDump.getRevisions().get(1).getNodes().size(), is(1));

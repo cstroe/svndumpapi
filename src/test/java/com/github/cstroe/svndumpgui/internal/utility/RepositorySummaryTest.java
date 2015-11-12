@@ -8,7 +8,7 @@ import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
@@ -27,7 +27,7 @@ public class RepositorySummaryTest {
 
     @Test
     public void summarize_in_memory() throws ParseException, IOException {
-        Repository dump = RepositoryFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        Repository dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
 
         RepositoryWriter summaryWriter = new RepositorySummary();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

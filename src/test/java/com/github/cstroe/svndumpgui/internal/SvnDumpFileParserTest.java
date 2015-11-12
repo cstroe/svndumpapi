@@ -44,7 +44,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-public class RepositoryFileParserTest {
+public class SvnDumpFileParserTest {
 
     public static Repository parse(String dumpFile) throws ParseException {
         final InputStream s = Thread.currentThread().getContextClassLoader()
