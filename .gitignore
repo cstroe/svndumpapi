@@ -1,5 +1,5 @@
-svndumpgui.ipr
-svndumpgui.iml
-svndumpgui.iws
+svndumpapi.ipr
+svndumpapi.iml
+svndumpapi.iws
 target/
 .idea/
