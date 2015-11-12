@@ -4,6 +4,9 @@ import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
 import com.github.cstroe.svndumpgui.api.Revision;
+import com.github.cstroe.svndumpgui.generated.MergeInfoParser;
+import com.github.cstroe.svndumpgui.generated.ParseException;
+import com.github.cstroe.svndumpgui.internal.transform.property.MergeInfoData;
 
 public class PathChange extends AbstractRepositoryMutator {
 
@@ -18,9 +21,8 @@ public class PathChange extends AbstractRepositoryMutator {
     @Override
     public void consume(Revision revision) {
         if(revision.getProperties().containsKey(Property.MERGEINFO)) {
-            final String mergeInfo = revision.get(Property.MERGEINFO);
-            if(mergeInfo.startsWith(oldPath)) {
-                final String newMergeInfo = newPath + mergeInfo.substring(oldPath.length());
+            final String newMergeInfo = updateMergeInfo(revision.getProperties().get(Property.MERGEINFO));
+            if(newMergeInfo != null) {
                 revision.getProperties().put(Property.MERGEINFO, newMergeInfo);
             }
         }
@@ -44,18 +46,39 @@ public class PathChange extends AbstractRepositoryMutator {
         }
 
         if(node.getProperties() != null && node.getProperties().containsKey(Property.MERGEINFO)) {
-            final String mergeInfo = node.getProperties().get(Property.MERGEINFO);
-            if(mergeInfo.startsWith(oldPath)) {
-                final String newMergeInfo = newPath + mergeInfo.substring(oldPath.length());
-                node.getProperties().put(Property.MERGEINFO, newMergeInfo);
-            }
-
-            final String leadingSlashPath = "/" + oldPath;
-            if(mergeInfo.startsWith(leadingSlashPath)) {
-                final String newMergeInfo = "/" + newPath + mergeInfo.substring(oldPath.length() + 1);
+            final String newMergeInfo = updateMergeInfo(node.getProperties().get(Property.MERGEINFO));
+            if(newMergeInfo != null) {
                 node.getProperties().put(Property.MERGEINFO, newMergeInfo);
             }
         }
         super.consume(node);
+    }
+
+    /**
+     * @return null if the string was not updated
+     */
+    private String updateMergeInfo(String currentMergeInfo) {
+        MergeInfoData data;
+        try {
+            data = MergeInfoParser.parse(currentMergeInfo);
+        } catch(ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        boolean changedMergeInfo = false;
+        for(MergeInfoData.Path path : data.getPaths()) {
+            String pathName = path.getPath();
+            if(pathName.startsWith("/" + oldPath)) {
+                final String newPathName = "/" + newPath + pathName.substring(oldPath.length() + 1);
+                path.setPath(newPathName);
+                changedMergeInfo = true;
+            }
+        }
+
+        if(changedMergeInfo) {
+            return data.toString();
+        } else {
+            return null;
+        }
     }
 }
