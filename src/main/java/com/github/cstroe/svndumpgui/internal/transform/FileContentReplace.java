@@ -3,18 +3,18 @@ package com.github.cstroe.svndumpgui.internal.transform;
 import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 
-import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class FileContentReplace extends AbstractRepositoryMutator {
     private final Predicate<Node> nodeMatcher;
-    private final List<ContentChunk> contentChunks;
+    private final Function<Node, ContentChunk> contentChunkGenerator;
 
     private boolean skipFileContent = false;
 
-    public FileContentReplace(Predicate<Node> nodeMatcher, List<ContentChunk> contentChunks) {
+    public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
         this.nodeMatcher = nodeMatcher;
-        this.contentChunks = contentChunks;
+        this.contentChunkGenerator = contentChunkGenerator;
     }
 
     @Override
@@ -22,12 +22,9 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         super.consume(node);
         if(nodeMatcher.test(node)) {
             skipFileContent = true;
-            boolean hasChunks = false;
-            for(ContentChunk chunk : contentChunks) {
-                hasChunks = true;
+            ContentChunk chunk = contentChunkGenerator.apply(node);
+            if(chunk != null) {
                 super.consume(chunk);
-            }
-            if(hasChunks) {
                 super.endChunks();
             }
         }

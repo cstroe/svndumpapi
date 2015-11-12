@@ -1,6 +1,5 @@
 package com.github.cstroe.svndumpgui.internal.transform;
 
-import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
@@ -12,8 +11,6 @@ import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import org.junit.Test;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Predicate;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -26,9 +23,7 @@ public class FileContentReplaceTest {
         final String newFileContent = "No content.\n";
 
         Predicate<Node> predicate = n -> n.getRevision().get().getNumber() == 1 && n.getHeaders().get(NodeHeader.PATH).equals("README.txt");
-        List<ContentChunk> contentList = new LinkedList<>();
-        contentList.add(new ContentChunkImpl(newFileContent.getBytes()));
-        FileContentReplace fileContentReplace = new FileContentReplace(predicate, contentList);
+        FileContentReplace fileContentReplace = new FileContentReplace(predicate, n -> new ContentChunkImpl(newFileContent.getBytes()));
 
         RepositoryInMemory inMemory = new RepositoryInMemory();
         fileContentReplace.continueTo(inMemory);
