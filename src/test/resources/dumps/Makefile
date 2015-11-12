@@ -21,3 +21,7 @@ utf8_log_message:
 
 add_and_multiple_change:
 	./scripts/add_and_multiple_change.sh > add_and_multiple_change.dump
+
+many_branches:
+	./scripts/many_branches.sh > many_branches.dump
+	sed 's/\/branch2/\/newbranchname/' many_branches.dump > many_branches_renamed.dump

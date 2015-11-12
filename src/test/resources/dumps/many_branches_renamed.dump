@@ -1,0 +1,680 @@
+SVN-fs-dump-format-version: 2
+
+UUID: fd1966bb-b5d9-4a5e-876e-38606efe9112
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-11-12T02:51:15.365858Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:15.536035Z
+K 7
+svn:log
+V 15
+Initial commit.
+PROPS-END
+
+Node-path: branches
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: trunk
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: trunk/file.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 20
+Text-content-md5: 4221d002ceb5d3c9e9137e495ceaa647
+Text-content-sha1: 804d716fc5844f1cc5516c8f0be7a480517fdea2
+Content-length: 30
+
+PROPS-END
+this is a test file
+
+
+Revision-number: 2
+Prop-content-length: 109
+Content-length: 109
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:15.651425Z
+K 7
+svn:log
+V 9
+Branch 1.
+PROPS-END
+
+Node-path: branches/branch1
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 1
+Node-copyfrom-path: trunk
+
+
+Revision-number: 3
+Prop-content-length: 132
+Content-length: 132
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:15.784427Z
+K 7
+svn:log
+V 31
+Adding another line to file.txt
+PROPS-END
+
+Node-path: trunk/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 33
+Text-content-md5: 79f2d2c6810f0f7953c8972e6b06e3bd
+Text-content-sha1: 952b76fbdb467e6a9b8bbef76dfc22f9dd14480b
+Content-length: 33
+
+this is a test file
+another line
+
+
+Revision-number: 4
+Prop-content-length: 127
+Content-length: 127
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:15.950726Z
+K 7
+svn:log
+V 26
+Merged trunk into branch1.
+PROPS-END
+
+Node-path: branches/branch1
+Node-kind: dir
+Node-action: change
+Prop-content-length: 45
+Content-length: 45
+
+K 13
+svn:mergeinfo
+V 10
+/trunk:2-3
+PROPS-END
+
+
+Node-path: branches/branch1/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 33
+Text-content-md5: 79f2d2c6810f0f7953c8972e6b06e3bd
+Text-content-sha1: 952b76fbdb467e6a9b8bbef76dfc22f9dd14480b
+Content-length: 33
+
+this is a test file
+another line
+
+
+Revision-number: 5
+Prop-content-length: 109
+Content-length: 109
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:16.089883Z
+K 7
+svn:log
+V 9
+Branch 2.
+PROPS-END
+
+Node-path: branches/newbranchname
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 4
+Node-copyfrom-path: trunk
+
+
+Revision-number: 6
+Prop-content-length: 118
+Content-length: 118
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:16.232261Z
+K 7
+svn:log
+V 17
+Added third line.
+PROPS-END
+
+Node-path: branches/branch1/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 44
+Text-content-md5: 5230b668f445f074595d3ce715035a0b
+Text-content-sha1: 38688d658b84091fefc657d6b473cb7797fb6325
+Content-length: 44
+
+this is a test file
+another line
+third line
+
+
+Revision-number: 7
+Prop-content-length: 129
+Content-length: 129
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:16.405333Z
+K 7
+svn:log
+V 28
+Merged branch1 into branch2.
+PROPS-END
+
+Node-path: branches/newbranchname
+Node-kind: dir
+Node-action: change
+Prop-content-length: 56
+Content-length: 56
+
+K 13
+svn:mergeinfo
+V 21
+/branches/branch1:2-6
+PROPS-END
+
+
+Node-path: branches/newbranchname/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 44
+Text-content-md5: 5230b668f445f074595d3ce715035a0b
+Text-content-sha1: 38688d658b84091fefc657d6b473cb7797fb6325
+Content-length: 44
+
+this is a test file
+another line
+third line
+
+
+Revision-number: 8
+Prop-content-length: 119
+Content-length: 119
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:16.536913Z
+K 7
+svn:log
+V 18
+Added fourth line.
+PROPS-END
+
+Node-path: branches/branch1/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 56
+Text-content-md5: ff4f226213ca6c4bfc2aba85af568f77
+Text-content-sha1: cb847677141832f1062744e02db2b85efe930f85
+Content-length: 56
+
+this is a test file
+another line
+third line
+fourth line
+
+
+Revision-number: 9
+Prop-content-length: 129
+Content-length: 129
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:16.682827Z
+K 7
+svn:log
+V 28
+Merged branch1 into branch2.
+PROPS-END
+
+Node-path: branches/newbranchname
+Node-kind: dir
+Node-action: change
+Prop-content-length: 56
+Content-length: 56
+
+K 13
+svn:mergeinfo
+V 21
+/branches/branch1:2-8
+PROPS-END
+
+
+Node-path: branches/newbranchname/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 56
+Text-content-md5: ff4f226213ca6c4bfc2aba85af568f77
+Text-content-sha1: cb847677141832f1062744e02db2b85efe930f85
+Content-length: 56
+
+this is a test file
+another line
+third line
+fourth line
+
+
+Revision-number: 10
+Prop-content-length: 124
+Content-length: 124
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:16.855726Z
+K 7
+svn:log
+V 23
+Last change on branch1.
+PROPS-END
+
+Node-path: branches/branch1
+Node-kind: dir
+Node-action: change
+Prop-content-length: 45
+Content-length: 45
+
+K 13
+svn:mergeinfo
+V 10
+/trunk:2-9
+PROPS-END
+
+
+Revision-number: 11
+Prop-content-length: 131
+Content-length: 131
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.015701Z
+K 7
+svn:log
+V 30
+Merge branch1 back into trunk.
+PROPS-END
+
+Node-path: trunk
+Node-kind: dir
+Node-action: change
+Prop-content-length: 57
+Content-length: 57
+
+K 13
+svn:mergeinfo
+V 22
+/branches/branch1:2-10
+PROPS-END
+
+
+Node-path: trunk/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 56
+Text-content-md5: ff4f226213ca6c4bfc2aba85af568f77
+Text-content-sha1: cb847677141832f1062744e02db2b85efe930f85
+Content-length: 56
+
+this is a test file
+another line
+third line
+fourth line
+
+
+Revision-number: 12
+Prop-content-length: 118
+Content-length: 118
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.097867Z
+K 7
+svn:log
+V 17
+Deleting branch1.
+PROPS-END
+
+Node-path: branches/branch1
+Node-action: delete
+
+
+Revision-number: 13
+Prop-content-length: 121
+Content-length: 121
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.270362Z
+K 7
+svn:log
+V 20
+Adding another file.
+PROPS-END
+
+Node-path: trunk/other.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 11
+Text-content-md5: aff8766b86bae76c1fc4a203ab1b1ec6
+Text-content-sha1: a77b0882841c633011478420bf0eb9d10f39fd1b
+Content-length: 21
+
+PROPS-END
+a new file
+
+
+Revision-number: 14
+Prop-content-length: 127
+Content-length: 127
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.420763Z
+K 7
+svn:log
+V 26
+Merged trunk into branch2.
+PROPS-END
+
+Node-path: branches/newbranchname
+Node-kind: dir
+Node-action: change
+Prop-content-length: 69
+Content-length: 69
+
+K 13
+svn:mergeinfo
+V 34
+/branches/branch1:2-10
+/trunk:5-13
+PROPS-END
+
+
+Node-path: branches/newbranchname/other.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 13
+Node-copyfrom-path: trunk/other.txt
+Text-copy-source-md5: aff8766b86bae76c1fc4a203ab1b1ec6
+Text-copy-source-sha1: a77b0882841c633011478420bf0eb9d10f39fd1b
+
+
+Revision-number: 15
+Prop-content-length: 126
+Content-length: 126
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.535418Z
+K 7
+svn:log
+V 25
+Final touches on branch2.
+PROPS-END
+
+Node-path: branches/newbranchname/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 70
+Text-content-md5: 15bc38cc43b50d76b45fefd846cf50d0
+Text-content-sha1: e65abbe8c0c1f846fa2cf82efdcd44c3da67ead4
+Content-length: 70
+
+this is a test file
+another line
+third line
+fourth line
+final touches
+
+
+Revision-number: 16
+Prop-content-length: 133
+Content-length: 133
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.687911Z
+K 7
+svn:log
+V 32
+Merged trunk into branch2 final.
+PROPS-END
+
+Node-path: branches/newbranchname
+Node-kind: dir
+Node-action: change
+Prop-content-length: 69
+Content-length: 69
+
+K 13
+svn:mergeinfo
+V 34
+/branches/branch1:2-10
+/trunk:5-15
+PROPS-END
+
+
+Revision-number: 17
+Prop-content-length: 132
+Content-length: 132
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.840237Z
+K 7
+svn:log
+V 31
+Merged branch2 back into trunk.
+PROPS-END
+
+Node-path: trunk
+Node-kind: dir
+Node-action: change
+Prop-content-length: 80
+Content-length: 80
+
+K 13
+svn:mergeinfo
+V 45
+/branches/branch1:2-10
+/branches/newbranchname:5-16
+PROPS-END
+
+
+Node-path: trunk/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 70
+Text-content-md5: 15bc38cc43b50d76b45fefd846cf50d0
+Text-content-sha1: e65abbe8c0c1f846fa2cf82efdcd44c3da67ead4
+Content-length: 70
+
+this is a test file
+another line
+third line
+fourth line
+final touches
+
+
+Revision-number: 18
+Prop-content-length: 118
+Content-length: 118
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:17.938566Z
+K 7
+svn:log
+V 17
+Deleting branch2.
+PROPS-END
+
+Node-path: branches/newbranchname
+Node-action: delete
+
+
+Revision-number: 19
+Prop-content-length: 111
+Content-length: 111
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-12T02:51:18.070837Z
+K 7
+svn:log
+V 10
+Some work.
+PROPS-END
+
+Node-path: trunk/file.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 92
+Text-content-md5: 5e9ec3b69ee4878a8ff61c047c87046d
+Text-content-sha1: d03fa64d1de1d1a87e04b156f76a48bba906caf6
+Content-length: 92
+
+this is a test file
+another line
+third line
+fourth line
+final touches
+P.S. really last line
+
+
+Node-path: trunk/other.txt
+Node-action: delete
+
+
