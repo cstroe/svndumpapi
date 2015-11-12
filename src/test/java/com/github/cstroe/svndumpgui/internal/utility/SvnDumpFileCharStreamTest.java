@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class RepositoryFileCharStreamTest {
+public class SvnDumpFileCharStreamTest {
 
     private SvnDumpFileCharStream charStream;
 

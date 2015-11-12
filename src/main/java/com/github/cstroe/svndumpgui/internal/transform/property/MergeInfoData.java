@@ -5,6 +5,7 @@ import java.util.List;
 
 public class MergeInfoData {
     private List<Path> mergePaths = new ArrayList<>();
+    private boolean trailingNewLine = true;
 
     public List<Path> getPaths() {
         return mergePaths;
@@ -17,8 +18,18 @@ public class MergeInfoData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        mergePaths.forEach(builder::append);
+        mergePaths.forEach(path -> {
+            builder.append(path);
+            builder.append("\n");
+        });
+        if(builder.length() > 0 && !trailingNewLine) {
+            builder.deleteCharAt(builder.length() - 1);
+        }
         return builder.toString();
+    }
+
+    public void setTrailingNewLine(boolean trailingNewLine) {
+        this.trailingNewLine = trailingNewLine;
     }
 
     public static class Path {
@@ -31,6 +42,10 @@ public class MergeInfoData {
 
         public String getPath() {
             return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
         }
 
         public void addRange(Range range) {
@@ -54,7 +69,6 @@ public class MergeInfoData {
                 }
                 builder.append(range);
             }
-            builder.append("\n");
             return builder.toString();
         }
     }

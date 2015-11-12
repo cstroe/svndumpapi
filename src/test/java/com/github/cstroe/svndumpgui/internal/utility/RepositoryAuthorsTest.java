@@ -3,7 +3,7 @@ package com.github.cstroe.svndumpgui.internal.utility;
 import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryAuthors;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class RepositoryAuthorsTest {
 
     @Test
     public void read_authors() throws ParseException, IOException {
-        Repository dump = RepositoryFileParserTest.parse("dumps/svn_multi_file_delete_multiple_authors.dump");
+        Repository dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete_multiple_authors.dump");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         RepositoryWriter authorsWriter = new RepositoryAuthors();
         authorsWriter.writeTo(baos);
@@ -29,7 +29,7 @@ public class RepositoryAuthorsTest {
 
     @Test
     public void filter_duplicates() throws ParseException, IOException {
-        Repository dump = RepositoryFileParserTest.parse("dumps/svn_multi_file_delete.dump");
+        Repository dump = SvnDumpFileParserTest.parse("dumps/svn_multi_file_delete.dump");
         RepositoryWriter authorsWriter = new RepositoryAuthors();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         authorsWriter.writeTo(baos);

@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.RepositoryMutator;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -19,7 +19,7 @@ public class NodeHeaderChangeTest {
     public void change_action() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -31,7 +31,7 @@ public class NodeHeaderChangeTest {
             assertThat(node.get(NodeHeader.PATH), is(equalTo("README2.txt")));
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(2, "delete", "README2.txt", NodeHeader.ACTION, "delete", "add");
-            Repository updateDump = RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            Repository updateDump = SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
 
             assertThat(updateDump.getRevisions().size(), is(3));
             assertThat(updateDump.getRevisions().get(0).getNodes().size(), is(0));
@@ -49,7 +49,7 @@ public class NodeHeaderChangeTest {
     public void throws_exception_when_not_found() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -61,7 +61,7 @@ public class NodeHeaderChangeTest {
             assertThat(node.get(NodeHeader.PATH), is(equalTo("README2.txt")));
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(2, "add", "README2.txt", NodeHeader.ACTION, "delete", "add");
-            RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
         }
     }
 
@@ -69,7 +69,7 @@ public class NodeHeaderChangeTest {
     public void throws_exception_when_no_node_matched() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -81,7 +81,7 @@ public class NodeHeaderChangeTest {
             assertThat(node.get(NodeHeader.PATH), is(equalTo("README2.txt")));
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(1, "delete", "README2.txt", NodeHeader.ACTION, "delete", "add");
-            RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
         }
     }
 
@@ -89,7 +89,7 @@ public class NodeHeaderChangeTest {
     public void throws_exception_on_missing_revision() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -101,7 +101,7 @@ public class NodeHeaderChangeTest {
             assertThat(node.get(NodeHeader.PATH), is(equalTo("README2.txt")));
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(4, "add", "README2.txt", NodeHeader.ACTION, "delete", "add");
-            RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
         }
     }
 
@@ -114,7 +114,7 @@ public class NodeHeaderChangeTest {
     public void should_respect_revision_number() throws ParseException {
         String dumpFilePath = "dumps/add_and_multiple_change.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(5));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -145,7 +145,7 @@ public class NodeHeaderChangeTest {
             }
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(4, "change", "file1.txt", NodeHeader.ACTION, "change", "delete");
-            Repository updatedDump = RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            Repository updatedDump = SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
 
             assertThat(updatedDump.getRevisions().size(), is(5));
             assertThat(updatedDump.getRevisions().get(0).getNodes().size(), is(0));
@@ -181,7 +181,7 @@ public class NodeHeaderChangeTest {
     public void should_respect_revision_number_earlier() throws ParseException {
         String dumpFilePath = "dumps/add_and_multiple_change.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(5));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -212,7 +212,7 @@ public class NodeHeaderChangeTest {
         }
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(2, "change", "file1.txt", NodeHeader.ACTION, "change", "delete");
-            Repository updatedDump = RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            Repository updatedDump = SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
 
             assertThat(updatedDump.getRevisions().size(), is(5));
             assertThat(updatedDump.getRevisions().get(0).getNodes().size(), is(0));
@@ -248,7 +248,7 @@ public class NodeHeaderChangeTest {
     public void old_value_does_not_match() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(3));
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -260,7 +260,7 @@ public class NodeHeaderChangeTest {
             assertThat(node.get(NodeHeader.PATH), is(equalTo("README2.txt")));
         }{
             RepositoryMutator actionChange = new NodeHeaderChange(2, "delete", "README2.txt", NodeHeader.PATH, "README1.txt", "README3.txt");
-            RepositoryFileParserTest.consume(dumpFilePath, actionChange);
+            SvnDumpFileParserTest.consume(dumpFilePath, actionChange);
         }
     }
 }

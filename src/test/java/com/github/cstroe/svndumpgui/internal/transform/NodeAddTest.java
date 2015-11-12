@@ -12,7 +12,7 @@ import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -43,7 +43,7 @@ public class NodeAddTest {
 
         String dumpFilePath = "dumps/firstcommit.dump";
         {
-            Repository dump = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dump = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dump.getRevisions().size(), is(2));
             assertThat(dump.getRevisions().get(1).getNodes().size(), is(1));
@@ -53,7 +53,7 @@ public class NodeAddTest {
             newNode.setHeaders(headers);
 
             RepositoryMutator nodeAdd = new NodeAdd(1, newNode);
-            Repository updatedDump = RepositoryFileParserTest.consume(dumpFilePath, nodeAdd);
+            Repository updatedDump = SvnDumpFileParserTest.consume(dumpFilePath, nodeAdd);
 
             assertThat(updatedDump.getRevisions().size(), is(2));
             assertThat(updatedDump.getRevisions().get(1).getNodes().size(), is(2));

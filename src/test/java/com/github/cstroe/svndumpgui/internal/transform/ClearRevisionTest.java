@@ -10,7 +10,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
@@ -31,7 +31,7 @@ public class ClearRevisionTest {
     public void clear_revision() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dumpBefore = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dumpBefore = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dumpBefore.getRevisions().size(), is(3));
             assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
@@ -40,7 +40,7 @@ public class ClearRevisionTest {
         }
         {
             RepositoryMutator cr = new ClearRevision(2);
-            Repository dumpAfter = RepositoryFileParserTest.consume(dumpFilePath, cr);
+            Repository dumpAfter = SvnDumpFileParserTest.consume(dumpFilePath, cr);
 
             assertThat(dumpAfter.getRevisions().size(), is(3));
             assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
@@ -53,7 +53,7 @@ public class ClearRevisionTest {
     public void clear_range() throws ParseException {
         String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
-            Repository dumpBefore = RepositoryFileParserTest.parse(dumpFilePath);
+            Repository dumpBefore = SvnDumpFileParserTest.parse(dumpFilePath);
 
             assertThat(dumpBefore.getRevisions().size(), is(3));
             assertThat(dumpBefore.getRevisions().get(0).getNodes().size(), is(0));
@@ -62,7 +62,7 @@ public class ClearRevisionTest {
         }
         {
             RepositoryMutator clear = new ClearRevision(1, 2);
-            Repository dumpAfter = RepositoryFileParserTest.consume(dumpFilePath, clear);
+            Repository dumpAfter = SvnDumpFileParserTest.consume(dumpFilePath, clear);
 
             assertThat(dumpAfter.getRevisions().size(), is(3));
             assertThat(dumpAfter.getRevisions().get(0).getNodes().size(), is(0));
@@ -99,7 +99,7 @@ public class ClearRevisionTest {
     @Test(expected = IllegalArgumentException.class)
     public void cant_change_non_existent_revision() throws ParseException {
         RepositoryConsumer cr = new ClearRevision(3);
-        RepositoryFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
+        SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
     }
 
     @Test

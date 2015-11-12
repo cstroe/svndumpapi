@@ -6,7 +6,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.RepositoryFileParserTest;
+import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
@@ -120,7 +120,7 @@ public class RepositoryWriterImplTest {
 
         assertEqualStreams(s1, new ByteArrayInputStream(firstStream.toByteArray()));
 
-        Repository readDump = RepositoryFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
+        Repository readDump = SvnDumpFileParserTest.parse(new ByteArrayInputStream(firstStream.toByteArray()));
 
         ByteArrayOutputStream secondStream = new ByteArrayOutputStream();
         writer.writeTo(secondStream);
