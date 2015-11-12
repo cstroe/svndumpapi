@@ -101,7 +101,7 @@ public class PropertyChangeTest {
         assertThat(dump.getRevisions().size(), is(6));
         Revision r4 = dump.getRevisions().get(4);
         assertThat(r4.getNodes().size(), is(2));
-        assertThat(r4.getNodes().get(0).getProperties().get(Property.MERGEINFO), is("/branches/mybranch:1-3\n"));
+        assertThat(r4.getNodes().get(0).getProperties().get(Property.MERGEINFO), is("/branches/mybranch:1-3"));
     }
 
     @Test
