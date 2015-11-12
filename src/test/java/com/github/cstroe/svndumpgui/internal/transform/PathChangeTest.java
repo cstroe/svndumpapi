@@ -115,4 +115,25 @@ public class PathChangeTest {
 
         assertEqualStreams(s, bis);
     }
+
+    @Test
+    public void update_multiline_mergeinfo() throws Exception {
+        RepositoryMutator pathChange = new PathChange("branches/branch2", "branches/newbranchname");
+        RepositoryInMemory dumpInMemory = new RepositoryInMemory();
+        pathChange.continueTo(dumpInMemory);
+        SvnDumpFileParser.consume(TestUtil.openResource("dumps/many_branches.dump"), pathChange);
+        Repository dump = dumpInMemory.getDump();
+
+        ByteArrayOutputStream changedDump = new ByteArrayOutputStream();
+        RepositoryWriter writer = new RepositoryWriterImpl();
+        writer.writeTo(changedDump);
+        SvnDumpFileParserDoppelganger.consume(dump, writer);
+
+        final InputStream s = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("dumps/many_branches_renamed.dump");
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(changedDump.toByteArray());
+
+        assertEqualStreams(s, bis);
+    }
 }
