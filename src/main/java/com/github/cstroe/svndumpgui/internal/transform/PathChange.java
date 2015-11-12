@@ -19,17 +19,6 @@ public class PathChange extends AbstractRepositoryMutator {
     }
 
     @Override
-    public void consume(Revision revision) {
-        if(revision.getProperties().containsKey(Property.MERGEINFO)) {
-            final String newMergeInfo = updateMergeInfo(revision.getProperties().get(Property.MERGEINFO));
-            if(newMergeInfo != null) {
-                revision.getProperties().put(Property.MERGEINFO, newMergeInfo);
-            }
-        }
-        super.consume(revision);
-    }
-
-    @Override
     public void consume(Node node) {
         final String nodePath = node.get(NodeHeader.PATH);
         if(nodePath.startsWith(oldPath)) {
