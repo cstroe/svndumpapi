@@ -32,7 +32,6 @@ PARSER_BEGIN(SvnDumpFileParser)
   import com.github.cstroe.svndumpgui.api.Revision;
   import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
   import com.github.cstroe.svndumpgui.internal.PreambleImpl;
-  import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
   import com.github.cstroe.svndumpgui.internal.NodeImpl;
   import com.github.cstroe.svndumpgui.internal.RevisionImpl;
   import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;

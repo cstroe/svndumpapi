@@ -6,7 +6,6 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +52,7 @@ public class NodeImpl implements Node {
 
     @Override
     public List<ContentChunk> getContent() {
-        return Collections.unmodifiableList(content);
+        return content;
     }
 
     @Override
