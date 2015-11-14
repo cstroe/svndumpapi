@@ -11,7 +11,7 @@ import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
-import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -37,8 +37,8 @@ public class FileContentReplaceTest {
 
         SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_file.dump"), fileContentReplace);
 
-        assertThat(inMemory.getDump().getRevisions().size(), is(2));
-        Revision r1 = inMemory.getDump().getRevisions().get(1);
+        assertThat(inMemory.getRepo().getRevisions().size(), is(2));
+        Revision r1 = inMemory.getRepo().getRevisions().get(1);
         assertThat(r1.getNodes().size(), is(1));
         Node node = r1.getNodes().get(0);
         assertThat(new String(node.getContent().get(0).getContent()), is(equalTo(newFileContent)));
@@ -54,7 +54,7 @@ public class FileContentReplaceTest {
         FileContentReplace fileContentReplace = new FileContentReplace(predicate, n -> null);
 
         ByteArrayOutputStream newDump = new ByteArrayOutputStream();
-        RepositoryWriter svnDumpWriter = new RepositoryWriterImpl();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
         svnDumpWriter.writeTo(newDump);
 
         fileContentReplace.continueTo(svnDumpWriter);

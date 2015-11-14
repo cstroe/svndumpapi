@@ -56,7 +56,7 @@ public class RepositoryInMemory extends AbstractRepositoryWriter {
         super.consume(chunk);
     }
 
-    public Repository getDump() {
+    public Repository getRepo() {
         return dump;
     }
 }

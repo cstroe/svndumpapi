@@ -17,7 +17,7 @@ import com.github.cstroe.svndumpgui.internal.validate.TerminatingValidator;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
 import com.github.cstroe.svndumpgui.internal.validate.PathCollisionValidator;
-import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -152,7 +152,7 @@ public class AMDump {
 
         // save the dump
         FileOutputStream fos = new FileOutputStream("/tmp/am_good.dump");
-        RepositoryWriter dumpWriter = new RepositoryWriterImpl();
+        RepositoryWriter dumpWriter = new SvnDumpWriter();
         dumpWriter.writeTo(fos);
         chain.continueTo(dumpWriter);
 

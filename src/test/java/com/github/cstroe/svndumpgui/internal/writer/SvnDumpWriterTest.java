@@ -24,7 +24,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class RepositoryWriterImplTest {
+public class SvnDumpWriterTest {
 
     @Test
     public void no_uuid() throws IOException {
@@ -33,7 +33,7 @@ public class RepositoryWriterImplTest {
         Revision r0 = new RevisionImpl(0);
         dump.getRevisions().add(r0);
 
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         writer.writeTo(os);
         SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
@@ -108,9 +108,9 @@ public class RepositoryWriterImplTest {
     public void rewrite_file() throws ParseException, IOException {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
-        Repository dump = dumpInMemory.getDump();
+        Repository dump = dumpInMemory.getRepo();
 
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
         writer.writeTo(firstStream);
         SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
@@ -134,7 +134,7 @@ public class RepositoryWriterImplTest {
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RepositoryWriter dumpWriter = new RepositoryWriterImpl();
+        RepositoryWriter dumpWriter = new SvnDumpWriter();
         dumpWriter.writeTo(baos);
         SvnDumpFileParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
 
@@ -157,13 +157,13 @@ public class RepositoryWriterImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void dont_consume_null_chunks(){
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         writer.consume((ContentChunk)null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void dont_consume_chunks_with_null_content(){
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         writer.consume(new ContentChunk() {
             @Override
             public byte[] getContent() {

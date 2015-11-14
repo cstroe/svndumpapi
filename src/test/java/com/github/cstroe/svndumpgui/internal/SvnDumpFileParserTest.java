@@ -16,7 +16,7 @@ import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
-import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -57,7 +57,7 @@ public class SvnDumpFileParserTest {
         SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(is));
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         parser.Start(dumpInMemory);
-        return dumpInMemory.getDump();
+        return dumpInMemory.getRepo();
     }
 
     /**
@@ -80,7 +80,7 @@ public class SvnDumpFileParserTest {
         SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(is));
         parser.Start(consumer);
 
-        return saveDump.getDump();
+        return saveDump.getRepo();
     }
 
     @SuppressWarnings("unchecked")
@@ -502,7 +502,7 @@ public class SvnDumpFileParserTest {
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RepositoryWriterImpl writer = new RepositoryWriterImpl();
+        SvnDumpWriter writer = new SvnDumpWriter();
         writer.writeTo(baos);
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
@@ -542,7 +542,7 @@ public class SvnDumpFileParserTest {
         RepositoryInMemory inMemoryDump = new RepositoryInMemory();
         parser.Start(inMemoryDump);
 
-        List<ContentChunk> chunks = inMemoryDump.getDump().getRevisions().get(1).getNodes().get(0).getContent();
+        List<ContentChunk> chunks = inMemoryDump.getRepo().getRevisions().get(1).getNodes().get(0).getContent();
         assertThat(chunks.size(), is(4));
         assertThat(chunks.get(0).getContent().length, is(64));
         assertThat(chunks.get(1).getContent().length, is(64));
@@ -576,7 +576,7 @@ public class SvnDumpFileParserTest {
             dump.addRevision(r1);
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RepositoryWriterImpl writer = new RepositoryWriterImpl();
+        SvnDumpWriter writer = new SvnDumpWriter();
         writer.writeTo(baos);
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
@@ -627,7 +627,7 @@ public class SvnDumpFileParserTest {
         RepositoryInMemory inMemoryDump = new RepositoryInMemory();
         parser.Start(inMemoryDump);
 
-        List<ContentChunk> chunks = inMemoryDump.getDump().getRevisions().get(1).getNodes().get(0).getContent();
+        List<ContentChunk> chunks = inMemoryDump.getRepo().getRevisions().get(1).getNodes().get(0).getContent();
         assertThat(chunks.size(), is(3));
         assertThat(chunks.get(0).getContent().length, is(100));
         assertThat(chunks.get(1).getContent().length, is(100));
@@ -665,7 +665,7 @@ public class SvnDumpFileParserTest {
             dump.addRevision(r0);
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         writer.writeTo(baos);
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
@@ -673,7 +673,7 @@ public class SvnDumpFileParserTest {
 
         SvnDumpFileParser.consume(new ByteArrayInputStream(baos.toByteArray()), inMemory);
 
-        Repository recreatedDump = inMemory.getDump();
+        Repository recreatedDump = inMemory.getRepo();
         assertThat(recreatedDump.getRevisions().size(), is(1));
 
         Revision r0 = recreatedDump.getRevisions().get(0);

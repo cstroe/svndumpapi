@@ -96,7 +96,7 @@ public class PropertyChangeTest {
 
         SvnDumpFileParser.consume(s, propChange);
 
-        Repository dump = inMemoryDump.getDump();
+        Repository dump = inMemoryDump.getRepo();
 
         assertThat(dump.getRevisions().size(), is(6));
         Revision r4 = dump.getRevisions().get(4);

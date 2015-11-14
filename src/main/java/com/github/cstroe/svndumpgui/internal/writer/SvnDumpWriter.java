@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
-public class RepositoryWriterImpl extends AbstractRepositoryWriter {
+public class SvnDumpWriter extends AbstractRepositoryWriter {
 
     @Override
     public void consume(Preamble preamble) {

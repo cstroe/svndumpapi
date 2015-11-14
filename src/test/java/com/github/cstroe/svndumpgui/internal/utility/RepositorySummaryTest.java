@@ -12,7 +12,7 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
-import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
 import org.junit.Test;
 
@@ -79,7 +79,7 @@ public class RepositorySummaryTest {
         n3_1.getHeaders().put(NodeHeader.KIND, "dir");
         n3_1.getHeaders().put(NodeHeader.PATH, "directory1");
 
-        RepositoryWriterImpl writer = new RepositoryWriterImpl();
+        SvnDumpWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writer.writeTo(outputStream);
         SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);

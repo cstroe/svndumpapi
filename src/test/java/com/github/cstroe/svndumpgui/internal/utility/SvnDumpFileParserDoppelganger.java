@@ -52,14 +52,14 @@ public class SvnDumpFileParserDoppelganger {
     public static Repository parse(String fileName) throws ParseException {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consume(fileName, dumpInMemory);
-        return dumpInMemory.getDump();
+        return dumpInMemory.getRepo();
     }
 
     public static Repository consume(Repository dump, RepositoryConsumer consumer) {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consumer.continueTo(dumpInMemory);
         new SvnDumpFileParserDoppelganger(dump).Start(consumer);
-        return dumpInMemory.getDump();
+        return dumpInMemory.getRepo();
     }
 
     public static Repository consume(String fileName, RepositoryConsumer consumer) throws ParseException {
@@ -73,7 +73,7 @@ public class SvnDumpFileParserDoppelganger {
         RepositoryInMemory svnDumpInMemory = new RepositoryInMemory();
         consumer.continueTo(svnDumpInMemory);
         SvnDumpFileParser.consume(is, consumer);
-        return svnDumpInMemory.getDump();
+        return svnDumpInMemory.getRepo();
     }
 
     /**

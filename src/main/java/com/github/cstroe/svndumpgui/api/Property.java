@@ -11,7 +11,7 @@ public interface Property {
     /**
      * Used in {@link com.github.cstroe.svndumpgui.generated.SvnDumpFileParser#Start(RepositoryConsumer)}
      * to keep track of how many EOLs are actually in the dump file, so that
-     * {@link com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl#endNode(Node)}
+     * {@link com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter#endNode(Node)}
      * can produce the matching number of new lines.
      *
      * Had to resort to this "hack" because the SVN dump file description is not specific enough
