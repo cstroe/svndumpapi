@@ -9,7 +9,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryMutator;
 import com.github.cstroe.svndumpgui.api.Preamble;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
@@ -142,7 +142,7 @@ public class NodeAddTest {
 
         NodeAdd nodeAdd = new NodeAdd(3, nodeToAdd);
         nodeAdd.continueTo(mockConsumer);
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
 
     }
 
@@ -166,6 +166,6 @@ public class NodeAddTest {
         }
 
         NodeAdd nodeAdd = new NodeAdd(6, nodeToAdd);
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
     }
 }

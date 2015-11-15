@@ -7,7 +7,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryValidationError;
 import com.github.cstroe.svndumpgui.api.RepositoryValidator;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -84,6 +84,6 @@ public class TerminatingValidatorTest {
 
         TerminatingValidator terminatingValidator = new TerminatingValidator(innerValidator);
 
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/svn_delete_with_add.dump"), terminatingValidator);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_delete_with_add.dump"), terminatingValidator);
     }
 }

@@ -15,9 +15,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class SvnDumpFileCharStreamTest {
+public class SvnDumpCharStreamTest {
 
-    private SvnDumpFileCharStream charStream;
+    private SvnDumpCharStream charStream;
 
     @Test
     public void parse_tokens() throws IOException {
@@ -25,7 +25,7 @@ public class SvnDumpFileCharStreamTest {
         final InputStream inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("FastCharStreamTokens.txt");
 
-        charStream = new SvnDumpFileCharStream(inputStream);
+        charStream = new SvnDumpCharStream(inputStream);
 
         int number;
         READ();
@@ -92,7 +92,7 @@ public class SvnDumpFileCharStreamTest {
         assertThat(readData(number), is(equalTo("abcde")));
         assertThat(charStream.getStreamPosition(), is(51l));
 
-        assertThat(charStream.buffer.length, is(SvnDumpFileCharStream.INITAL_BUFFER_LENGTH));
+        assertThat(charStream.buffer.length, is(SvnDumpCharStream.INITAL_BUFFER_LENGTH));
     }
 
     private void READ() throws IOException {
@@ -151,7 +151,7 @@ public class SvnDumpFileCharStreamTest {
         final InputStream inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("FastCharStreamTokens.txt");
 
-        charStream = new SvnDumpFileCharStream(inputStream);
+        charStream = new SvnDumpCharStream(inputStream);
 
         int number;
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
@@ -174,7 +174,7 @@ public class SvnDumpFileCharStreamTest {
         assertThat(new String(charStream.readBytes(number)), is(equalTo("abcde")));
         assertThat(charStream.getStreamPosition(), is(51l));
 
-        assertThat(charStream.buffer.length, is(SvnDumpFileCharStream.INITAL_BUFFER_LENGTH));
+        assertThat(charStream.buffer.length, is(SvnDumpCharStream.INITAL_BUFFER_LENGTH));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class SvnDumpFileCharStreamTest {
         builder.append("\n");
 
 
-        charStream = new SvnDumpFileCharStream(new ByteArrayInputStream(builder.toString().getBytes()));
+        charStream = new SvnDumpCharStream(new ByteArrayInputStream(builder.toString().getBytes()));
 
         int number;
 
@@ -253,7 +253,7 @@ public class SvnDumpFileCharStreamTest {
         assertThat(new String(charStream.readBytes(number)), is(equalTo("abcd")));
         assertThat(charStream.getStreamPosition(), is(18229l));
 
-        assertThat(charStream.buffer.length, is(SvnDumpFileCharStream.INITAL_BUFFER_LENGTH));
+        assertThat(charStream.buffer.length, is(SvnDumpCharStream.INITAL_BUFFER_LENGTH));
     }
 
     @Test
@@ -278,7 +278,7 @@ public class SvnDumpFileCharStreamTest {
             baos.write("\n".getBytes());
         }
 
-        charStream = new SvnDumpFileCharStream(new ByteArrayInputStream(baos.toByteArray()));
+        charStream = new SvnDumpCharStream(new ByteArrayInputStream(baos.toByteArray()));
 
         int number;
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();

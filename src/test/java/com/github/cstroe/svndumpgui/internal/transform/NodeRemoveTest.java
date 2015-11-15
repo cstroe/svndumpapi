@@ -9,7 +9,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryMutator;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import org.jmock.Expectations;
@@ -138,6 +138,6 @@ public class NodeRemoveTest {
         nr.continueTo(new NodeRemove(2, "delete", "README.txt"));
         nr.continueTo(mockConsumer);
 
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/svn_multi_file_delete.dump"), nr);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_multi_file_delete.dump"), nr);
     }
 }

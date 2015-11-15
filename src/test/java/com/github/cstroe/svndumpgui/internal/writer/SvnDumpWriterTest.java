@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
@@ -107,7 +107,7 @@ public class SvnDumpWriterTest {
     @Test
     public void rewrite_file() throws ParseException, IOException {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
         Repository dump = dumpInMemory.getRepo();
 
         RepositoryWriter writer = new SvnDumpWriter();
@@ -136,7 +136,7 @@ public class SvnDumpWriterTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         RepositoryWriter dumpWriter = new SvnDumpWriter();
         dumpWriter.writeTo(baos);
-        SvnDumpFileParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
+        SvnDumpParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStream s = Thread.currentThread().getContextClassLoader()

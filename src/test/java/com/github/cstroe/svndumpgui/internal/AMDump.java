@@ -5,14 +5,14 @@ import com.github.cstroe.svndumpgui.api.RepositoryValidator;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.transform.ClearRevision;
 import com.github.cstroe.svndumpgui.internal.transform.NodeAdd;
 import com.github.cstroe.svndumpgui.internal.transform.NodeHeaderChange;
 import com.github.cstroe.svndumpgui.internal.transform.NodeRemove;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.transform.UpdateAuthorForEmptyRevisions;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpCharStream;
 import com.github.cstroe.svndumpgui.internal.validate.TerminatingValidator;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryAuthors;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
@@ -162,7 +162,7 @@ public class AMDump {
         chain.continueTo(summaryWriter);
 
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/onestep.dump");
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(s));
 
         parser.Start(chain);
 
@@ -178,7 +178,7 @@ public class AMDump {
     @Ignore
     public void list_authors() throws IOException, ParseException {
         final InputStream s = new FileInputStream("/home/cosmin/Desktop/AgreementMaker-GitHub-Conversion/finished.dump");
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(s));
         RepositoryWriter authorsWriter = new RepositoryAuthors();
         authorsWriter.writeTo(System.out);
 

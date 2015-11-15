@@ -6,7 +6,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 
 import java.io.InputStream;
@@ -72,7 +72,7 @@ public class SvnDumpFileParserDoppelganger {
     public static Repository consume(InputStream is, RepositoryConsumer consumer) throws ParseException {
         RepositoryInMemory svnDumpInMemory = new RepositoryInMemory();
         consumer.continueTo(svnDumpInMemory);
-        SvnDumpFileParser.consume(is, consumer);
+        SvnDumpParser.consume(is, consumer);
         return svnDumpInMemory.getRepo();
     }
 

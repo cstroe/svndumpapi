@@ -6,7 +6,7 @@ import com.github.cstroe.svndumpgui.api.Preamble;
 import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.Sequence;
@@ -68,6 +68,6 @@ public class RepositoryInMemoryTest {
         final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("dumps/add_edit_delete_add.dump");
         RepositoryInMemory inMemory = new RepositoryInMemory();
         inMemory.continueTo(chainedConsumer);
-        SvnDumpFileParser.consume(inputStream, inMemory);
+        SvnDumpParser.consume(inputStream, inMemory);
     }
 }

@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
@@ -35,7 +35,7 @@ public class FileContentReplaceTest {
         RepositoryInMemory inMemory = new RepositoryInMemory();
         fileContentReplace.continueTo(inMemory);
 
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_file.dump"), fileContentReplace);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file.dump"), fileContentReplace);
 
         assertThat(inMemory.getRepo().getRevisions().size(), is(2));
         Revision r1 = inMemory.getRepo().getRevisions().get(1);
@@ -59,7 +59,7 @@ public class FileContentReplaceTest {
 
         fileContentReplace.continueTo(svnDumpWriter);
 
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_file.dump"), fileContentReplace);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file.dump"), fileContentReplace);
 
         TestUtil.assertEqualStreams(TestUtil.openResource("dumps/add_file.dump"), new ByteArrayInputStream(newDump.toByteArray()));
     }

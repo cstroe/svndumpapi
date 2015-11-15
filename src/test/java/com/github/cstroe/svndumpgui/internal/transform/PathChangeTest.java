@@ -4,7 +4,7 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.RepositoryMutator;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
@@ -27,7 +27,7 @@ public class PathChangeTest {
         final String dumpFilePath = "dumps/svn_multi_file_delete.dump";
         {
             RepositoryInMemory dumpInMemory = new RepositoryInMemory();
-            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), dumpInMemory);
+            SvnDumpParser.consume(TestUtil.openResource(dumpFilePath), dumpInMemory);
             Repository dump = dumpInMemory.getRepo();
 
             assertThat(dump.getRevisions().size(), is(3));
@@ -43,7 +43,7 @@ public class PathChangeTest {
             RepositoryMutator pathChange = new PathChange("README.txt", "README-changed.txt");
             RepositoryInMemory dumpInMemory = new RepositoryInMemory();
             pathChange.continueTo(dumpInMemory);
-            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), pathChange);
+            SvnDumpParser.consume(TestUtil.openResource(dumpFilePath), pathChange);
             Repository dump = dumpInMemory.getRepo();
 
             assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
@@ -61,7 +61,7 @@ public class PathChangeTest {
         String dumpFilePath = "dumps/svn_copy_file.dump";
         {
             RepositoryInMemory dumpInMemory = new RepositoryInMemory();
-            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), dumpInMemory);
+            SvnDumpParser.consume(TestUtil.openResource(dumpFilePath), dumpInMemory);
             Repository dump = dumpInMemory.getRepo();
 
             assertThat(dump.getRevisions().size(), is(3));
@@ -79,7 +79,7 @@ public class PathChangeTest {
             RepositoryMutator pathChange = new PathChange("README.txt", "README-changed.txt");
             RepositoryInMemory dumpInMemory = new RepositoryInMemory();
             pathChange.continueTo(dumpInMemory);
-            SvnDumpFileParser.consume(TestUtil.openResource(dumpFilePath), pathChange);
+            SvnDumpParser.consume(TestUtil.openResource(dumpFilePath), pathChange);
             Repository dump = dumpInMemory.getRepo();
 
             assertThat(dump.getRevisions().size(), is(3));
@@ -100,7 +100,7 @@ public class PathChangeTest {
         RepositoryMutator pathChange = new PathChange("branches", "custom_branches");
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         pathChange.continueTo(dumpInMemory);
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), pathChange);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), pathChange);
         Repository dump = dumpInMemory.getRepo();
 
         ByteArrayOutputStream changedDump = new ByteArrayOutputStream();
@@ -121,7 +121,7 @@ public class PathChangeTest {
         RepositoryMutator pathChange = new PathChange("branches/branch2", "branches/newbranchname");
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         pathChange.continueTo(dumpInMemory);
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/many_branches.dump"), pathChange);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/many_branches.dump"), pathChange);
         Repository dump = dumpInMemory.getRepo();
 
         ByteArrayOutputStream changedDump = new ByteArrayOutputStream();

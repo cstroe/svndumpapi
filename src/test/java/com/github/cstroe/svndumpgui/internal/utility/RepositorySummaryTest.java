@@ -6,7 +6,7 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
@@ -48,7 +48,7 @@ public class RepositorySummaryTest {
 
         final InputStream inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/svn_multi_file_delete.dump");
-        SvnDumpFileParser.consume(inputStream, svnDumpSummary);
+        SvnDumpParser.consume(inputStream, svnDumpSummary);
 
         InputStream summaryStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");
@@ -87,7 +87,7 @@ public class RepositorySummaryTest {
         RepositorySummary dumpSummary = new RepositorySummary();
         ByteArrayOutputStream summaryStream = new ByteArrayOutputStream();
         dumpSummary.writeTo(summaryStream);
-        SvnDumpFileParser.consume(new ByteArrayInputStream(outputStream.toByteArray()), dumpSummary);
+        SvnDumpParser.consume(new ByteArrayInputStream(outputStream.toByteArray()), dumpSummary);
 
         InputStream expectedStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/empty_revisions_at_beginning.txt");

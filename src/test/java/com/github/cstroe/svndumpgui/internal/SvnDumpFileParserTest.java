@@ -11,8 +11,8 @@ import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.CharStream;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpCharStream;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
@@ -54,7 +54,7 @@ public class SvnDumpFileParserTest {
     }
 
     public static Repository parse(InputStream is) throws ParseException {
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(is));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(is));
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         parser.Start(dumpInMemory);
         return dumpInMemory.getRepo();
@@ -77,7 +77,7 @@ public class SvnDumpFileParserTest {
         RepositoryInMemory saveDump = new RepositoryInMemory();
         consumer.continueTo(saveDump);
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(is));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(is));
         parser.Start(consumer);
 
         return saveDump.getRepo();
@@ -89,7 +89,7 @@ public class SvnDumpFileParserTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/partial/simple_property.fragment");
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(s));
 
         RevisionImpl revision = new RevisionImpl(0);
         Map properties = parser.Property();
@@ -104,7 +104,7 @@ public class SvnDumpFileParserTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/partial/empty_revision.fragment");
 
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(s));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(s));
         Revision revision = parser.Revision();
 
         assertNotNull(revision);
@@ -472,7 +472,7 @@ public class SvnDumpFileParserTest {
 
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/add_file.dump");
-        SvnDumpFileParser.consume(is, consumer);
+        SvnDumpParser.consume(is, consumer);
     }
 
     @Test
@@ -507,7 +507,7 @@ public class SvnDumpFileParserTest {
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
 
         Mockery context = new Mockery();
@@ -537,7 +537,7 @@ public class SvnDumpFileParserTest {
 
         // actually record the FileContentChunks this time
         bais = new ByteArrayInputStream(baos.toByteArray());
-        parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
+        parser = new SvnDumpParser(new SvnDumpCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
         RepositoryInMemory inMemoryDump = new RepositoryInMemory();
         parser.Start(inMemoryDump);
@@ -581,7 +581,7 @@ public class SvnDumpFileParserTest {
         SvnDumpFileParserDoppelganger.consume(dump, writer);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        SvnDumpFileParser parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
 
         Mockery context = new Mockery();
@@ -622,7 +622,7 @@ public class SvnDumpFileParserTest {
 
         // actually record the FileContentChunks this time
         bais = new ByteArrayInputStream(baos.toByteArray());
-        parser = new SvnDumpFileParser(new SvnDumpFileCharStream(bais));
+        parser = new SvnDumpParser(new SvnDumpCharStream(bais));
         parser.setFileContentChunkSize(fileContentChunkSize);
         RepositoryInMemory inMemoryDump = new RepositoryInMemory();
         parser.Start(inMemoryDump);
@@ -671,7 +671,7 @@ public class SvnDumpFileParserTest {
 
         RepositoryInMemory inMemory = new RepositoryInMemory();
 
-        SvnDumpFileParser.consume(new ByteArrayInputStream(baos.toByteArray()), inMemory);
+        SvnDumpParser.consume(new ByteArrayInputStream(baos.toByteArray()), inMemory);
 
         Repository recreatedDump = inMemory.getRepo();
         assertThat(recreatedDump.getRevisions().size(), is(1));
@@ -691,7 +691,7 @@ public class SvnDumpFileParserTest {
         Mockery mockery = new Mockery();
         CharStream fakeStream = mockery.mock(CharStream.class);
         RepositoryConsumer consumer = mockery.mock(RepositoryConsumer.class);
-        new SvnDumpFileParser(fakeStream).Start(consumer);
+        new SvnDumpParser(fakeStream).Start(consumer);
     }
 
     @Test
@@ -703,11 +703,11 @@ public class SvnDumpFileParserTest {
         OutputStream os = new FileOutputStream(new File("/home/cosmin/Zoo/svndumpgui/runs/" + generateFileName()));
         writer.writeTo(os);
 
-        SvnDumpFileCharStream charStream = new SvnDumpFileCharStream(process.getInputStream());
+        SvnDumpCharStream charStream = new SvnDumpCharStream(process.getInputStream());
         PrintStream debugStream = new PrintStream(os);
 
         try {
-            new SvnDumpFileParser(charStream).Start(writer);
+            new SvnDumpParser(charStream).Start(writer);
         } catch(ParseException ex) {
             debugStream.println(ex.getMessage());
             fail(ex.getMessage());
@@ -730,6 +730,6 @@ public class SvnDumpFileParserTest {
             oneOf(mockConsumer).endRevision(with(any(Revision.class))); inSequence(consumerSequence);
         }});
 
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/invalid/missing_nl.invalid"), mockConsumer);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/invalid/missing_nl.invalid"), mockConsumer);
     }
 }
