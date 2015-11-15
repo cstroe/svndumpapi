@@ -22,7 +22,7 @@ public class RepositoryAuthorsTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         RepositoryWriter authorsWriter = new RepositoryAuthors();
         authorsWriter.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, authorsWriter);
+        SvnDumpParserDoppelganger.consume(dump, authorsWriter);
 
         assertThat(baos.toString(), is(equalTo("superd\nsuper2\n")));
     }
@@ -33,7 +33,7 @@ public class RepositoryAuthorsTest {
         RepositoryWriter authorsWriter = new RepositoryAuthors();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         authorsWriter.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, authorsWriter);
+        SvnDumpParserDoppelganger.consume(dump, authorsWriter);
 
         assertThat(baos.toString(), is(equalTo("cosmin\n")));
     }

@@ -10,7 +10,7 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class SvnDumpWriterTest {
         RepositoryWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         writer.writeTo(os);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, writer);
         assertThat(os.toString(), is(equalTo("SVN-fs-dump-format-version: 2\n\n\nRevision-number: 0\nProp-content-length: 10\nContent-length: 10\n\nPROPS-END\n\n")));
     }
 
@@ -113,7 +113,7 @@ public class SvnDumpWriterTest {
         RepositoryWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
         writer.writeTo(firstStream);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, writer);
 
         final InputStream s1 = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
@@ -124,7 +124,7 @@ public class SvnDumpWriterTest {
 
         ByteArrayOutputStream secondStream = new ByteArrayOutputStream();
         writer.writeTo(secondStream);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(readDump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(readDump, writer);
 
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");

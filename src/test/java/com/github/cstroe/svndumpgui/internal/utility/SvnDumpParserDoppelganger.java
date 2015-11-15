@@ -21,10 +21,10 @@ import java.io.InputStream;
  *
  * Useful in tests.
  */
-public class SvnDumpFileParserDoppelganger {
+public class SvnDumpParserDoppelganger {
     private Repository dump;
 
-    public SvnDumpFileParserDoppelganger(Repository dump) {
+    public SvnDumpParserDoppelganger(Repository dump) {
         this.dump = dump;
     }
 
@@ -58,7 +58,7 @@ public class SvnDumpFileParserDoppelganger {
     public static Repository consume(Repository dump, RepositoryConsumer consumer) {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consumer.continueTo(dumpInMemory);
-        new SvnDumpFileParserDoppelganger(dump).Start(consumer);
+        new SvnDumpParserDoppelganger(dump).Start(consumer);
         return dumpInMemory.getRepo();
     }
 
@@ -82,6 +82,6 @@ public class SvnDumpFileParserDoppelganger {
      * consumer, we have nothing to return.
      */
     public static void consumeWithoutChaining(Repository dump, RepositoryConsumer consumer) {
-        new SvnDumpFileParserDoppelganger(dump).Start(consumer);
+        new SvnDumpParserDoppelganger(dump).Start(consumer);
     }
 }

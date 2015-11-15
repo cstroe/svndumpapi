@@ -5,10 +5,10 @@ import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.RepositoryMutator;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -106,7 +106,7 @@ public class PathChangeTest {
         ByteArrayOutputStream changedDump = new ByteArrayOutputStream();
         RepositoryWriter writer = new SvnDumpWriter();
         writer.writeTo(changedDump);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
+        SvnDumpParserDoppelganger.consume(dump, writer);
 
         final InputStream s = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream("dumps/simple_branch_and_merge_renamed.dump");
@@ -127,7 +127,7 @@ public class PathChangeTest {
         ByteArrayOutputStream changedDump = new ByteArrayOutputStream();
         RepositoryWriter writer = new SvnDumpWriter();
         writer.writeTo(changedDump);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
+        SvnDumpParserDoppelganger.consume(dump, writer);
 
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/many_branches_renamed.dump");

@@ -13,7 +13,7 @@ import com.github.cstroe.svndumpgui.generated.CharStream;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.utility.SvnDumpCharStream;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
@@ -504,7 +504,7 @@ public class SvnDumpFileParserTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter writer = new SvnDumpWriter();
         writer.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
+        SvnDumpParserDoppelganger.consume(dump, writer);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(bais));
@@ -578,7 +578,7 @@ public class SvnDumpFileParserTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SvnDumpWriter writer = new SvnDumpWriter();
         writer.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
+        SvnDumpParserDoppelganger.consume(dump, writer);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(bais));
@@ -667,7 +667,7 @@ public class SvnDumpFileParserTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         RepositoryWriter writer = new SvnDumpWriter();
         writer.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, writer);
+        SvnDumpParserDoppelganger.consume(dump, writer);
 
         RepositoryInMemory inMemory = new RepositoryInMemory();
 

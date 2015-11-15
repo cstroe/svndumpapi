@@ -14,7 +14,7 @@ import org.jmock.Mockery;
 import org.jmock.Sequence;
 import org.junit.Test;
 
-public class SvnDumpFileParserDoppelgangerTest {
+public class SvnDumpParserDoppelgangerTest {
 
     @Test
     public void consume_should_work() {
@@ -88,7 +88,7 @@ public class SvnDumpFileParserDoppelgangerTest {
             oneOf(consumer).finish(); inSequence(consumerSequence);
         }});
 
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, consumer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, consumer);
     }
 
     @Test

@@ -32,7 +32,7 @@ public class RepositorySummaryTest {
         RepositoryWriter summaryWriter = new RepositorySummary();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         summaryWriter.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, summaryWriter);
+        SvnDumpParserDoppelganger.consume(dump, summaryWriter);
 
         InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");
@@ -82,7 +82,7 @@ public class RepositorySummaryTest {
         SvnDumpWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writer.writeTo(outputStream);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, writer);
 
         RepositorySummary dumpSummary = new RepositorySummary();
         ByteArrayOutputStream summaryStream = new ByteArrayOutputStream();

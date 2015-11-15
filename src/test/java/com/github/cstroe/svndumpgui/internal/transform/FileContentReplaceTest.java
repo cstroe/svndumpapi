@@ -63,4 +63,18 @@ public class FileContentReplaceTest {
 
         TestUtil.assertEqualStreams(TestUtil.openResource("dumps/add_file.dump"), new ByteArrayInputStream(newDump.toByteArray()));
     }
+
+    @Test(expected = NullPointerException.class)
+    public void does_not_allow_null_chunk() throws ParseException {
+        Predicate<Node> predicate = n -> true;
+        FileContentReplace fileContentReplace = new FileContentReplace(predicate, n -> null);
+
+        ByteArrayOutputStream newDump = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDump);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file.dump"), fileContentReplace);
+    }
 }
