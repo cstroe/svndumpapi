@@ -26,3 +26,8 @@ many_branches:
 	./scripts/many_branches.sh > many_branches.dump
 	sed 's/\/branch2/\/newbranchname/' many_branches.dump > many_branches_renamed.dump
 	sed -i '600s/45/51/' many_branches_renamed.dump
+
+svn_copy_file:
+	./scripts/svn_copy_file.sh > svn_copy_file.dump
+	# be aware of hand hacked time stamps to match svn_copy_file.dump
+	./scripts/svn_copy_file_new_content.sh > svn_copy_file_new_content.dump

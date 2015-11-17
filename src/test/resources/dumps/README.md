@@ -1,6 +1,11 @@
 # How to create the test SVN Dump Files
 
-The `SVNDumpFileParser` unit tests are based on the files in this directory.
+Many unit tests are based on the files in this directory.
+
+The `Makefile` calls scripts to create svn dump files.  This is useful in order to understand how the files were created.
+If a script does not exist, then the commands to create that dump should be listed below in this file.
+
+Slowly, we should convert all of the instructions below into scripts.
 
 ## PREAMBLE
 
@@ -107,16 +112,6 @@ Same as `svn_rename.dump` but without the copy hashes.
     svn rm testdir3
     svn commit -m "Deleted 3 dirs."
     
-##  svn_copy_file.dump
-
-    <SETUP CODE>
-    echo "this is a test file" > README.txt
-    svn add README.txt
-    svn commit -m "Added readme."
-    svn cp README.txt OTHER.txt
-    svn commit -m "Copied readme."
-    <EXPORT CODE>
-
 ## inner_dir.dump
 
     <SETUP CODE>

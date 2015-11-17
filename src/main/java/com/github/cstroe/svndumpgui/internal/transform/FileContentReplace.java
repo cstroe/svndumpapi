@@ -3,11 +3,16 @@ package com.github.cstroe.svndumpgui.internal.transform;
 import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
+import com.github.cstroe.svndumpgui.api.Property;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class FileContentReplace extends AbstractRepositoryMutator {
     private final Predicate<Node> nodeMatcher;
@@ -16,9 +21,11 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     private boolean nodeMatched = false;
     private ContentChunk generatedChunk = null;
 
+    Table<Integer, String, Node> nodeTable = HashBasedTable.create();
+
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
-        this.nodeMatcher = nodeMatcher;
-        this.contentChunkGenerator = contentChunkGenerator;
+        this.nodeMatcher = checkNotNull(nodeMatcher);
+        this.contentChunkGenerator = checkNotNull(contentChunkGenerator);
     }
 
     @Override
@@ -30,6 +37,14 @@ public class FileContentReplace extends AbstractRepositoryMutator {
                 throw new NullPointerException("Cannot provide null node content.");
             }
         } else {
+            final String copyFromRev = node.get(NodeHeader.COPY_FROM_REV);
+            final String copyFromPath = node.get(NodeHeader.COPY_FROM_PATH);
+            if(copyFromRev != null && copyFromPath != null &&
+                    nodeTable.contains(Integer.parseInt(copyFromRev), copyFromPath)) {
+                Node changedNode = nodeTable.get(Integer.parseInt(copyFromRev), copyFromPath);
+                node.getHeaders().put(NodeHeader.SOURCE_MD5, changedNode.get(NodeHeader.MD5));
+                node.getHeaders().put(NodeHeader.SOURCE_SHA1, changedNode.get(NodeHeader.SHA1));
+            }
             super.consume(node);
         }
     }
@@ -53,6 +68,7 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         if(!nodeMatched) {
             super.endNode(node);
         } else {
+            nodeTable.put(node.getRevision().get().getNumber(), node.get(NodeHeader.PATH),  node);
             node.getHeaders().put(NodeHeader.TEXT_CONTENT_LENGTH, Integer.toString(generatedChunk.getContent().length));
 
             String propContentLengthRaw = node.get(NodeHeader.PROP_CONTENT_LENGTH);
@@ -76,9 +92,14 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             node.getContent().clear();
             node.addFileContentChunk(generatedChunk);
 
+            final String trailingNewLine = node.getProperties().get(Property.TRAILING_NEWLINE_HINT);
+            node.getProperties().remove(Property.TRAILING_NEWLINE_HINT);
             super.consume(node);
             super.consume(generatedChunk);
             super.endChunks();
+            if(trailingNewLine != null) {
+                node.getProperties().put(Property.TRAILING_NEWLINE_HINT, trailingNewLine);
+            }
             super.endNode(node);
         }
         nodeMatched = false;
