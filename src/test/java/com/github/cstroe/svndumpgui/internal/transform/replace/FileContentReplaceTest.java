@@ -1,4 +1,4 @@
-package com.github.cstroe.svndumpgui.internal.transform;
+package com.github.cstroe.svndumpgui.internal.transform.replace;
 
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
