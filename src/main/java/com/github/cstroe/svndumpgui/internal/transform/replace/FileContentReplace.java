@@ -42,7 +42,9 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         final String theNodeAction = node.get(NodeHeader.ACTION);
         final String copyFromPath = node.get(NodeHeader.COPY_FROM_PATH);
 
-        if("file".equals(theKindOfNodeWeHave)) {
+        if("delete".equals(theNodeAction)) {
+            deletePath(node);
+        } else if("file".equals(theKindOfNodeWeHave)) {
             if(nodeMatcher.test(node)) {
                 nodeMatched = true;
                 generatedChunk = checkNotNull(contentChunkGenerator.apply(node));
@@ -70,26 +72,18 @@ public class FileContentReplace extends AbstractRepositoryMutator {
                         throw new RuntimeException(e);
                     }
                 }
-            } else if("delete".equals(theNodeAction))  {
-                deletePath(node);
             }
-        } else if("dir".equals(theKindOfNodeWeHave)) {
-            if("add".equals(theNodeAction) && copyFromPath != null) {
-                Path previouslyMatchedPath = fs.getPath("/" + copyFromPath);
-                if (Files.exists(previouslyMatchedPath)) {
-                    Path newPath = fs.getPath("/" + node.get(NodeHeader.PATH));
-                    try {
-                        FileOperations.RecursiveCopier tc = new FileOperations.RecursiveCopier(previouslyMatchedPath, newPath);
-                        Files.walkFileTree(previouslyMatchedPath, tc);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+        } else if("dir".equals(theKindOfNodeWeHave) && "add".equals(theNodeAction) && copyFromPath != null) {
+            Path previouslyMatchedPath = fs.getPath("/" + copyFromPath);
+            if (Files.exists(previouslyMatchedPath)) {
+                Path newPath = fs.getPath("/" + node.get(NodeHeader.PATH));
+                try {
+                    FileOperations.RecursiveCopier tc = new FileOperations.RecursiveCopier(previouslyMatchedPath, newPath);
+                    Files.walkFileTree(previouslyMatchedPath, tc);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } else if("delete".equals(theNodeAction)) {
-                deletePath(node);
             }
-        } else if("delete".equals(theNodeAction)) {
-            deletePath(node);
         }
         super.consume(node);
     }
