@@ -31,3 +31,8 @@ svn_copy_file:
 	./scripts/svn_copy_file.sh > svn_copy_file.dump
 	# be aware of hand hacked time stamps to match svn_copy_file.dump
 	./scripts/svn_copy_file_new_content.sh > svn_copy_file_new_content.dump
+
+svn_copy_file_many_times:
+    ./scripts/svn_copy_file_many_times.sh > svn_copy_file_many_times.dump
+    # be aware of hand hacked time stamps and uuid to match svn_copy_file_many_times.dump
+	./scripts/svn_copy_file_many_times_new_content.sh > svn_copy_file_many_times_new_content.dump

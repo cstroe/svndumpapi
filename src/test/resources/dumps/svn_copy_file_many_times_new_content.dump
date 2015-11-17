@@ -1,0 +1,164 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 8f5f494b-f9cd-4c29-8083-4ae0c571e017
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-11-17T00:01:10.107503Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-17T00:01:10.273486Z
+K 7
+svn:log
+V 13
+Added readme.
+PROPS-END
+
+Node-path: README.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 12
+Text-content-md5: f8a6701de14ec3fcfd9f2fe595e9c9ed
+Text-content-sha1: 8b787bd9293c8b962c7a637a9fdbf627fe68610e
+Content-length: 22
+
+PROPS-END
+new content
+
+
+Revision-number: 2
+Prop-content-length: 115
+Content-length: 115
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-17T00:01:10.391212Z
+K 7
+svn:log
+V 14
+Copied readme.
+PROPS-END
+
+Node-path: OTHER.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 1
+Node-copyfrom-path: README.txt
+Text-copy-source-md5: f8a6701de14ec3fcfd9f2fe595e9c9ed
+Text-copy-source-sha1: 8b787bd9293c8b962c7a637a9fdbf627fe68610e
+
+
+Revision-number: 3
+Prop-content-length: 121
+Content-length: 121
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-17T00:01:10.580223Z
+K 7
+svn:log
+V 20
+Copied readme again.
+PROPS-END
+
+Node-path: dir1
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: dir1/OTHER.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 2
+Node-copyfrom-path: OTHER.txt
+Text-copy-source-md5: f8a6701de14ec3fcfd9f2fe595e9c9ed
+Text-copy-source-sha1: 8b787bd9293c8b962c7a637a9fdbf627fe68610e
+
+
+Revision-number: 4
+Prop-content-length: 117
+Content-length: 117
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-17T00:01:10.721140Z
+K 7
+svn:log
+V 16
+Moved directory.
+PROPS-END
+
+Node-path: otherdir1
+Node-kind: dir
+Node-action: add
+Node-copyfrom-rev: 3
+Node-copyfrom-path: dir1
+
+
+Node-path: dir1
+Node-action: delete
+
+
+Revision-number: 5
+Prop-content-length: 120
+Content-length: 120
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-17T00:01:10.841652Z
+K 7
+svn:log
+V 19
+Renamed file again.
+PROPS-END
+
+Node-path: otherdir1/NEWNAME.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 4
+Node-copyfrom-path: otherdir1/OTHER.txt
+Text-copy-source-md5: f8a6701de14ec3fcfd9f2fe595e9c9ed
+Text-copy-source-sha1: 8b787bd9293c8b962c7a637a9fdbf627fe68610e
+
+

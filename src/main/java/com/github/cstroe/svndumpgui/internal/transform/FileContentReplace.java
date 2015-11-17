@@ -44,6 +44,7 @@ public class FileContentReplace extends AbstractRepositoryMutator {
                 Node changedNode = nodeTable.get(Integer.parseInt(copyFromRev), copyFromPath);
                 node.getHeaders().put(NodeHeader.SOURCE_MD5, changedNode.get(NodeHeader.MD5));
                 node.getHeaders().put(NodeHeader.SOURCE_SHA1, changedNode.get(NodeHeader.SHA1));
+                nodeTable.put(node.getRevision().get().getNumber(), node.get(NodeHeader.PATH), changedNode);
             }
             super.consume(node);
         }
