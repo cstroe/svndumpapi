@@ -109,4 +109,21 @@ public class FileContentReplaceTest {
 
         TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_file_many_times_new_content.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
     }
+
+    @Test
+    public void tracks_files_across_deletes() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), fileContentReplace);
+
+        TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
+
+    }
 }
