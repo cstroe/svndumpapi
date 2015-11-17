@@ -5,7 +5,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.Property;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
 import com.github.cstroe.svndumpgui.internal.transform.property.MergeInfoReplaceRevision;
@@ -94,9 +94,9 @@ public class PropertyChangeTest {
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
 
-        SvnDumpFileParser.consume(s, propChange);
+        SvnDumpParser.consume(s, propChange);
 
-        Repository dump = inMemoryDump.getDump();
+        Repository dump = inMemoryDump.getRepo();
 
         assertThat(dump.getRevisions().size(), is(6));
         Revision r4 = dump.getRevisions().get(4);

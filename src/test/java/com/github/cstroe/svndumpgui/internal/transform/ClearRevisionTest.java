@@ -9,11 +9,11 @@ import com.github.cstroe.svndumpgui.api.RepositoryMutator;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
-import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.Sequence;
@@ -142,7 +142,7 @@ public class ClearRevisionTest {
 
         ClearRevision clearRevision = new ClearRevision(1,3);
         clearRevision.continueTo(mockConsumer);
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), clearRevision);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), clearRevision);
     }
 
     @Test
@@ -151,8 +151,8 @@ public class ClearRevisionTest {
 
         {
             RepositoryInMemory inMemoryDump = new RepositoryInMemory();
-            SvnDumpFileParser.consume(TestUtil.openResource(theDumpWereWorkingWith), inMemoryDump);
-            Repository initialDumpState = inMemoryDump.getDump();
+            SvnDumpParser.consume(TestUtil.openResource(theDumpWereWorkingWith), inMemoryDump);
+            Repository initialDumpState = inMemoryDump.getRepo();
 
             assertThat(initialDumpState.getRevisions().size(), is(5));
             assertThat(initialDumpState.getRevisions().get(0).getNodes().size(), is(0));
@@ -165,18 +165,18 @@ public class ClearRevisionTest {
         ByteArrayOutputStream clearedDumpStream = new ByteArrayOutputStream();
         {
             ClearRevision clearRevision = new ClearRevision(1, 3);
-            RepositoryWriter writer = new RepositoryWriterImpl();
+            RepositoryWriter writer = new SvnDumpWriter();
             writer.writeTo(clearedDumpStream);
             clearRevision.continueTo(writer);
-            SvnDumpFileParser.consume(TestUtil.openResource(theDumpWereWorkingWith), clearRevision);
+            SvnDumpParser.consume(TestUtil.openResource(theDumpWereWorkingWith), clearRevision);
         }
 
         ClearRevision clearRevisionAgain = new ClearRevision(1,3);
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         clearRevisionAgain.continueTo(dumpInMemory);
-        SvnDumpFileParser.consume(new ByteArrayInputStream(clearedDumpStream.toByteArray()), clearRevisionAgain);
+        SvnDumpParser.consume(new ByteArrayInputStream(clearedDumpStream.toByteArray()), clearRevisionAgain);
 
-        Repository dump = dumpInMemory.getDump();
+        Repository dump = dumpInMemory.getRepo();
         assertThat(dump.getRevisions().size(), is(5));
         assertThat(dump.getRevisions().get(0).getNodes().size(), is(0));
         assertThat(dump.getRevisions().get(1).getNodes().size(), is(0));

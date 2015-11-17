@@ -13,7 +13,7 @@ import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpParserDoppelganger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
@@ -161,7 +161,7 @@ public class PathCollisionValidatorTest {
         }
 
         RepositoryValidator pcValidator = new PathCollisionValidator();
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, pcValidator);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, pcValidator);
         assertFalse(pcValidator.isValid());
     }
 

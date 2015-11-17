@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
  * character position of the token in the input, as required by Lucene's
  * org.apache.lucene.analysis.Token API.
  * */
-public final class SvnDumpFileCharStream implements CharStream {
+public final class SvnDumpCharStream implements CharStream {
     public static final int INITAL_BUFFER_LENGTH = 2048;
     byte[] buffer = null;
 
@@ -46,7 +46,7 @@ public final class SvnDumpFileCharStream implements CharStream {
     InputStream inputStream;            // source of bytes
 
     /** Constructs from a Reader. */
-    public SvnDumpFileCharStream(InputStream stream) {
+    public SvnDumpCharStream(InputStream stream) {
         inputStream = stream;
     }
 

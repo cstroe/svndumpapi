@@ -6,13 +6,13 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
-import com.github.cstroe.svndumpgui.internal.writer.RepositoryWriterImpl;
+import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ public class RepositorySummaryTest {
         RepositoryWriter summaryWriter = new RepositorySummary();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         summaryWriter.writeTo(baos);
-        SvnDumpFileParserDoppelganger.consume(dump, summaryWriter);
+        SvnDumpParserDoppelganger.consume(dump, summaryWriter);
 
         InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");
@@ -48,7 +48,7 @@ public class RepositorySummaryTest {
 
         final InputStream inputStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/svn_multi_file_delete.dump");
-        SvnDumpFileParser.consume(inputStream, svnDumpSummary);
+        SvnDumpParser.consume(inputStream, svnDumpSummary);
 
         InputStream summaryStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/svn_multi_file_delete.txt");
@@ -79,15 +79,15 @@ public class RepositorySummaryTest {
         n3_1.getHeaders().put(NodeHeader.KIND, "dir");
         n3_1.getHeaders().put(NodeHeader.PATH, "directory1");
 
-        RepositoryWriterImpl writer = new RepositoryWriterImpl();
+        SvnDumpWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         writer.writeTo(outputStream);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, writer);
 
         RepositorySummary dumpSummary = new RepositorySummary();
         ByteArrayOutputStream summaryStream = new ByteArrayOutputStream();
         dumpSummary.writeTo(summaryStream);
-        SvnDumpFileParser.consume(new ByteArrayInputStream(outputStream.toByteArray()), dumpSummary);
+        SvnDumpParser.consume(new ByteArrayInputStream(outputStream.toByteArray()), dumpSummary);
 
         InputStream expectedStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("summary/empty_revisions_at_beginning.txt");

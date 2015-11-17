@@ -5,12 +5,12 @@ import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.SvnDumpFileParserTest;
 import com.github.cstroe.svndumpgui.internal.RepositoryImpl;
 import com.github.cstroe.svndumpgui.internal.PreambleImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileParserDoppelganger;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpParserDoppelganger;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class RepositoryWriterImplTest {
+public class SvnDumpWriterTest {
 
     @Test
     public void no_uuid() throws IOException {
@@ -33,10 +33,10 @@ public class RepositoryWriterImplTest {
         Revision r0 = new RevisionImpl(0);
         dump.getRevisions().add(r0);
 
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         writer.writeTo(os);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, writer);
         assertThat(os.toString(), is(equalTo("SVN-fs-dump-format-version: 2\n\n\nRevision-number: 0\nProp-content-length: 10\nContent-length: 10\n\nPROPS-END\n\n")));
     }
 
@@ -107,13 +107,13 @@ public class RepositoryWriterImplTest {
     @Test
     public void rewrite_file() throws ParseException, IOException {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
-        SvnDumpFileParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
-        Repository dump = dumpInMemory.getDump();
+        SvnDumpParser.consume(TestUtil.openResource("dumps/simple_branch_and_merge.dump"), dumpInMemory);
+        Repository dump = dumpInMemory.getRepo();
 
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         ByteArrayOutputStream firstStream = new ByteArrayOutputStream();
         writer.writeTo(firstStream);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(dump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(dump, writer);
 
         final InputStream s1 = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
@@ -124,7 +124,7 @@ public class RepositoryWriterImplTest {
 
         ByteArrayOutputStream secondStream = new ByteArrayOutputStream();
         writer.writeTo(secondStream);
-        SvnDumpFileParserDoppelganger.consumeWithoutChaining(readDump, writer);
+        SvnDumpParserDoppelganger.consumeWithoutChaining(readDump, writer);
 
         final InputStream s = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("dumps/simple_branch_and_merge.dump");
@@ -134,9 +134,9 @@ public class RepositoryWriterImplTest {
 
     private void recreateDumpFile(String dumpFile) throws ParseException, IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RepositoryWriter dumpWriter = new RepositoryWriterImpl();
+        RepositoryWriter dumpWriter = new SvnDumpWriter();
         dumpWriter.writeTo(baos);
-        SvnDumpFileParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
+        SvnDumpParser.consume(TestUtil.openResource(dumpFile), dumpWriter);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStream s = Thread.currentThread().getContextClassLoader()
@@ -157,13 +157,13 @@ public class RepositoryWriterImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void dont_consume_null_chunks(){
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         writer.consume((ContentChunk)null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void dont_consume_chunks_with_null_content(){
-        RepositoryWriter writer = new RepositoryWriterImpl();
+        RepositoryWriter writer = new SvnDumpWriter();
         writer.consume(new ContentChunk() {
             @Override
             public byte[] getContent() {

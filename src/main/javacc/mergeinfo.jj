@@ -10,13 +10,13 @@ PARSER_BEGIN(MergeInfoParser)
 package com.github.cstroe.svndumpgui.generated;
 
 import com.github.cstroe.svndumpgui.internal.transform.property.MergeInfoData;
-import com.github.cstroe.svndumpgui.internal.utility.SvnDumpFileCharStream;
+import com.github.cstroe.svndumpgui.internal.utility.SvnDumpCharStream;
 
 import java.io.ByteArrayInputStream;
 
 public class MergeInfoParser {
     public static MergeInfoData parse(String string) throws ParseException {
-        MergeInfoParser parser = new MergeInfoParser(new SvnDumpFileCharStream(new ByteArrayInputStream(string.getBytes())));
+        MergeInfoParser parser = new MergeInfoParser(new SvnDumpCharStream(new ByteArrayInputStream(string.getBytes())));
         return parser.Start();
     }
 }

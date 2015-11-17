@@ -105,10 +105,10 @@ All the operations to the SVN dump file are detailed in [this test](src/test/jav
 
 Parsing an SVN dump file is straight forward.  Here's an example that uses a single consumer (writes the SVN dump to STD OUT):
 
-    RepositoryWriter writer = new RepositoryWriterImpl();
-    writer.writeTo(System.out);
-    
+    RepositoryInMemory inMemory = new RepositoryInMemory();
     InputStream is = new FileInputStream("svn.dump");
-    SvnDumpFileParser.consume(is, writer);
+    SvnDumpFileParser.consume(is, inMemory);
+    
+    Repository svnRepository = inMemory.getRepo();
 
-See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/RepositoryFileParserTest.java) for usage patterns of the parser.
+See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpFileParserTest.java) for usage patterns of the parser.

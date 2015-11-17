@@ -6,7 +6,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
-import com.github.cstroe.svndumpgui.generated.SvnDumpFileParser;
+import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 
 import java.io.InputStream;
@@ -21,10 +21,10 @@ import java.io.InputStream;
  *
  * Useful in tests.
  */
-public class SvnDumpFileParserDoppelganger {
+public class SvnDumpParserDoppelganger {
     private Repository dump;
 
-    public SvnDumpFileParserDoppelganger(Repository dump) {
+    public SvnDumpParserDoppelganger(Repository dump) {
         this.dump = dump;
     }
 
@@ -52,14 +52,14 @@ public class SvnDumpFileParserDoppelganger {
     public static Repository parse(String fileName) throws ParseException {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consume(fileName, dumpInMemory);
-        return dumpInMemory.getDump();
+        return dumpInMemory.getRepo();
     }
 
     public static Repository consume(Repository dump, RepositoryConsumer consumer) {
         RepositoryInMemory dumpInMemory = new RepositoryInMemory();
         consumer.continueTo(dumpInMemory);
-        new SvnDumpFileParserDoppelganger(dump).Start(consumer);
-        return dumpInMemory.getDump();
+        new SvnDumpParserDoppelganger(dump).Start(consumer);
+        return dumpInMemory.getRepo();
     }
 
     public static Repository consume(String fileName, RepositoryConsumer consumer) throws ParseException {
@@ -72,8 +72,8 @@ public class SvnDumpFileParserDoppelganger {
     public static Repository consume(InputStream is, RepositoryConsumer consumer) throws ParseException {
         RepositoryInMemory svnDumpInMemory = new RepositoryInMemory();
         consumer.continueTo(svnDumpInMemory);
-        SvnDumpFileParser.consume(is, consumer);
-        return svnDumpInMemory.getDump();
+        SvnDumpParser.consume(is, consumer);
+        return svnDumpInMemory.getRepo();
     }
 
     /**
@@ -82,6 +82,6 @@ public class SvnDumpFileParserDoppelganger {
      * consumer, we have nothing to return.
      */
     public static void consumeWithoutChaining(Repository dump, RepositoryConsumer consumer) {
-        new SvnDumpFileParserDoppelganger(dump).Start(consumer);
+        new SvnDumpParserDoppelganger(dump).Start(consumer);
     }
 }
