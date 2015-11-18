@@ -25,9 +25,4 @@ public class SpanImpl implements Span {
     public int high() {
         return high;
     }
-
-    @Override
-    public boolean contains(int value) {
-        return value >= low && value <= high;
-    }
 }
