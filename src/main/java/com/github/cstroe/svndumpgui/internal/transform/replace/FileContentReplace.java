@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
+import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.transform.AbstractRepositoryMutator;
 import com.github.cstroe.svndumpgui.internal.utility.FileOperations;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
@@ -29,6 +30,24 @@ public class FileContentReplace extends AbstractRepositoryMutator {
 
     private FileSystem fs;
     private static final String NODE_ATTR = "user:node";
+
+    /**
+     * Helper method to generate a predicate that matches a node,
+     * given the revision number, node action, and node path.
+     */
+    public static Predicate<Node> nodeMatch(int revision, String action, String path) {
+        return n ->
+            n.getRevision().get().getNumber() == revision &&
+            action.equals(n.get(NodeHeader.ACTION)) &&
+            path.equals(n.get(NodeHeader.PATH));
+    }
+
+    /**
+     * Helper method to generate a {@link ContentChunk} from a String.
+     */
+    public static Function<Node, ContentChunk> chunkFromString(String content) {
+        return n -> new ContentChunkImpl(content.getBytes());
+    }
 
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
         this.nodeMatcher = checkNotNull(nodeMatcher);
