@@ -86,8 +86,9 @@ public class FileContentReplaceTest {
 
     @Test
     public void tracks_copied_file_across_one_copy() throws ParseException, IOException {
-        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
+        FileContentReplace fileContentReplace =
+                FileContentReplace.createFCR(1, "add", "README.txt",
+                        n -> new ContentChunkImpl("new content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
@@ -102,8 +103,9 @@ public class FileContentReplaceTest {
 
     @Test
     public void tracks_copied_file_across_many_copies() throws ParseException, IOException {
-        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
+        FileContentReplace fileContentReplace =
+                FileContentReplace.createFCR(1, "add", "README.txt",
+                        n -> new ContentChunkImpl("new content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();

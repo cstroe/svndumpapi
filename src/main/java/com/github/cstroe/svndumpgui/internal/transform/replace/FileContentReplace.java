@@ -49,6 +49,17 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         return n -> new ContentChunkImpl(content.getBytes());
     }
 
+    /**
+     * Helper function for creating a FileContentReplace using a
+     * {@link #nodeMatch(int, String, String) node matcher} and a {@link #chunkFromString(String) string}.
+     */
+    public static FileContentReplace createFCR(int revision, String action, String path, Function<Node, ContentChunk> chunkGenerator) {
+        return new FileContentReplace(
+                nodeMatch(revision, action, path),
+                chunkGenerator
+        );
+    }
+
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
         this.nodeMatcher = checkNotNull(nodeMatcher);
         this.contentChunkGenerator = checkNotNull(contentChunkGenerator);
