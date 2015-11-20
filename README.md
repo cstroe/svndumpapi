@@ -86,12 +86,12 @@ Some useful validators:
 The `bin/run-java` shell script will run the `CliConsumer`.  
 The current usage pattern is to modify the `CliConsumer` and create your chain programmatically, then do:
 
-    mvn clean install
+    mvn clean install dependency:copy-dependencies
     cat file.dump | ./bin/run-java > output.dump
 
 or, if your repository is too large for a single file:
 
-    mvn clean install
+    mvn clean install dependency:copy-dependencies
     svnadmin create /path/to/newrepo
     svnadmin dump /path/to/repo | ./bin/run-java | svnadmin load -q /path/to/newrepo
 
