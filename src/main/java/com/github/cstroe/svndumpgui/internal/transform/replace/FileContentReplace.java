@@ -187,10 +187,27 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     }
 
     private void rememberNode(Node node) {
-        Path matchedPath = fs.getPath("/" + node.get(NodeHeader.PATH));
+        String nodePath = node.get(NodeHeader.PATH);
+        String[] nodePathSegments = nodePath.split("/");
+        Path filesystemPath = fs.getPath("/" + nodePath);
         try {
-            Files.createFile(matchedPath);
-            Files.setAttribute(matchedPath, NODE_ATTR, NodeSerializer.toBytes(node));
+            if(!Files.exists(filesystemPath)) {
+                createParentDirectory(fs, nodePathSegments);
+                Files.createFile(filesystemPath);
+                Files.setAttribute(filesystemPath, NODE_ATTR, NodeSerializer.toBytes(node));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void createParentDirectory(FileSystem fs, String[] nodePathSegments) {
+        String path = fs.getSeparator();
+        for (int i = 0; i < nodePathSegments.length - 1; i++) {
+            path = path + fs.getSeparator() + nodePathSegments[i];
+        }
+        try {
+            Files.createDirectories(fs.getPath(path));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

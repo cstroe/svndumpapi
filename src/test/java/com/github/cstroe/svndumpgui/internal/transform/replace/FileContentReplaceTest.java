@@ -15,11 +15,16 @@ import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
+import com.google.common.jimfs.Jimfs;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -86,9 +91,8 @@ public class FileContentReplaceTest {
 
     @Test
     public void tracks_copied_file_across_one_copy() throws ParseException, IOException {
-        FileContentReplace fileContentReplace =
-                FileContentReplace.createFCR(1, "add", "README.txt",
-                        n -> new ContentChunkImpl("new content\n".getBytes()));
+        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
@@ -157,5 +161,47 @@ public class FileContentReplaceTest {
         ourNode.getHeaders().put(NodeHeader.PATH, "/somepath/is/here.txt");
 
         assertThat(new String(chunkGenerator.apply(ourNode).getContent()), is(equalTo("Test chunk.")));
+    }
+
+    @Test
+    public void parent_directories_get_created_correctly() {
+        FileSystem fs = Jimfs.newFileSystem();
+
+        String[] pathSegments = new String[4];
+        pathSegments[0] = "dir1";
+        pathSegments[1] = "dir2";
+        pathSegments[2] = "dir3";
+        pathSegments[3] = "file.txt";
+        FileContentReplace.createParentDirectory(fs, pathSegments);
+
+        Path parentDirectory = fs.getPath("/dir1/dir2/dir3");
+        assertTrue(Files.exists(parentDirectory));
+
+        String[] subDirectorySegments = new String[5];
+        System.arraycopy(pathSegments, 0, subDirectorySegments, 0, 3);
+        subDirectorySegments[3] = "dir4";
+        subDirectorySegments[4] = "file2.txt";
+        FileContentReplace.createParentDirectory(fs, subDirectorySegments);
+
+        Path subDirectory = fs.getPath("/dir1/dir2/dir3/dir4");
+        assertTrue(Files.exists(subDirectory));
+    }
+
+    @Test
+    public void tracks_node_in_directory() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 2 && "dir1/dir2/dir3/README.txt".equals(n.get(NodeHeader.PATH));
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file_in_directory.before.dump"), fileContentReplace);
+
+        InputStream dumpWithNewContent = TestUtil.openResource("dumps/add_file_in_directory.after.dump");
+        InputStream dumpCreatedByFileContentReplace = new ByteArrayInputStream(newDumpStream.toByteArray());
+        TestUtil.assertEqualStreams(dumpWithNewContent, dumpCreatedByFileContentReplace);
     }
 }
