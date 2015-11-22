@@ -5,6 +5,8 @@ public interface Span {
     static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
     int low();
     int high();
+    void low(int value);
+    void high(int value);
 
     default boolean contains(int value) {
         return value >= low() && value <= high();
@@ -20,6 +22,22 @@ public interface Span {
         if(span.low() > high()) {
             return false;
         }
+
+        return true;
+    }
+
+    /**
+     * Merge with another span.
+     * @param otherSpan Must overlap with this span.
+     * @return true if merge happened, false if it didn't
+     */
+    default boolean merge(Span otherSpan) {
+        if(!overlaps(otherSpan)) {
+            return false;
+        }
+
+        low(Math.min(low(), otherSpan.low()));
+        high(Math.max(high(), otherSpan.high()));
 
         return true;
     }
