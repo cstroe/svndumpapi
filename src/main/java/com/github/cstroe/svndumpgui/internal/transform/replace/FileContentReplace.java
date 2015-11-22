@@ -4,17 +4,11 @@ import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
+import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.transform.AbstractRepositoryMutator;
-import com.github.cstroe.svndumpgui.internal.utility.FileOperations;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
-import com.google.common.jimfs.Configuration;
-import com.google.common.jimfs.Jimfs;
 
-import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -27,80 +21,76 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     private boolean nodeMatched = false;
     private ContentChunk generatedChunk = null;
 
-    private FileSystem fs;
-    private static final String NODE_ATTR = "user:node";
+    private boolean updateTreeOfKnowledge = false;
+    private final TreeOfKnowledge tok;
 
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
+        this(nodeMatcher, contentChunkGenerator, new TreeOfKnowledge());
+        this.updateTreeOfKnowledge = true;
+    }
+
+    /**
+     * @param tok An external {@link com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledge tree of knowledge}
+     *            that is updated by someone else.  Use this if you want to share a single tree with multiple consumers.
+     */
+    public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator, TreeOfKnowledge tok) {
         this.nodeMatcher = checkNotNull(nodeMatcher);
         this.contentChunkGenerator = checkNotNull(contentChunkGenerator);
-        this.fs = Jimfs.newFileSystem(Configuration.unix().toBuilder().setAttributeViews("basic", "user").build());
+        this.tok = tok;
     }
 
     @Override
     public void consume(Node node) {
-        final String theKindOfNodeWeHave = node.get(NodeHeader.KIND);
-        final String theNodeAction = node.get(NodeHeader.ACTION);
-        final String copyFromPath = node.get(NodeHeader.COPY_FROM_PATH);
+        if(updateTreeOfKnowledge) {
+            tok.consume(node);
+        }
 
-        if("delete".equals(theNodeAction)) {
-            deletePath(node);
-        } else if("file".equals(theKindOfNodeWeHave)) {
+        if("file".equals(node.get(NodeHeader.KIND))) {
             if(nodeMatcher.test(node)) {
                 nodeMatched = true;
                 generatedChunk = checkNotNull(contentChunkGenerator.apply(node));
                 return; // we're outta here
             }
 
-            if("add".equals(theNodeAction) && copyFromPath != null) {
-                Path previouslyMatchedPath = fs.getPath("/" + copyFromPath);
-                if(Files.exists(previouslyMatchedPath)) {
-                    try {
-                        Node changedNode = NodeSerializer.fromBytes((byte[])Files.getAttribute(previouslyMatchedPath, NODE_ATTR));
+            // node was not matched, but it might be a copy of a previously replaced node
+            Node previousNode = findPreviousNode(node);
 
-                        node.getHeaders().put(NodeHeader.SOURCE_MD5, changedNode.get(NodeHeader.MD5));
-                        node.getHeaders().put(NodeHeader.SOURCE_SHA1, changedNode.get(NodeHeader.SHA1));
+            if(previousNode != null) {
+                String previousMd5 = previousNode.get(NodeHeader.MD5);
+                String previousSha1 = previousNode.get(NodeHeader.SHA1);
+                String currentSourceMd5 = node.get(NodeHeader.SOURCE_MD5);
+                String currentSourceSha1 = node.get(NodeHeader.SOURCE_SHA1);
 
-                        Path newPath = fs.getPath("/" + node.get(NodeHeader.PATH));
-                        Path parentDir = newPath.getParent();
-                        if(!Files.exists(parentDir)) {
-                            Files.createDirectory(parentDir);
-                        }
-                        Files.createFile(newPath);
-
-                        Files.setAttribute(newPath, NODE_ATTR, NodeSerializer.toBytes(changedNode));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                if (!previousMd5.equals(currentSourceMd5)) {
+                    node.getHeaders().put(NodeHeader.SOURCE_MD5, previousMd5);
                 }
-            }
-        } else if("dir".equals(theKindOfNodeWeHave) && "add".equals(theNodeAction) && copyFromPath != null) {
-            Path previouslyMatchedPath = fs.getPath("/" + copyFromPath);
-            if (Files.exists(previouslyMatchedPath)) {
-                Path newPath = fs.getPath("/" + node.get(NodeHeader.PATH));
-                try {
-                    FileOperations.RecursiveCopier tc = new FileOperations.RecursiveCopier(previouslyMatchedPath, newPath);
-                    Files.walkFileTree(previouslyMatchedPath, tc);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                if (!previousSha1.equals(currentSourceSha1)) {
+                    node.getHeaders().put(NodeHeader.SOURCE_SHA1, previousSha1);
                 }
             }
         }
         super.consume(node);
     }
 
-    private void deletePath(Node node) {
-        Path currentFile = fs.getPath("/" + node.get(NodeHeader.PATH));
-        if(Files.exists(currentFile)) {
-            try {
-                if(Files.isDirectory(currentFile)) {
-                    Files.walkFileTree(currentFile, new FileOperations.RecursiveDeleter());
-                } else {
-                    Files.deleteIfExists(currentFile);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+    private Node findPreviousNode(Node currentNode) {
+        Node previousNode = null;
+        String copyFromRev = currentNode.get(NodeHeader.COPY_FROM_REV);
+        if(copyFromRev != null) {
+            int copyRevision = Integer.parseInt(copyFromRev);
+            String copyPath = currentNode.get(NodeHeader.COPY_FROM_PATH);
+            previousNode = tok.tellMeAbout(copyRevision, copyPath);
+            if(previousNode == null) {
+                throw new IllegalStateException("r" +  currentNode.getRevision().get().getNumber() + " " + currentNode.get(NodeHeader.PATH) +
+                        " copied from untracked node! r" + copyFromRev + ": " + copyPath);
+            }
+
+            Node previousPreviousNode = findPreviousNode(previousNode);
+            if(previousPreviousNode != null) {
+                return previousPreviousNode;
             }
         }
+
+        return previousNode;
     }
 
     @Override
@@ -127,7 +117,6 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             node.getContent().clear();
             node.addFileContentChunk(generatedChunk);
 
-            rememberNode(node);
             continueNodeConsumption(node);
         }
         nodeMatched = false;
@@ -153,16 +142,6 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         if (node.get(NodeHeader.SHA1) != null) {
             final String sha1hash = new Sha1().hash(generatedChunk.getContent());
             node.getHeaders().put(NodeHeader.SHA1, sha1hash);
-        }
-    }
-
-    private void rememberNode(Node node) {
-        Path matchedPath = fs.getPath("/" + node.get(NodeHeader.PATH));
-        try {
-            Files.createFile(matchedPath);
-            Files.setAttribute(matchedPath, NODE_ATTR, NodeSerializer.toBytes(node));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

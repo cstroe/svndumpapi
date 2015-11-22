@@ -98,12 +98,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.google.jimfs</groupId>
-            <artifactId>jimfs</artifactId>
-            <version>1.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
             <version>1.2</version>
