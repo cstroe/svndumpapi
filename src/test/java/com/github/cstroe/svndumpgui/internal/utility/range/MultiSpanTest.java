@@ -2,6 +2,7 @@ package com.github.cstroe.svndumpgui.internal.utility.range;
 
 import org.junit.Test;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 public class MultiSpanTest {
@@ -52,5 +53,38 @@ public class MultiSpanTest {
         assertFalse(multiSpan.contains(5));
         assertFalse(multiSpan.contains(6));
         assertFalse(multiSpan.contains(6000000));
+    }
+
+    @Test
+    public void span_merging() {
+        MultiSpan multiSpan = new MultiSpan();
+        multiSpan.add(new SpanImpl(0, 1));
+        assertThat(multiSpan.getSpans().size(), is(1));
+        multiSpan.add(new SpanImpl(1, 2));
+        assertThat(multiSpan.getSpans().size(), is(1));
+
+        assertFalse(multiSpan.contains(-1));
+        assertTrue(multiSpan.contains(0));
+        assertTrue(multiSpan.contains(1));
+        assertTrue(multiSpan.contains(2));
+        assertFalse(multiSpan.contains(3));
+    }
+
+    @Test
+    public void span_merge_reduction() {
+        MultiSpan multiSpan = new MultiSpan();
+        multiSpan.add(new SpanImpl(0, 1));
+        assertThat(multiSpan.getSpans().size(), is(1));
+        multiSpan.add(new SpanImpl(2, 3));
+        assertThat(multiSpan.getSpans().size(), is(2));
+        multiSpan.add(new SpanImpl(1, 2));
+        assertThat(multiSpan.getSpans().size(), is(1));
+
+        assertFalse(multiSpan.contains(-1));
+        assertTrue(multiSpan.contains(0));
+        assertTrue(multiSpan.contains(1));
+        assertTrue(multiSpan.contains(2));
+        assertTrue(multiSpan.contains(3));
+        assertFalse(multiSpan.contains(4));
     }
 }
