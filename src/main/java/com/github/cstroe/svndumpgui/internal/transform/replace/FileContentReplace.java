@@ -47,10 +47,11 @@ public class FileContentReplace extends AbstractRepositoryMutator {
      * Helper function for creating a FileContentReplace using a
      * {@link #nodeMatch(int, String, String) node matcher} and a {@link #chunkFromString(String) string}.
      */
-    public static FileContentReplace createFCR(int revision, String action, String path, Function<Node, ContentChunk> chunkGenerator) {
+    public static FileContentReplace createFCR(int revision, String action, String path, Function<Node, ContentChunk> chunkGenerator, TreeOfKnowledge tok) {
         return new FileContentReplace(
                 nodeMatch(revision, action, path),
-                chunkGenerator
+                chunkGenerator,
+                tok
         );
     }
 
