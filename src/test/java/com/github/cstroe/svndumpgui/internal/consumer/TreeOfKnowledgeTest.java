@@ -7,7 +7,6 @@ import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.utility.range.MultiSpan;
 import com.github.cstroe.svndumpgui.internal.utility.tree.CLTreeNode;
-import com.github.cstroe.svndumpgui.internal.utility.tree.CLTreeNodeImpl;
 import org.javatuples.Triplet;
 import org.junit.Test;
 
@@ -44,5 +43,16 @@ public class TreeOfKnowledgeTest {
         assertNotNull(n);
         assertThat(n.get(NodeHeader.MD5), is("4221d002ceb5d3c9e9137e495ceaa647"));
         assertThat(n.get(NodeHeader.SHA1), is("804d716fc5844f1cc5516c8f0be7a480517fdea2"));
+    }
+
+    @Test
+    public void nested_directories() throws ParseException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+        SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
+
+        Node n = tok.tellMeAbout(1, "test");
+        assertNotNull(n);
+        assertThat(n.get(NodeHeader.ACTION), is("add"));
+        assertThat(n.get(NodeHeader.PATH), is("test"));
     }
 }

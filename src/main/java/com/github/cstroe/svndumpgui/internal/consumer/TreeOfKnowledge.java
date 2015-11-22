@@ -47,6 +47,7 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
 
             case "delete":
                 deleteFromTree(node);
+                break;
 
             default:
                 throw new IllegalArgumentException("Unhandled node action.");
