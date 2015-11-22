@@ -49,10 +49,22 @@ public class TreeOfKnowledgeTest {
     public void nested_directories() throws ParseException {
         TreeOfKnowledge tok = new TreeOfKnowledge();
         SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
-
-        Node n = tok.tellMeAbout(1, "test");
-        assertNotNull(n);
-        assertThat(n.get(NodeHeader.ACTION), is("add"));
-        assertThat(n.get(NodeHeader.PATH), is("test"));
+        {
+            Node n = tok.tellMeAbout(1, "test");
+            assertThat(n.get(NodeHeader.ACTION), is("add"));
+            assertThat(n.get(NodeHeader.PATH), is("test"));
+        }{
+            Node n = tok.tellMeAbout(1, "test/file1.txt");
+            assertThat(n.get(NodeHeader.ACTION), is("add"));
+            assertThat(n.get(NodeHeader.PATH), is("test/file1.txt"));
+            assertThat(n.get(NodeHeader.MD5), is("d41d8cd98f00b204e9800998ecf8427e"));
+            assertThat(n.get(NodeHeader.SHA1), is("da39a3ee5e6b4b0d3255bfef95601890afd80709"));
+        }{
+            Node n = tok.tellMeAbout(1, "test/file2.txt");
+            assertThat(n.get(NodeHeader.ACTION), is("add"));
+            assertThat(n.get(NodeHeader.PATH), is("test/file2.txt"));
+            assertThat(n.get(NodeHeader.MD5), is("d41d8cd98f00b204e9800998ecf8427e"));
+            assertThat(n.get(NodeHeader.SHA1), is("da39a3ee5e6b4b0d3255bfef95601890afd80709"));
+        }
     }
 }

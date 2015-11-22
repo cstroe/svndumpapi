@@ -11,16 +11,11 @@ import com.github.cstroe.svndumpgui.internal.utility.tree.CLTreeNodeImpl;
 import org.javatuples.Triplet;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TreeOfKnowledge extends AbstractRepositoryConsumer {
 
     private final CLTreeNodeImpl<Triplet<MultiSpan, String, Node>> root;
-
-    private Predicate<Triplet<MultiSpan, String, Node>> inRevision(int revision) {
-        return t ->  t.getValue0().contains(revision);
-    }
 
     private Predicate<Triplet<MultiSpan, String, Node>> inRevisionWithLabel(int revision, String label) {
         return t ->  t.getValue0().contains(revision) && t.getValue1().equals(label);
@@ -61,13 +56,11 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
 
         CLTreeNode<Triplet<MultiSpan, String, Node>> currentRoot = root;
         for (String currentPath : pathComponents) {
-            List<CLTreeNode<Triplet<MultiSpan, String, Node>>> children = currentRoot.getChildren(inRevision(revision));
-            Optional<CLTreeNode<Triplet<MultiSpan, String, Node>>> currentNode =
-                    children.parallelStream().filter(n -> n.lookInside().getValue1().equals(currentPath))
-                            .findAny();
+            List<CLTreeNode<Triplet<MultiSpan, String, Node>>> children =
+                    currentRoot.getChildren(inRevisionWithLabel(revision, currentPath));
 
             final Span toInfinity = new SpanImpl(revision, Span.POSITIVE_INFINITY);
-            if (!currentNode.isPresent()) {
+            if (children.size() == 0) {
                 MultiSpan multiSpan = new MultiSpan();
                 multiSpan.add(toInfinity);
                 Triplet<MultiSpan, String, Node> r = Triplet.with(
@@ -77,8 +70,12 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
                 CLTreeNode<Triplet<MultiSpan, String, Node>> newNode = new CLTreeNodeImpl<>(r);
                 currentRoot.addChild(newNode);
                 currentRoot = newNode;
+            } else if(children.size() == 1) {
+                CLTreeNode<Triplet<MultiSpan, String, Node>> currentNode = children.get(0);
+                currentNode.lookInside().getValue0().add(toInfinity);
+                currentRoot = currentNode;
             } else {
-                currentNode.get().lookInside().getValue0().add(toInfinity);
+                throw new IllegalArgumentException("Ambiguous node label.");
             }
         }
     }
