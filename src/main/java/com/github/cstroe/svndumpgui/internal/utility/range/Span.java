@@ -41,4 +41,14 @@ public interface Span {
 
         return true;
     }
+
+    default void cutoff(int value) {
+        if(low() > value) {
+            throw new IllegalArgumentException("cannot cutoff to " + value + " with span: " + this);
+        }
+
+        if(high() > value) {
+            high(value);
+        }
+    }
 }

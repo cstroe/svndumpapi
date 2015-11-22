@@ -34,6 +34,10 @@ public class MultiSpan {
         return spans.parallelStream().anyMatch(s -> s.contains(value));
     }
 
+    public void cutoff(int value) {
+        spans.parallelStream().forEach(s -> s.cutoff(value));
+    }
+
     List<Span> getSpans() {
         return spans;
     }

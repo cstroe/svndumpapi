@@ -87,4 +87,25 @@ public class MultiSpanTest {
         assertTrue(multiSpan.contains(3));
         assertFalse(multiSpan.contains(4));
     }
+
+    @Test
+    public void cutoff() {
+        {
+            MultiSpan multiSpan = new MultiSpan();
+            multiSpan.add(new SpanImpl(0, 10));
+            multiSpan.cutoff(5);
+            assertTrue(multiSpan.contains(5));
+            assertFalse(multiSpan.contains(6));
+        }{
+            MultiSpan multiSpan = new MultiSpan();
+            multiSpan.add(new SpanImpl(6, 10));
+            multiSpan.add(new SpanImpl(0, 4));
+            multiSpan.cutoff(7);
+            assertTrue(multiSpan.contains(4));
+            assertFalse(multiSpan.contains(5));
+            assertTrue(multiSpan.contains(6));
+            assertTrue(multiSpan.contains(7));
+            assertFalse(multiSpan.contains(8));
+        }
+    }
 }
