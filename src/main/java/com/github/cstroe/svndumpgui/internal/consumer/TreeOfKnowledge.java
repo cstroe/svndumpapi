@@ -62,7 +62,8 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
         for (String currentPath : pathComponents) {
             List<CLTreeNode<Triplet<MultiSpan, String, Node>>> children = currentRoot.getChildren(inRevision(revision));
             Optional<CLTreeNode<Triplet<MultiSpan, String, Node>>> currentNode =
-                    children.stream().filter(n -> n.lookInside().getValue1().equals(currentPath)).findFirst();
+                    children.parallelStream().filter(n -> n.lookInside().getValue1().equals(currentPath))
+                            .findAny();
 
             final Span toInfinity = new SpanImpl(revision, Span.POSITIVE_INFINITY);
             if (!currentNode.isPresent()) {
