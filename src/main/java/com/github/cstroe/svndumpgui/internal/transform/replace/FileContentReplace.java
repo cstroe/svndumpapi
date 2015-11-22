@@ -5,6 +5,7 @@ import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
 import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledge;
+import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.transform.AbstractRepositoryMutator;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
@@ -23,6 +24,35 @@ public class FileContentReplace extends AbstractRepositoryMutator {
 
     private boolean updateTreeOfKnowledge = false;
     private final TreeOfKnowledge tok;
+
+    /**
+     * Helper method to generate a predicate that matches a node,
+     * given the revision number, node action, and node path.
+     */
+    public static Predicate<Node> nodeMatch(int revision, String action, String path) {
+        return n ->
+            n.getRevision().get().getNumber() == revision &&
+            action.equals(n.get(NodeHeader.ACTION)) &&
+            path.equals(n.get(NodeHeader.PATH));
+    }
+
+    /**
+     * Helper method to generate a {@link ContentChunk} from a String.
+     */
+    public static Function<Node, ContentChunk> chunkFromString(String content) {
+        return n -> new ContentChunkImpl(content.getBytes());
+    }
+
+    /**
+     * Helper function for creating a FileContentReplace using a
+     * {@link #nodeMatch(int, String, String) node matcher} and a {@link #chunkFromString(String) string}.
+     */
+    public static FileContentReplace createFCR(int revision, String action, String path, Function<Node, ContentChunk> chunkGenerator) {
+        return new FileContentReplace(
+                nodeMatch(revision, action, path),
+                chunkGenerator
+        );
+    }
 
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
         this(nodeMatcher, contentChunkGenerator, new TreeOfKnowledge());

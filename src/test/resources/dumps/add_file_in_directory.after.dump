@@ -1,0 +1,90 @@
+SVN-fs-dump-format-version: 2
+
+UUID: b4310758-64ec-4395-b936-4f5688dbc373
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-11-20T14:56:09.317179Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 120
+Content-length: 120
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-20T14:56:09.458880Z
+K 7
+svn:log
+V 19
+Adding directories.
+PROPS-END
+
+Node-path: dir1
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: dir1/dir2
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Node-path: dir1/dir2/dir3
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Revision-number: 2
+Prop-content-length: 121
+Content-length: 121
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-20T14:56:09.598275Z
+K 7
+svn:log
+V 20
+Committed README.txt
+PROPS-END
+
+Node-path: dir1/dir2/dir3/README.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 12
+Text-content-md5: f8a6701de14ec3fcfd9f2fe595e9c9ed
+Text-content-sha1: 8b787bd9293c8b962c7a637a9fdbf627fe68610e
+Content-length: 22
+
+PROPS-END
+new content
+
+

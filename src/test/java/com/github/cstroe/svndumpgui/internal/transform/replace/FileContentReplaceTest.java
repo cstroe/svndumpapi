@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.transform.replace;
 
+import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
@@ -7,6 +8,8 @@ import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
+import com.github.cstroe.svndumpgui.internal.NodeImpl;
+import com.github.cstroe.svndumpgui.internal.RevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
@@ -17,12 +20,16 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class FileContentReplaceTest {
     @Test
@@ -96,8 +103,9 @@ public class FileContentReplaceTest {
 
     @Test
     public void tracks_copied_file_across_many_copies() throws ParseException, IOException {
-        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
+        FileContentReplace fileContentReplace =
+                FileContentReplace.createFCR(1, "add", "README.txt",
+                        n -> new ContentChunkImpl("new content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
@@ -108,6 +116,47 @@ public class FileContentReplaceTest {
         SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_file_many_times.dump"), fileContentReplace);
 
         TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_file_many_times_new_content.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
+    }
+
+    @Test
+    public void nodematch() {
+        Predicate<Node> nodeMatch = FileContentReplace.nodeMatch(2, "add", "/somepath/is/here.txt");
+        {
+            Node ourNode = new NodeImpl(new RevisionImpl(2));
+            ourNode.getHeaders().put(NodeHeader.ACTION, "add");
+            ourNode.getHeaders().put(NodeHeader.PATH, "/somepath/is/here.txt");
+
+            assertTrue(nodeMatch.test(ourNode));
+        }{
+            Node ourNode = new NodeImpl(new RevisionImpl(2));
+            ourNode.getHeaders().put(NodeHeader.ACTION, "add");
+            ourNode.getHeaders().put(NodeHeader.PATH, "/somepath/is/here1.txt");
+
+            assertFalse(nodeMatch.test(ourNode));
+        }{
+            Node ourNode = new NodeImpl(new RevisionImpl(2));
+            ourNode.getHeaders().put(NodeHeader.ACTION, "remove");
+            ourNode.getHeaders().put(NodeHeader.PATH, "/somepath/is/here.txt");
+
+            assertFalse(nodeMatch.test(ourNode));
+        }{
+            Node ourNode = new NodeImpl(new RevisionImpl(3));
+            ourNode.getHeaders().put(NodeHeader.ACTION, "add");
+            ourNode.getHeaders().put(NodeHeader.PATH, "/somepath/is/here.txt");
+
+            assertFalse(nodeMatch.test(ourNode));
+        }
+    }
+
+    @Test
+    public void chunkFromString() {
+        Function<Node, ContentChunk> chunkGenerator = FileContentReplace.chunkFromString("Test chunk.");
+
+        Node ourNode = new NodeImpl(new RevisionImpl(2));
+        ourNode.getHeaders().put(NodeHeader.ACTION, "add");
+        ourNode.getHeaders().put(NodeHeader.PATH, "/somepath/is/here.txt");
+
+        assertThat(new String(chunkGenerator.apply(ourNode).getContent()), is(equalTo("Test chunk.")));
     }
 
     @Test
@@ -125,5 +174,23 @@ public class FileContentReplaceTest {
 
         TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
 
+    }
+
+    @Test
+    public void tracks_node_in_directory() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 2 && "dir1/dir2/dir3/README.txt".equals(n.get(NodeHeader.PATH));
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file_in_directory.before.dump"), fileContentReplace);
+
+        InputStream dumpWithNewContent = TestUtil.openResource("dumps/add_file_in_directory.after.dump");
+        InputStream dumpCreatedByFileContentReplace = new ByteArrayInputStream(newDumpStream.toByteArray());
+        TestUtil.assertEqualStreams(dumpWithNewContent, dumpCreatedByFileContentReplace);
     }
 }
