@@ -4,8 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MultiSpan {
+public class MultiSpan implements Cloneable {
     private List<Span> spans = new ArrayList<>();
+
+    public MultiSpan() {}
+
+    private MultiSpan(List<Span> spans) {
+        this.spans = spans;
+    }
 
     public void add(Span span) {
         for(Span currentSpan : spans) {
@@ -40,6 +46,16 @@ public class MultiSpan {
 
     List<Span> getSpans() {
         return spans;
+    }
+
+    @SuppressWarnings({"CloneDoesntCallSuperClone", "CloneDoesntDeclareCloneNotSupportedException"})
+    @Override
+    public MultiSpan clone() {
+        List<Span> newSpans = new ArrayList<>(spans.size());
+        for(Span currentSpan : spans) {
+            newSpans.add(new SpanImpl(currentSpan.low(), currentSpan.high()));
+        }
+        return new MultiSpan(newSpans);
     }
 
     @Override
