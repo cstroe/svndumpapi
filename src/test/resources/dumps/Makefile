@@ -33,6 +33,11 @@ svn_copy_file:
 	./scripts/svn_copy_file_new_content.sh > svn_copy_file_new_content.dump
 
 svn_copy_file_many_times:
-    ./scripts/svn_copy_file_many_times.sh > svn_copy_file_many_times.dump
-    # be aware of hand hacked time stamps and uuid to match svn_copy_file_many_times.dump
+	./scripts/svn_copy_file_many_times.sh > svn_copy_file_many_times.dump
+	# be aware of hand hacked time stamps and uuid to match svn_copy_file_many_times.dump
 	./scripts/svn_copy_file_many_times_new_content.sh > svn_copy_file_many_times_new_content.dump
+
+svn_copy_and_delete:
+	./scripts/svn_copy_and_delete.sh "this is some file content" > svn_copy_and_delete.before.dump
+	# hand hacked time stamps to match the file above
+	./scripts/svn_copy_and_delete.sh "i replaced the content" > svn_copy_and_delete.after.dump

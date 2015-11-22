@@ -15,16 +15,12 @@ import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
-import com.google.common.jimfs.Jimfs;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -164,27 +160,20 @@ public class FileContentReplaceTest {
     }
 
     @Test
-    public void parent_directories_get_created_correctly() {
-        FileSystem fs = Jimfs.newFileSystem();
+    public void tracks_files_across_deletes() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
 
-        String[] pathSegments = new String[4];
-        pathSegments[0] = "dir1";
-        pathSegments[1] = "dir2";
-        pathSegments[2] = "dir3";
-        pathSegments[3] = "file.txt";
-        FileContentReplace.createParentDirectory(fs, pathSegments);
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
 
-        Path parentDirectory = fs.getPath("/dir1/dir2/dir3");
-        assertTrue(Files.exists(parentDirectory));
+        fileContentReplace.continueTo(svnDumpWriter);
 
-        String[] subDirectorySegments = new String[5];
-        System.arraycopy(pathSegments, 0, subDirectorySegments, 0, 3);
-        subDirectorySegments[3] = "dir4";
-        subDirectorySegments[4] = "file2.txt";
-        FileContentReplace.createParentDirectory(fs, subDirectorySegments);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), fileContentReplace);
 
-        Path subDirectory = fs.getPath("/dir1/dir2/dir3/dir4");
-        assertTrue(Files.exists(subDirectory));
+        TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
+
     }
 
     @Test
