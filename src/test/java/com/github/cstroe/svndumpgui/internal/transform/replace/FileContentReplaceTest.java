@@ -10,6 +10,7 @@ import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
+import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
@@ -171,6 +172,26 @@ public class FileContentReplaceTest {
         fileContentReplace.continueTo(svnDumpWriter);
 
         SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), fileContentReplace);
+
+        TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
+
+    }
+
+    @Test
+    public void tracks_files_across_deletes_with_external_tok() throws ParseException, IOException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+
+        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        tok.continueTo(fileContentReplace);
+        tok.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), tok);
 
         TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
 

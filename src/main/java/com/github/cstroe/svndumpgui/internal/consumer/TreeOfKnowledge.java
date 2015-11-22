@@ -56,6 +56,7 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
             default:
                 throw new IllegalArgumentException("Unhandled node action.");
         }
+        super.consume(node);
     }
 
     private void addToTree(Node node) {
