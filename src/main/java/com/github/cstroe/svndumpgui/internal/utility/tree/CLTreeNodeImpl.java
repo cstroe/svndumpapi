@@ -36,4 +36,9 @@ public class CLTreeNodeImpl<T> implements CLTreeNode<T> {
     public T lookInside() {
         return objectInside;
     }
+
+    @Override
+    public String toString() {
+        return "CLTreeNodeImpl{" + objectInside.toString() + "}";
+    }
 }
