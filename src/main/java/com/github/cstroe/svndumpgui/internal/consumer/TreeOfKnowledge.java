@@ -13,6 +13,9 @@ import org.javatuples.Triplet;
 import java.util.List;
 import java.util.function.Predicate;
 
+/**
+ * It knows everything that has ever happened.
+ */
 public class TreeOfKnowledge extends AbstractRepositoryConsumer {
 
     private final CLTreeNodeImpl<Triplet<MultiSpan, String, Node>> root;
