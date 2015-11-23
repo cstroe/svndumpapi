@@ -2,14 +2,19 @@ package com.github.cstroe.svndumpgui.internal.consumer;
 
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
+import com.github.cstroe.svndumpgui.api.Repository;
+import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.utility.range.MultiSpan;
 import com.github.cstroe.svndumpgui.internal.utility.tree.CLTreeNode;
+import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
@@ -118,5 +123,94 @@ public class TreeOfKnowledgeTest {
         SvnDumpParser.consume(TestUtil.openResource("dumps/set_root_property.dump"), tok);
 
         assertThat(tok.getRoot().getChildren(t -> true).size(), is(0));
+    }
+
+    @Test
+    public void consume_all_the_files() throws ParseException {
+        consume("dumps/simple_branch_and_merge_renamed.dump");
+        consume("dumps/svn_copy_file_many_times_new_content.dump");
+        consume("dumps/property_change_on_file.dump");
+        consume("dumps/inner_dir.dump");
+        consume("dumps/set_root_property.dump");
+        consume("dumps/empty.dump");
+        consume("dumps/add_edit_delete_add.dump");
+        consume("dumps/add_and_copychange_once.dump");
+        consume("dumps/svn_copy_and_delete.before.dump");
+        consume("dumps/svn_multi_dir_delete.dump");
+        consume("dumps/many_branches_renamed.dump");
+        consume("dumps/add_and_copychange.dump");
+        consume("dumps/svn_rename_no_copy_hashes.dump");
+        consume("dumps/add_file_in_directory.before.dump");
+        consume("dumps/extra_newline_in_log_message.dump");
+        consume("dumps/composite_commit.dump");
+        consume("dumps/svn_add_directory.dump");
+        consume("dumps/add_file.dump");
+        consume("dumps/svn_delete_with_add.dump");
+        consume("dumps/svn_copy_file.dump");
+        consume("dumps/add_and_multiple_change.dump");
+        consume("dumps/svn_multi_file_delete.dump");
+        consume("dumps/svn_copy_and_delete.after.dump");
+        consume("dumps/utf8_log_message.dump");
+        consume("dumps/firstcommit.dump");
+        consume("dumps/svn_multi_file_delete_multiple_authors.dump");
+        consume("dumps/svn_replace.dump");
+        consume("dumps/undelete.dump");
+        consume("dumps/property_change_on_root.dump");
+        consume("dumps/svn_copy_file_new_content.dump");
+        consume("dumps/binary_commit.dump");
+        consume("dumps/simple_branch_and_merge.dump");
+        consume("dumps/add_file_no_node_properties.dump");
+        consume("dumps/invalid/composite_commit.dump");
+        consume("dumps/svn_copy_file_many_times.dump");
+        consume("dumps/add_and_change_copy_delete.dump");
+        consume("dumps/svn_delete_file.dump");
+        consume("dumps/svn_rename.dump");
+        consume("dumps/many_branches.dump");
+        consume("dumps/different_node_order2.dump");
+        consume("dumps/different_node_order.dump");
+        consume("dumps/add_file_in_directory.after.dump");
+    }
+
+    private void consume(String file) throws ParseException {
+        RepositoryInMemory memoryCopy = new RepositoryInMemory();
+        SvnDumpParser.consume(TestUtil.openResource(file), memoryCopy);
+
+        List<Pair<Integer, String>> nodes = getNodeList(memoryCopy.getRepo());
+
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+        SvnDumpParser.consume(TestUtil.openResource(file), tok);
+
+        for(Pair<Integer, String> pair : nodes) {
+            Node node = tok.tellMeAbout(pair.getValue0(), pair.getValue1());
+            assertNotNull(node);
+            assertThat(node.getRevision().get().getNumber(), is(pair.getValue0()));
+            assertThat(node.get(NodeHeader.PATH), is(equalTo((pair.getValue1()))));
+        }
+    }
+
+    private List<Pair<Integer, String>> getNodeList(Repository repo) {
+        List<Pair<Integer, String>> nodes = new ArrayList<>();
+
+        for(Revision revision : repo.getRevisions()) {
+            for(Node node : revision.getNodes()) {
+                if("delete".equals(node.get(NodeHeader.ACTION))) {
+                    continue;
+                }
+
+                final String path = node.get(NodeHeader.PATH);
+                if(path == null || path.isEmpty()) {
+                    continue;
+                }
+
+                final String textContentLength = node.get(NodeHeader.TEXT_CONTENT_LENGTH);
+                if(textContentLength == null) {
+                    continue;
+                }
+
+                nodes.add(Pair.with(node.getRevision().get().getNumber(), node.get(NodeHeader.PATH)));
+            }
+        }
+
+        return nodes;
     }
 }
