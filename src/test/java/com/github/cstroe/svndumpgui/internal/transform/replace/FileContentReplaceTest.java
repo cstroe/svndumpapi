@@ -217,6 +217,25 @@ public class FileContentReplaceTest {
     }
 
     @Test
+    public void tracks_node_in_directory_external_tok() throws ParseException, IOException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+        FileContentReplace fileContentReplace = FileContentReplace.createFCR(2, "add", "dir1/dir2/dir3/README.txt", n -> new ContentChunkImpl("new content\n".getBytes()), tok);
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        tok.continueTo(fileContentReplace);
+        tok.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file_in_directory.before.dump"), tok);
+
+        InputStream dumpWithNewContent = TestUtil.openResource("dumps/add_file_in_directory.after.dump");
+        InputStream dumpCreatedByFileContentReplace = new ByteArrayInputStream(newDumpStream.toByteArray());
+        TestUtil.assertEqualStreams(dumpWithNewContent, dumpCreatedByFileContentReplace);
+    }
+
+    @Test
     public void does_not_change_a_copy_and_changed_file() throws ParseException, IOException {
         TreeOfKnowledge tok = new TreeOfKnowledge();
 
