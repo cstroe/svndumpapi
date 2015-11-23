@@ -44,13 +44,17 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
         final String nodeAction = node.get(NodeHeader.ACTION);
         switch(nodeAction) {
             case "add":
-            case "change":
-            case "replace":
                 addToTree(node);
                 break;
 
             case "delete":
                 deleteFromTree(node);
+                break;
+
+            case "change":
+            case "replace":
+                deleteFromTree(node);
+                addToTree(node);
                 break;
 
             default:

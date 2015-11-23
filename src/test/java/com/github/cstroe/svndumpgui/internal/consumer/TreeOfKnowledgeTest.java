@@ -101,4 +101,14 @@ public class TreeOfKnowledgeTest {
         SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
         assertNull(tok.tellMeAbout(3, "test-renamed/innerdir/file3.txt"));
     }
+
+    @Test
+    public void tracks_change_nodes() throws ParseException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_change_copy_delete.dump"), tok);
+
+        Node node = tok.tellMeAbout(2, "README.txt");
+        assertThat(node.getRevision().get().getNumber(), is(2));
+        assertThat(node.get(NodeHeader.ACTION), is(equalTo("change")));
+    }
 }

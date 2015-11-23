@@ -1,0 +1,100 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 5316bf23-ea20-457c-86b3-9aaef1c02f14
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-11-23T07:22:55.654063Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:22:55.792665Z
+K 7
+svn:log
+V 13
+Added readme.
+PROPS-END
+
+Node-path: README.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 21
+Text-content-md5: b264e4c43787cb81e7d4c5eb4b006427
+Text-content-sha1: fb7cf39e8e0becdcd0468863cdc653e61f1d9f9c
+Content-length: 31
+
+PROPS-END
+This is a text file.
+
+
+Revision-number: 2
+Prop-content-length: 115
+Content-length: 115
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:22:55.913116Z
+K 7
+svn:log
+V 14
+Deleting file.
+PROPS-END
+
+Node-path: README.txt
+Node-action: delete
+
+
+Revision-number: 3
+Prop-content-length: 123
+Content-length: 123
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:22:56.036053Z
+K 7
+svn:log
+V 22
+Copied readme from r1.
+PROPS-END
+
+Node-path: README.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 1
+Node-copyfrom-path: README.txt
+Text-copy-source-md5: b264e4c43787cb81e7d4c5eb4b006427
+Text-copy-source-sha1: fb7cf39e8e0becdcd0468863cdc653e61f1d9f9c
+Text-content-length: 21
+Text-content-md5: 2d282102fa671256327d4767ec23bc6b
+Text-content-sha1: e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe
+Content-length: 21
+
+This is a test file.
+
+

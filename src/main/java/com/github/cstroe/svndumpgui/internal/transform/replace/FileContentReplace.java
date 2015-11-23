@@ -128,6 +128,11 @@ public class FileContentReplace extends AbstractRepositoryMutator {
                         " copied from untracked node! r" + copyFromRev + ": " + copyPath);
             }
 
+            String previousAction = previousNode.get(NodeHeader.ACTION);
+            if("change".equals(previousAction) || "replace".equals(previousAction)) {
+                return null;
+            }
+
             if(previousNode.get(NodeHeader.MD5) == null) {
                 Node previousPreviousNode = findPreviousNode(previousNode);
                 if (previousPreviousNode != null) {

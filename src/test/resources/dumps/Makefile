@@ -44,3 +44,6 @@ svn_copy_and_delete:
 
 add_and_copychange:
 	./scripts/add_and_copychange.sh > add_and_copychange.dump
+
+add_and_change_copy_delete:
+	./scripts/add_and_change_copy_delete.sh > add_and_change_copy_delete.dump

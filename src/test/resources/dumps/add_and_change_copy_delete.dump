@@ -1,0 +1,154 @@
+SVN-fs-dump-format-version: 2
+
+UUID: 16e1d1d8-4dcb-44c7-b2bc-3e2a6220cac8
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2015-11-23T07:31:09.465452Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:31:09.614727Z
+K 7
+svn:log
+V 13
+Added readme.
+PROPS-END
+
+Node-path: README.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 21
+Text-content-md5: b264e4c43787cb81e7d4c5eb4b006427
+Text-content-sha1: fb7cf39e8e0becdcd0468863cdc653e61f1d9f9c
+Content-length: 31
+
+PROPS-END
+This is a text file.
+
+
+Revision-number: 2
+Prop-content-length: 108
+Content-length: 108
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:31:09.726212Z
+K 7
+svn:log
+V 8
+Changed.
+PROPS-END
+
+Node-path: README.txt
+Node-kind: file
+Node-action: change
+Text-content-length: 21
+Text-content-md5: 2d282102fa671256327d4767ec23bc6b
+Text-content-sha1: e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe
+Content-length: 21
+
+This is a test file.
+
+
+Revision-number: 3
+Prop-content-length: 112
+Content-length: 112
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:31:09.870278Z
+K 7
+svn:log
+V 11
+Other file.
+PROPS-END
+
+Node-path: OTHER.txt
+Node-kind: file
+Node-action: add
+Prop-content-length: 10
+Text-content-length: 21
+Text-content-md5: 33fb2ffd28461fa230b730f0d9db81c9
+Text-content-sha1: 8eb231a85a9445902571ef2ca8e3f64ec085519d
+Content-length: 31
+
+PROPS-END
+This is a test file!
+
+
+Revision-number: 4
+Prop-content-length: 123
+Content-length: 123
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:31:10.015323Z
+K 7
+svn:log
+V 22
+Copied readme from r2.
+PROPS-END
+
+Node-path: README-new.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 2
+Node-copyfrom-path: README.txt
+Text-copy-source-md5: 2d282102fa671256327d4767ec23bc6b
+Text-copy-source-sha1: e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe
+
+
+Revision-number: 5
+Prop-content-length: 108
+Content-length: 108
+
+K 10
+svn:author
+V 6
+cosmin
+K 8
+svn:date
+V 27
+2015-11-23T07:31:10.151044Z
+K 7
+svn:log
+V 8
+Deleted.
+PROPS-END
+
+Node-path: README.txt
+Node-action: delete
+
+

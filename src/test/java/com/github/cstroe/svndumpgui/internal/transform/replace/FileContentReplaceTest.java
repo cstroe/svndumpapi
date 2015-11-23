@@ -236,4 +236,25 @@ public class FileContentReplaceTest {
                 TestUtil.openResource("dumps/add_and_copychange.dump"),
                 new ByteArrayInputStream(newDumpStream.toByteArray()));
     }
+
+    @Test
+    public void does_not_change_a_change_and_copied_file() throws ParseException, IOException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+
+        Predicate<Node> nodeMatcher = n -> false;
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        tok.continueTo(fileContentReplace);
+        tok.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_change_copy_delete.dump"), tok);
+
+        TestUtil.assertEqualStreams(
+                TestUtil.openResource("dumps/add_and_change_copy_delete.dump"),
+                new ByteArrayInputStream(newDumpStream.toByteArray()));
+    }
 }
