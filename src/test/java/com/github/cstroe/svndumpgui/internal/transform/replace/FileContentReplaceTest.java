@@ -193,8 +193,9 @@ public class FileContentReplaceTest {
 
         SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), tok);
 
-        TestUtil.assertEqualStreams(TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"), new ByteArrayInputStream(newDumpStream.toByteArray()));
-
+        TestUtil.assertEqualStreams(
+                TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"),
+                new ByteArrayInputStream(newDumpStream.toByteArray()));
     }
 
     @Test
@@ -213,5 +214,26 @@ public class FileContentReplaceTest {
         InputStream dumpWithNewContent = TestUtil.openResource("dumps/add_file_in_directory.after.dump");
         InputStream dumpCreatedByFileContentReplace = new ByteArrayInputStream(newDumpStream.toByteArray());
         TestUtil.assertEqualStreams(dumpWithNewContent, dumpCreatedByFileContentReplace);
+    }
+
+    @Test
+    public void does_not_change_a_copy_and_changed_file() throws ParseException, IOException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+
+        Predicate<Node> nodeMatcher = n -> false;
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        tok.continueTo(fileContentReplace);
+        tok.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_copychange.dump"), tok);
+
+        TestUtil.assertEqualStreams(
+                TestUtil.openResource("dumps/add_and_copychange.dump"),
+                new ByteArrayInputStream(newDumpStream.toByteArray()));
     }
 }

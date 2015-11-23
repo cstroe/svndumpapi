@@ -121,15 +121,18 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         if(copyFromRev != null) {
             int copyRevision = Integer.parseInt(copyFromRev);
             String copyPath = currentNode.get(NodeHeader.COPY_FROM_PATH);
+
             previousNode = tok.tellMeAbout(copyRevision, copyPath);
             if(previousNode == null) {
                 throw new IllegalStateException("r" +  currentNode.getRevision().get().getNumber() + " " + currentNode.get(NodeHeader.PATH) +
                         " copied from untracked node! r" + copyFromRev + ": " + copyPath);
             }
 
-            Node previousPreviousNode = findPreviousNode(previousNode);
-            if(previousPreviousNode != null) {
-                return previousPreviousNode;
+            if(previousNode.get(NodeHeader.MD5) == null) {
+                Node previousPreviousNode = findPreviousNode(previousNode);
+                if (previousPreviousNode != null) {
+                    return previousPreviousNode;
+                }
             }
         }
 

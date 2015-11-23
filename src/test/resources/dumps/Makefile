@@ -41,3 +41,6 @@ svn_copy_and_delete:
 	./scripts/svn_copy_and_delete.sh "this is some file content" > svn_copy_and_delete.before.dump
 	# hand hacked time stamps to match the file above
 	./scripts/svn_copy_and_delete.sh "i replaced the content" > svn_copy_and_delete.after.dump
+
+add_and_copychange:
+	./scripts/add_and_copychange.sh > add_and_copychange.dump
