@@ -101,14 +101,27 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             if(previousNode != null) {
                 String previousMd5 = previousNode.get(NodeHeader.MD5);
                 String previousSha1 = previousNode.get(NodeHeader.SHA1);
+                String previousCopyMd5 = previousNode.get(NodeHeader.SOURCE_MD5);
+                String previousCopySha1 = previousNode.get(NodeHeader.SOURCE_SHA1);
                 String currentSourceMd5 = node.get(NodeHeader.SOURCE_MD5);
                 String currentSourceSha1 = node.get(NodeHeader.SOURCE_SHA1);
 
-                if (!previousMd5.equals(currentSourceMd5)) {
-                    node.getHeaders().put(NodeHeader.SOURCE_MD5, previousMd5);
+                String md5 = previousMd5;
+                if(md5 == null) {
+                    md5 = previousCopyMd5;
                 }
-                if (!previousSha1.equals(currentSourceSha1)) {
-                    node.getHeaders().put(NodeHeader.SOURCE_SHA1, previousSha1);
+
+                if (!md5.equals(currentSourceMd5)) {
+                    node.getHeaders().put(NodeHeader.SOURCE_MD5, md5);
+                }
+
+                String sha1 = previousSha1;
+                if(sha1 == null) {
+                    sha1 = previousCopySha1;
+                }
+
+                if (!sha1.equals(currentSourceSha1)) {
+                    node.getHeaders().put(NodeHeader.SOURCE_SHA1, sha1);
                 }
             }
         }
@@ -131,13 +144,6 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             String previousAction = previousNode.get(NodeHeader.ACTION);
             if("change".equals(previousAction) || "replace".equals(previousAction)) {
                 return null;
-            }
-
-            if(previousNode.get(NodeHeader.MD5) == null) {
-                Node previousPreviousNode = findPreviousNode(previousNode);
-                if (previousPreviousNode != null) {
-                    return previousPreviousNode;
-                }
             }
         }
 
