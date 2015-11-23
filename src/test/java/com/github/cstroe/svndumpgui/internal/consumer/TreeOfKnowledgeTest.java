@@ -111,4 +111,12 @@ public class TreeOfKnowledgeTest {
         assertThat(node.getRevision().get().getNumber(), is(2));
         assertThat(node.get(NodeHeader.ACTION), is(equalTo("change")));
     }
+
+    @Test
+    public void deal_with_property_set() throws ParseException {
+        TreeOfKnowledge tok = new TreeOfKnowledge();
+        SvnDumpParser.consume(TestUtil.openResource("dumps/set_root_property.dump"), tok);
+
+        assertThat(tok.getRoot().getChildren(t -> true).size(), is(0));
+    }
 }

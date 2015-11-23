@@ -47,3 +47,6 @@ add_and_copychange:
 
 add_and_change_copy_delete:
 	./scripts/add_and_change_copy_delete.sh > add_and_change_copy_delete.dump
+
+set_root_property:
+	./scripts/set_root_property.sh > ./set_root_property.dump

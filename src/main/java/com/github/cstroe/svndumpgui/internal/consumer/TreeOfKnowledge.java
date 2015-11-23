@@ -53,8 +53,11 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
 
             case "change":
             case "replace":
-                deleteFromTree(node);
-                addToTree(node);
+                final String nodeTextContentLength = node.get(NodeHeader.TEXT_CONTENT_LENGTH);
+                if(nodeTextContentLength != null) {
+                    deleteFromTree(node);
+                    addToTree(node);
+                }
                 break;
 
             default:
@@ -149,9 +152,9 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
             List<CLTreeNode<Triplet<MultiSpan, String, Node>>> children =
                     currentRoot.getChildren(inRevisionWithLabel(revision, currentPath));
             if (children.size() == 0) {
-                throw new IllegalArgumentException("cannot find: r" + revision + " " + String.join("/", pathComponents));
+                throw new IllegalArgumentException("cannot find: r" + revision + " '" + String.join("/", pathComponents) + "'");
             } else if(children.size() > 1)  {
-                throw new IllegalArgumentException("ambiguous path: r" + revision + " " + String.join("/", pathComponents));
+                throw new IllegalArgumentException("ambiguous path: r" + revision + " '" + String.join("/", pathComponents) + "'");
             }
 
             currentRoot = children.get(0);
