@@ -182,7 +182,7 @@ public class FileContentReplaceTest {
         TreeOfKnowledge tok = new TreeOfKnowledge();
 
         Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
@@ -219,7 +219,8 @@ public class FileContentReplaceTest {
     @Test
     public void tracks_node_in_directory_external_tok() throws ParseException, IOException {
         TreeOfKnowledge tok = new TreeOfKnowledge();
-        FileContentReplace fileContentReplace = FileContentReplace.createFCR(2, "add", "dir1/dir2/dir3/README.txt", n -> new ContentChunkImpl("new content\n".getBytes()), tok);
+        FileContentReplace fileContentReplace = FileContentReplace.createFCR(
+                2, "add", "dir1/dir2/dir3/README.txt", n -> new ContentChunkImpl("new content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
@@ -240,7 +241,7 @@ public class FileContentReplaceTest {
         TreeOfKnowledge tok = new TreeOfKnowledge();
 
         Predicate<Node> nodeMatcher = n -> false;
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
@@ -261,7 +262,7 @@ public class FileContentReplaceTest {
         TreeOfKnowledge tok = new TreeOfKnowledge();
 
         Predicate<Node> nodeMatcher = n -> false;
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
