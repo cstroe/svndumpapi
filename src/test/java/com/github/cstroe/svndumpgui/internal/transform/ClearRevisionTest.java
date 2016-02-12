@@ -110,7 +110,13 @@ public class ClearRevisionTest {
 
         Sequence consumerSequence = context.sequence("consumerSequence");
 
+        final ClearRevision clearRevision = new ClearRevision(1,3);
+
         context.checking(new Expectations() {{
+            // setup the consumer chain
+            oneOf(mockConsumer).setPreviousConsumer(clearRevision); inSequence(consumerSequence);
+
+            // preamble
             oneOf(mockConsumer).consume(with(any(Preamble.class))); inSequence(consumerSequence);
 
             // revision 0
@@ -140,7 +146,6 @@ public class ClearRevisionTest {
             oneOf(mockConsumer).finish();
         }});
 
-        ClearRevision clearRevision = new ClearRevision(1,3);
         clearRevision.continueTo(mockConsumer);
         SvnDumpParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), clearRevision);
     }

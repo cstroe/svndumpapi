@@ -105,6 +105,10 @@ public class NodeRemoveTest {
         RepositoryConsumer mockConsumer = context.mock(RepositoryConsumer.class, "mockConsumer");
 
         context.checking(new Expectations() {{
+            // setup the consumer chain
+            oneOf(mockConsumer).setPreviousConsumer(with(any(NodeRemove.class))); inSequence(consumerSequence);
+
+            // preamble
             oneOf(mockConsumer).consume(with(any(Preamble.class))); inSequence(consumerSequence);
 
             // revision 0

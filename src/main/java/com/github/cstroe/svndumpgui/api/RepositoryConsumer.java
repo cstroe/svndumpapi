@@ -12,6 +12,8 @@ public interface RepositoryConsumer {
 
     RepositoryConsumer getNextConsumer();
     void setNextConsumer(RepositoryConsumer consumer);
+    RepositoryConsumer getPreviousConsumer();
+    void setPreviousConsumer(RepositoryConsumer consumer);
 
     /**
      * This enables "chained consumers".  A consumer will inherently
@@ -29,5 +31,6 @@ public interface RepositoryConsumer {
             lastConsumer = lastConsumer.getNextConsumer();
         }
         lastConsumer.setNextConsumer(nextConsumer);
+        nextConsumer.setPreviousConsumer(lastConsumer);
     }
 }

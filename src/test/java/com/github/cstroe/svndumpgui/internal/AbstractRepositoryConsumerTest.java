@@ -10,6 +10,9 @@ import org.jmock.Mockery;
 import org.jmock.Sequence;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 public class AbstractRepositoryConsumerTest {
     @Test
     public void chaining_should_work() {
@@ -24,7 +27,10 @@ public class AbstractRepositoryConsumerTest {
 
         Sequence consumerSequence = context.sequence("consumerSequence");
 
+        final AbstractRepositoryConsumer consumer = new MockAbstractRepositoryConsumer();
+
         context.checking(new Expectations() {{
+            oneOf(mockConsumer).setPreviousConsumer(with(any(RepositoryConsumer.class))); inSequence(consumerSequence);
             oneOf(mockConsumer).consume(mockPreamble); inSequence(consumerSequence);
             oneOf(mockConsumer).consume(mockRevision); inSequence(consumerSequence);
             oneOf(mockConsumer).consume(mockNode); inSequence(consumerSequence);
@@ -36,8 +42,7 @@ public class AbstractRepositoryConsumerTest {
         }});
 
 
-        AbstractRepositoryConsumer consumer = new AbstractRepositoryConsumer();
-        consumer.continueTo(new AbstractRepositoryConsumer()); //  an intermediate consumer
+        consumer.continueTo(new MockAbstractRepositoryConsumer()); //  an intermediate consumer
         consumer.continueTo(mockConsumer);
 
         consumer.consume(mockPreamble);
@@ -49,4 +54,15 @@ public class AbstractRepositoryConsumerTest {
         consumer.endRevision(mockRevision);
         consumer.finish();
     }
+
+    @Test
+    public void previous_consumer_set_when_setting_next_consumer() {
+        RepositoryConsumer consumer1 = new MockAbstractRepositoryConsumer();
+        RepositoryConsumer consumer2 = new MockAbstractRepositoryConsumer();
+
+        consumer1.continueTo(consumer2);
+        assertThat(consumer2.getPreviousConsumer(), is(consumer1));
+    }
+
+    private class MockAbstractRepositoryConsumer extends AbstractRepositoryConsumer {}
 }

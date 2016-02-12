@@ -90,7 +90,13 @@ public class NodeAddTest {
 
         Sequence consumerSequence = context.sequence("consumerSequence");
 
+        final NodeAdd nodeAdd = new NodeAdd(3, nodeToAdd);
+
         context.checking(new Expectations() {{
+            // setup the consumer chain
+            oneOf(mockConsumer).setPreviousConsumer(nodeAdd); inSequence(consumerSequence);
+
+            // preamble
             oneOf(mockConsumer).consume(with(any(Preamble.class))); inSequence(consumerSequence);
 
             // revision 0
@@ -139,8 +145,6 @@ public class NodeAddTest {
             oneOf(mockConsumer).finish();
         }});
 
-
-        NodeAdd nodeAdd = new NodeAdd(3, nodeToAdd);
         nodeAdd.continueTo(mockConsumer);
         SvnDumpParser.consume(TestUtil.openResource("dumps/add_edit_delete_add.dump"), nodeAdd);
 
