@@ -4,8 +4,10 @@ import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
-import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledge;
+import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
+import com.github.cstroe.svndumpgui.internal.consumer.ImmutableTreeOfKnowledge;
+import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledgeImpl;
 import com.github.cstroe.svndumpgui.internal.transform.AbstractRepositoryMutator;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
@@ -46,7 +48,10 @@ public class FileContentReplace extends AbstractRepositoryMutator {
      * Helper function for creating a FileContentReplace using a
      * {@link #nodeMatch(int, String, String) node matcher} and a {@link #chunkFromString(String) string}.
      */
-    public static FileContentReplace createFCR(int revision, String action, String path, Function<Node, ContentChunk> chunkGenerator) {
+    public static FileContentReplace createFCR(int revision,
+                                               String action,
+                                               String path,
+                                               Function<Node, ContentChunk> chunkGenerator) {
         return new FileContentReplace(
                 nodeMatch(revision, action, path),
                 chunkGenerator
@@ -56,7 +61,11 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
         this.nodeMatcher = checkNotNull(nodeMatcher);
         this.contentChunkGenerator = checkNotNull(contentChunkGenerator);
-        this.tok = new TreeOfKnowledge();
+        this.tok = new TreeOfKnowledgeImpl();
+    }
+
+    protected TreeOfKnowledge getTreeOfKnowledge() {
+        return new ImmutableTreeOfKnowledge(tok);
     }
 
     @Override

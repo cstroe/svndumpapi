@@ -2,6 +2,7 @@ package com.github.cstroe.svndumpgui.internal.consumer;
 
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
+import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.AbstractRepositoryConsumer;
 import com.github.cstroe.svndumpgui.internal.utility.range.MultiSpan;
 import com.github.cstroe.svndumpgui.internal.utility.range.Span;
@@ -16,7 +17,7 @@ import java.util.function.Predicate;
 /**
  * It knows everything that has ever happened.
  */
-public class TreeOfKnowledge extends AbstractRepositoryConsumer {
+public class TreeOfKnowledgeImpl extends AbstractRepositoryConsumer implements TreeOfKnowledge {
 
     private final CLTreeNodeImpl<Triplet<MultiSpan, String, Node>> root;
 
@@ -28,7 +29,7 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
         return t ->  t.getValue0().contains(revision) && t.getValue1().equals(label);
     }
 
-    public TreeOfKnowledge() {
+    public TreeOfKnowledgeImpl() {
         Span toInfinity = new SpanImpl(0, Span.POSITIVE_INFINITY);
         MultiSpan multiSpan = new MultiSpan();
         multiSpan.add(toInfinity);
@@ -163,10 +164,7 @@ public class TreeOfKnowledge extends AbstractRepositoryConsumer {
         return currentRoot;
     }
 
-    /**
-     * @return The node that introduced the path in the given revision.
-     *         null if the path didn't exist in the given revision.
-     */
+    @Override
     public Node tellMeAbout(int revision, String path) {
         String[] pathComponents = path.split("/");
 

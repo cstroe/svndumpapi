@@ -21,10 +21,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
-public class TreeOfKnowledgeTest {
+public class TreeOfKnowledgeImplTest {
     @Test
     public void empty() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/empty.dump"), tok);
 
         CLTreeNode<Triplet<MultiSpan, String, Node>> root = tok.getRoot();
@@ -36,7 +36,7 @@ public class TreeOfKnowledgeTest {
 
     @Test
     public void add_file() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/add_file.dump"), tok);
 
         CLTreeNode<Triplet<MultiSpan, String, Node>> root = tok.getRoot();
@@ -53,7 +53,7 @@ public class TreeOfKnowledgeTest {
 
     @Test
     public void nested_directories() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
         {
             Node n = tok.tellMeAbout(1, "test");
@@ -82,14 +82,14 @@ public class TreeOfKnowledgeTest {
 
     @Test
     public void directory_deletes() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
         assertNull(tok.tellMeAbout(2, "test"));
     }
 
     @Test
     public void tracks_across_copies() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
         assertNotNull(tok.tellMeAbout(2, "test-renamed"));
         assertNotNull(tok.tellMeAbout(2, "test-renamed/innerdir"));
@@ -102,14 +102,14 @@ public class TreeOfKnowledgeTest {
 
     @Test
     public void tracks_deletes_across_copies() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/inner_dir.dump"), tok);
         assertNull(tok.tellMeAbout(3, "test-renamed/innerdir/file3.txt"));
     }
 
     @Test
     public void tracks_change_nodes() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_change_copy_delete.dump"), tok);
 
         Node node = tok.tellMeAbout(2, "README.txt");
@@ -119,7 +119,7 @@ public class TreeOfKnowledgeTest {
 
     @Test
     public void deal_with_property_set() throws ParseException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource("dumps/set_root_property.dump"), tok);
 
         assertThat(tok.getRoot().getChildren(t -> true).size(), is(0));
@@ -177,7 +177,7 @@ public class TreeOfKnowledgeTest {
 
         List<Pair<Integer, String>> nodes = getNodeList(memoryCopy.getRepo());
 
-        TreeOfKnowledge tok = new TreeOfKnowledge();
+        TreeOfKnowledgeImpl tok = new TreeOfKnowledgeImpl();
         SvnDumpParser.consume(TestUtil.openResource(file), tok);
 
         for(Pair<Integer, String> pair : nodes) {
