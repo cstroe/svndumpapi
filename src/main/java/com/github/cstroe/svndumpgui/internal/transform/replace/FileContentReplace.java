@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
+import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.consumer.ImmutableTreeOfKnowledge;
@@ -24,7 +25,8 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     private boolean nodeMatched = false;
     private ContentChunk generatedChunk = null;
 
-    private final TreeOfKnowledge tok;
+    private TreeOfKnowledge tok;
+    private ImmutableTreeOfKnowledge immutableToK;
 
     /**
      * Helper method to generate a predicate that matches a node,
@@ -65,12 +67,27 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     }
 
     protected TreeOfKnowledge getTreeOfKnowledge() {
-        return new ImmutableTreeOfKnowledge(tok);
+        if(immutableToK == null) {
+            immutableToK = new ImmutableTreeOfKnowledge(tok);
+        }
+        return immutableToK;
+    }
+
+    protected void setTreeOfKnowledge(TreeOfKnowledge tok) {
+        this.tok = tok;
+        if(tok instanceof ImmutableTreeOfKnowledge) {
+            this.immutableToK = (ImmutableTreeOfKnowledge) tok;
+        } else {
+            this.immutableToK = new ImmutableTreeOfKnowledge(tok);
+        }
     }
 
     @Override
     public void consume(Node node) {
-        tok.consume(node);
+        if(!(tok instanceof ImmutableTreeOfKnowledge)) {
+            tok.consume(node);
+        }
+
         if("file".equals(node.get(NodeHeader.KIND))) {
             if(nodeMatcher.test(node)) {
                 nodeMatched = true;
@@ -184,5 +201,14 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         }
 
         super.endNode(node);
+    }
+
+    @Override
+    public void continueTo(RepositoryConsumer nextConsumer) {
+        super.continueTo(nextConsumer);
+        if(nextConsumer instanceof FileContentReplace) {
+            FileContentReplace fcr = (FileContentReplace) nextConsumer;
+            fcr.setTreeOfKnowledge(getTreeOfKnowledge());
+        }
     }
 }

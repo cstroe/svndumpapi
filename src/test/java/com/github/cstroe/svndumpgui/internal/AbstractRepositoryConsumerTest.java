@@ -1,9 +1,9 @@
 package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.ContentChunk;
-import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
-import com.github.cstroe.svndumpgui.api.Preamble;
 import com.github.cstroe.svndumpgui.api.Node;
+import com.github.cstroe.svndumpgui.api.Preamble;
+import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.Revision;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -64,5 +64,32 @@ public class AbstractRepositoryConsumerTest {
         assertThat(consumer2.getPreviousConsumer(), is(consumer1));
     }
 
-    private class MockAbstractRepositoryConsumer extends AbstractRepositoryConsumer {}
+    @Test(expected = UnsupportedOperationException.class)
+    public void continueTo_should_only_allow_operations_on_the_head_of_the_chain() {
+        RepositoryConsumer headConsumer = new MockAbstractRepositoryConsumer();
+        RepositoryConsumer consumer2 = new MockAbstractRepositoryConsumer();
+        RepositoryConsumer consumer3 = new MockAbstractRepositoryConsumer();
+
+        headConsumer.continueTo(consumer2);
+        consumer2.continueTo(consumer3);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cant_continueTo_yourself() {
+        RepositoryConsumer consumer = new MockAbstractRepositoryConsumer();
+        consumer.continueTo(consumer);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void avoid_cycles() {
+        RepositoryConsumer consumer1 = new MockAbstractRepositoryConsumer();
+        RepositoryConsumer consumer2 = new MockAbstractRepositoryConsumer();
+        RepositoryConsumer consumer3 = new MockAbstractRepositoryConsumer();
+
+        consumer1.continueTo(consumer2);
+        consumer1.continueTo(consumer3);
+        consumer1.continueTo(consumer2);
+    }
+
+    public static class MockAbstractRepositoryConsumer extends AbstractRepositoryConsumer {}
 }

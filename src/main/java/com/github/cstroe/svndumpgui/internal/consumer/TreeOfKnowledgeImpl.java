@@ -16,6 +16,8 @@ import java.util.function.Predicate;
 
 /**
  * It knows everything that has ever happened.
+ *
+ * @see com.github.cstroe.svndumpgui.api.TreeOfKnowledge
  */
 public class TreeOfKnowledgeImpl extends AbstractRepositoryConsumer implements TreeOfKnowledge {
 
