@@ -144,4 +144,10 @@ public class NodeRemoveTest {
 
         SvnDumpParser.consume(TestUtil.openResource("dumps/svn_multi_file_delete.dump"), nr);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void throw_exception_when_node_was_not_found() {
+        NodeRemove nr = new NodeRemove(1, "add", "README.txt");
+        nr.finish();
+    }
 }

@@ -4,8 +4,11 @@ import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Repository;
 import com.github.cstroe.svndumpgui.api.Revision;
+import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
+import com.github.cstroe.svndumpgui.internal.NodeImpl;
+import com.github.cstroe.svndumpgui.internal.RevisionImpl;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.utility.range.MultiSpan;
 import com.github.cstroe.svndumpgui.internal.utility.tree.CLTreeNode;
@@ -212,5 +215,13 @@ public class TreeOfKnowledgeImplTest {
         }
 
         return nodes;
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void error_on_unknown_node_action() {
+        TreeOfKnowledge tok = new TreeOfKnowledgeImpl();
+        Node unknownNode = new NodeImpl(new RevisionImpl(1));
+        unknownNode.getHeaders().put(NodeHeader.ACTION, "unknown");
+        tok.consume(unknownNode);
     }
 }
