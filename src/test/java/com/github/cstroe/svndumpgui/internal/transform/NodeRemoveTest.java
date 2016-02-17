@@ -105,6 +105,10 @@ public class NodeRemoveTest {
         RepositoryConsumer mockConsumer = context.mock(RepositoryConsumer.class, "mockConsumer");
 
         context.checking(new Expectations() {{
+            // setup the consumer chain
+            oneOf(mockConsumer).setPreviousConsumer(with(any(NodeRemove.class))); inSequence(consumerSequence);
+
+            // preamble
             oneOf(mockConsumer).consume(with(any(Preamble.class))); inSequence(consumerSequence);
 
             // revision 0
@@ -139,5 +143,11 @@ public class NodeRemoveTest {
         nr.continueTo(mockConsumer);
 
         SvnDumpParser.consume(TestUtil.openResource("dumps/svn_multi_file_delete.dump"), nr);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void throw_exception_when_node_was_not_found() {
+        NodeRemove nr = new NodeRemove(1, "add", "README.txt");
+        nr.finish();
     }
 }

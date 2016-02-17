@@ -12,6 +12,8 @@ public interface RepositoryConsumer {
 
     RepositoryConsumer getNextConsumer();
     void setNextConsumer(RepositoryConsumer consumer);
+    RepositoryConsumer getPreviousConsumer();
+    void setPreviousConsumer(RepositoryConsumer consumer);
 
     /**
      * This enables "chained consumers".  A consumer will inherently
@@ -24,10 +26,23 @@ public interface RepositoryConsumer {
      *                     the stream after the last consumer in this chain.
      */
     default void continueTo(RepositoryConsumer nextConsumer) {
+        if(this == nextConsumer) {
+            throw new IllegalArgumentException("Cannot continue to yourself.");
+        }
+
+        if(this.getPreviousConsumer() != null) {
+            throw new UnsupportedOperationException("Must continue from the head of the chain.");
+        }
+
         RepositoryConsumer lastConsumer = this;
         while(lastConsumer.getNextConsumer() != null) {
-            lastConsumer = lastConsumer.getNextConsumer();
+            RepositoryConsumer currentConsumer = lastConsumer.getNextConsumer();
+            if(currentConsumer == nextConsumer) {
+                throw new IllegalStateException("Cannot add a duplicate consumer.");
+            }
+            lastConsumer = currentConsumer;
         }
         lastConsumer.setNextConsumer(nextConsumer);
+        nextConsumer.setPreviousConsumer(lastConsumer);
     }
 }

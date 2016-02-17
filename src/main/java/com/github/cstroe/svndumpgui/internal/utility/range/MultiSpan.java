@@ -41,6 +41,7 @@ public class MultiSpan implements Cloneable {
     }
 
     public void cutoff(int value) {
+        spans = spans.parallelStream().filter(s -> s.low() <= value).collect(Collectors.toList());
         spans.parallelStream().forEach(s -> s.cutoff(value));
     }
 

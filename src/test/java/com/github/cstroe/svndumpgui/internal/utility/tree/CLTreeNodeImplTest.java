@@ -1,5 +1,8 @@
 package com.github.cstroe.svndumpgui.internal.utility.tree;
 
+import com.github.cstroe.svndumpgui.api.Node;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.junit.Test;
 
 import java.util.List;
@@ -65,5 +68,12 @@ public class CLTreeNodeImplTest {
         assertTrue(objectsInside.contains("child2"));
         assertTrue(objectsInside.contains("child3"));
         assertTrue(objectsInside.contains("again, not a child"));
+    }
+
+    @Test
+    public void to_string() {
+        final String aString = "string";
+        CLTreeNodeImpl<String> clTreeNode = new CLTreeNodeImpl<>(aString);
+        assertThat(clTreeNode.toString(), is(equalTo("CLTreeNodeImpl{string}")));
     }
 }

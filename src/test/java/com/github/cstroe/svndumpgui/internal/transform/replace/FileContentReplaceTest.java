@@ -3,19 +3,25 @@ package com.github.cstroe.svndumpgui.internal.transform.replace;
 import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
+import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.RepositoryWriter;
 import com.github.cstroe.svndumpgui.api.Revision;
+import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
+import com.github.cstroe.svndumpgui.internal.AbstractRepositoryConsumerTest;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.RevisionImpl;
-import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledge;
+import com.github.cstroe.svndumpgui.internal.consumer.ImmutableTreeOfKnowledge;
+import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledgeImpl;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 import com.github.cstroe.svndumpgui.internal.utility.TestUtil;
 import com.github.cstroe.svndumpgui.internal.writer.RepositoryInMemory;
 import com.github.cstroe.svndumpgui.internal.writer.SvnDumpWriter;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -29,10 +35,14 @@ import java.util.function.Predicate;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class FileContentReplaceTest {
+    private Predicate<Node> MATCH_ANY = t -> true;
+    private Function<Node, ContentChunk> EMPTY_CHUNK = t -> new ContentChunkImpl(new byte[0]);
+
     @Test
     public void simple_replace() throws ParseException, NoSuchAlgorithmException {
         final String newFileContent = "No content.\n";
@@ -179,19 +189,16 @@ public class FileContentReplaceTest {
 
     @Test
     public void tracks_files_across_deletes_with_external_tok() throws ParseException, IOException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
-
         Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
         svnDumpWriter.writeTo(newDumpStream);
 
-        tok.continueTo(fileContentReplace);
-        tok.continueTo(svnDumpWriter);
+        fileContentReplace.continueTo(svnDumpWriter);
 
-        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), tok);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), fileContentReplace);
 
         TestUtil.assertEqualStreams(
                 TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"),
@@ -217,20 +224,35 @@ public class FileContentReplaceTest {
     }
 
     @Test
-    public void does_not_change_a_copy_and_changed_file() throws ParseException, IOException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
-
-        Predicate<Node> nodeMatcher = n -> false;
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+    public void tracks_node_in_directory_external_tok() throws ParseException, IOException {
+        FileContentReplace fileContentReplace = FileContentReplace.createFCR(
+                2, "add", "dir1/dir2/dir3/README.txt", n -> new ContentChunkImpl("new content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
         svnDumpWriter.writeTo(newDumpStream);
 
-        tok.continueTo(fileContentReplace);
-        tok.continueTo(svnDumpWriter);
+        fileContentReplace.continueTo(svnDumpWriter);
 
-        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_copychange.dump"), tok);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_file_in_directory.before.dump"), fileContentReplace);
+
+        InputStream dumpWithNewContent = TestUtil.openResource("dumps/add_file_in_directory.after.dump");
+        InputStream dumpCreatedByFileContentReplace = new ByteArrayInputStream(newDumpStream.toByteArray());
+        TestUtil.assertEqualStreams(dumpWithNewContent, dumpCreatedByFileContentReplace);
+    }
+
+    @Test
+    public void does_not_change_a_copy_and_changed_file() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> false;
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_copychange.dump"), fileContentReplace);
 
         TestUtil.assertEqualStreams(
                 TestUtil.openResource("dumps/add_and_copychange.dump"),
@@ -239,22 +261,86 @@ public class FileContentReplaceTest {
 
     @Test
     public void does_not_change_a_change_and_copied_file() throws ParseException, IOException {
-        TreeOfKnowledge tok = new TreeOfKnowledge();
-
         Predicate<Node> nodeMatcher = n -> false;
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()), tok);
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
 
         ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
         RepositoryWriter svnDumpWriter = new SvnDumpWriter();
         svnDumpWriter.writeTo(newDumpStream);
 
-        tok.continueTo(fileContentReplace);
-        tok.continueTo(svnDumpWriter);
+        fileContentReplace.continueTo(svnDumpWriter);
 
-        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_change_copy_delete.dump"), tok);
+        SvnDumpParser.consume(TestUtil.openResource("dumps/add_and_change_copy_delete.dump"), fileContentReplace);
 
         TestUtil.assertEqualStreams(
                 TestUtil.openResource("dumps/add_and_change_copy_delete.dump"),
                 new ByteArrayInputStream(newDumpStream.toByteArray()));
+    }
+
+    @Test
+    public void getTreeOfKnowledge_should_be_idempotent() {
+        FileContentReplace fcr = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        assertTrue(fcr.getTreeOfKnowledge() == fcr.getTreeOfKnowledge());
+    }
+
+    @Test
+    public void setTreeOfKnowledge_with_immutable_tree() {
+        ImmutableTreeOfKnowledge tok = new ImmutableTreeOfKnowledge(new TreeOfKnowledgeImpl());
+
+        FileContentReplace fcr = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        fcr.setTreeOfKnowledge(tok);
+        assertTrue(tok == fcr.getTreeOfKnowledge());
+    }
+
+    @Test
+    public void treeofknowledge_is_shared() {
+        FileContentReplace fcr1 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        assertNotNull(fcr1.getTreeOfKnowledge());
+
+        FileContentReplace fcr2 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        assertFalse(fcr1.getTreeOfKnowledge() == fcr2.getTreeOfKnowledge());
+
+        fcr1.continueTo(fcr2);
+        assertTrue(fcr1.getTreeOfKnowledge() == fcr2.getTreeOfKnowledge());
+    }
+
+    @Test
+    public void treeOfKnowledge_is_shared_between_all() {
+        FileContentReplace fcr1 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        RepositoryConsumer otherConsumer = new AbstractRepositoryConsumerTest.MockAbstractRepositoryConsumer();
+        FileContentReplace fcr2 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+
+        fcr1.continueTo(otherConsumer);
+        fcr1.continueTo(fcr2);
+
+        assertTrue(fcr1.getTreeOfKnowledge() == fcr2.getTreeOfKnowledge());
+
+        RepositoryConsumer otherConsumer2 = new AbstractRepositoryConsumerTest.MockAbstractRepositoryConsumer();
+        FileContentReplace fcr3 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+
+        fcr1.continueTo(otherConsumer2);
+        fcr1.continueTo(fcr3);
+
+        assertTrue(fcr1.getTreeOfKnowledge() == fcr2.getTreeOfKnowledge());
+        assertTrue(fcr1.getTreeOfKnowledge() == fcr3.getTreeOfKnowledge());
+    }
+
+    @Test
+    public void treeOfKnowledge_is_not_updated_more_than_once() {
+        Mockery context = new Mockery();
+        TreeOfKnowledge mockToK = context.mock(TreeOfKnowledge.class);
+        Node mockNode = new NodeImpl(new RevisionImpl(1));
+
+        context.checking(new Expectations() {{
+            exactly(1).of(mockToK).consume(mockNode);
+        }});
+
+
+        FileContentReplace fcr1 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        fcr1.setTreeOfKnowledge(mockToK);
+        FileContentReplace fcr2 = new FileContentReplace(MATCH_ANY, EMPTY_CHUNK);
+        fcr1.continueTo(fcr2);
+
+        fcr1.consume(mockNode);
     }
 }

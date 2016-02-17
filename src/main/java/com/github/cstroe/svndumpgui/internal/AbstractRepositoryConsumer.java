@@ -10,7 +10,8 @@ import com.github.cstroe.svndumpgui.api.Revision;
  * Responsible for continuing the consumer chain processing.
  * Uses Abstract prefix in name to follow the naming scheme.
  */
-public class AbstractRepositoryConsumer implements RepositoryConsumer {
+public abstract class AbstractRepositoryConsumer implements RepositoryConsumer {
+    private RepositoryConsumer previousConsumer;
     private RepositoryConsumer nextConsumer;
 
     @Override
@@ -21,6 +22,16 @@ public class AbstractRepositoryConsumer implements RepositoryConsumer {
     @Override
     public void setNextConsumer(RepositoryConsumer consumer) {
         this.nextConsumer = consumer;
+    }
+
+    @Override
+    public RepositoryConsumer getPreviousConsumer() {
+        return previousConsumer;
+    }
+
+    @Override
+    public void setPreviousConsumer(RepositoryConsumer previousConsumer) {
+        this.previousConsumer = previousConsumer;
     }
 
     @Override

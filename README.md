@@ -112,3 +112,16 @@ Parsing an SVN dump file is straight forward.  Here's an example that uses a sin
     Repository svnRepository = inMemory.getRepo();
 
 See [`SvnDumpFileParserTest`](src/test/java/com/github/cstroe/svndumpgui/internal/SvnDumpFileParserTest.java) for usage patterns of the parser.
+
+
+# Developing
+
+## Coverage Report
+
+To get a JaCoCo coverage report, run the following:
+
+```
+mvn clean test jacoco:report
+```
+
+The coverage report output will be in HTML format in `target/site/jacoco/index.html`.

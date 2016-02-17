@@ -22,7 +22,12 @@ public class RepositoryInMemoryTest {
         RepositoryConsumer chainedConsumer = context.mock(RepositoryConsumer.class, "chainedConsumer");
         final Sequence chainerConsumerSequence = context.sequence("chainedConsumerSequence");
 
+        final RepositoryInMemory inMemory = new RepositoryInMemory();
+
         context.checking(new Expectations() {{
+            // setup the consumer chain
+            oneOf(chainedConsumer).setPreviousConsumer(inMemory); inSequence(chainerConsumerSequence);
+
             // preamble
             oneOf(chainedConsumer).consume(with(any(Preamble.class))); inSequence(chainerConsumerSequence);
 
@@ -66,7 +71,6 @@ public class RepositoryInMemoryTest {
 
 
         final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("dumps/add_edit_delete_add.dump");
-        RepositoryInMemory inMemory = new RepositoryInMemory();
         inMemory.continueTo(chainedConsumer);
         SvnDumpParser.consume(inputStream, inMemory);
     }
