@@ -8,27 +8,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 public class ContentChunkImplTest {
-    @Test
-    public void copy_constructor_should_make_deep_copy() {
-        byte[] content = new byte[5];
-        content[0] = 'g';
-        content[1] = 'r';
-        content[2] = 'e';
-        content[3] = 'a';
-        content[4] = 't';
-
-        ContentChunk chunk = new ContentChunkImpl(content);
-        ContentChunk chunkCopy = new ContentChunkImpl(chunk);
-
-        content[0] = 'X';
-        content[1] = 'X';
-        content[2] = 'X';
-        content[3] = 'X';
-        content[4] = 'X';
-
-        assertThat(new String(chunkCopy.getContent()), is(equalTo("great")));
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void dont_allow_null_content() {
         new ContentChunkImpl((byte[])null);
