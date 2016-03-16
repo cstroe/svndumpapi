@@ -7,10 +7,12 @@ import org.jbehave.core.annotations.When;
 
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ContentChunkImplSteps {
 
+    private byte[] content;
     private ContentChunk contentChunk;
     private ContentChunk newContentChunk;
 
@@ -38,5 +40,20 @@ public class ContentChunkImplSteps {
     @Then("the new ContentChunkImpl should contain the content \"$content\"")
     public void checkNewContent(byte[] content) {
         assertTrue(Arrays.equals(content, newContentChunk.getContent()));
+    }
+
+    @When("we instantiate a ContentChunkImpl with null content")
+    public void chunkWithContent() {
+        content = null;
+    }
+
+    @Then("it should throw an $exception")
+    public void shouldThrowException(String exception) throws ClassNotFoundException {
+        Class<?> exceptionClass = Class.forName(exception);
+        try {
+            new ContentChunkImpl(content);
+        } catch (Exception ex) {
+            assertEquals(exceptionClass, ex.getClass());
+        }
     }
 }
