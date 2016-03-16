@@ -1,6 +1,7 @@
 package com.github.cstroe.svndumpgui.jbehave;
 
 import com.github.cstroe.svndumpgui.api.ContentChunkImplSteps;
+import de.codecentric.jbehave.junit.monitoring.JUnitReportingRunner;
 import org.jbehave.core.Embeddable;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
@@ -17,6 +18,7 @@ import org.jbehave.core.reporters.StoryReporterBuilder;
 import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.InstanceStepsFactory;
 import org.jbehave.core.steps.ParameterConverters;
+import org.junit.runner.RunWith;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -24,17 +26,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+@RunWith(JUnitReportingRunner.class)
 public class RunStories extends JUnitStories {
     private final CrossReference xref = new CrossReference();
 
     public RunStories() {
         configuredEmbedder()
                 .embedderControls()
-                .doGenerateViewAfterStories(true)
-                .doIgnoreFailureInStories(false)
+                .doGenerateViewAfterStories(false)
+                .doIgnoreFailureInStories(false) // we need this to be false in order for JUnit reporting to be correct when a story fails
                 .doIgnoreFailureInView(true)
                 .doVerboseFailures(true)
                 .useStoryTimeouts("60");
+        JUnitReportingRunner.recommandedControls(configuredEmbedder());
     }
 
     @Override

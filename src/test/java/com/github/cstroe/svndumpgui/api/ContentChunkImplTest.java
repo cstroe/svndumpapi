@@ -8,22 +8,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 public class ContentChunkImplTest {
-
-    @Test(expected = IllegalArgumentException.class)
-    public void copy_constructor_with_null_content() {
-        ContentChunk badChunk = new ContentChunk() {
-            @Override
-            public byte[] getContent() {
-                return null;
-            }
-
-            @Override
-            public void setContent(byte[] content) {}
-        };
-
-        new ContentChunkImpl(badChunk);
-    }
-
     @Test
     public void set_content_does_what_it_should_do() {
         byte[] byteArray = new byte[5];

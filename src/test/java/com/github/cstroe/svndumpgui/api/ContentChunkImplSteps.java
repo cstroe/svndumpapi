@@ -6,30 +6,60 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ContentChunkImplSteps {
 
-    private byte[] content;
+    private byte[] byteArray;
+    private Supplier<ContentChunk> chunkConstructor;
+    private Runnable delayedRunnable;
     private ContentChunk contentChunk;
     private ContentChunk newContentChunk;
+
+    @Given("a null byte array")
+    public void aNullByteArray() {
+        byteArray = null;
+    }
 
     @Given("a ContentChunkImpl with the content \"$content\"")
     public void aContentChunk(byte[] content) {
         contentChunk = new ContentChunkImpl(content);
     }
 
-    @When("we use the copy constructor to make a new ContentChunkImpl")
-    public void newContentChunk() {
-        newContentChunk = new ContentChunkImpl(contentChunk);
+    @Given("a ContentChunk that returns null content")
+    public void defineABadContentChunkImplementation() {
+        contentChunk = new ContentChunk() {
+            @Override
+            public byte[] getContent() {
+                return null;
+            }
+
+            @Override
+            public void setContent(byte[] content) {}
+        };
     }
 
     @When("set the content of the new copy to \"$content\"")
     public void setNewContentChunkContent(byte[] content) {
+        newContentChunk = chunkConstructor.get();
         byte[] oldContent = newContentChunk.getContent();
         System.arraycopy(content, 0, oldContent, 0, content.length);
+    }
+
+    @When("we pass it to the constructor of ContentChunkImpl")
+    public void defineAConstructorRunnable() {
+        chunkConstructor = () -> new ContentChunkImpl(byteArray);
+        delayedRunnable = () -> chunkConstructor.get();
+    }
+
+    @When("we pass it to the copy constructor of ContentChunkImpl")
+    public void defineACopyConstructorRunnable() {
+        chunkConstructor = () -> new ContentChunkImpl(contentChunk);
+        delayedRunnable = () -> chunkConstructor.get();
     }
 
     @Then("the original ContentChunkImpl should still contain the content \"$content\"")
@@ -44,16 +74,18 @@ public class ContentChunkImplSteps {
 
     @When("we instantiate a ContentChunkImpl with null content")
     public void chunkWithContent() {
-        content = null;
+        delayedRunnable = () -> new ContentChunkImpl((byte[])null);
     }
 
     @Then("it should throw an $exception")
     public void shouldThrowException(String exception) throws ClassNotFoundException {
         Class<?> exceptionClass = Class.forName(exception);
         try {
-            new ContentChunkImpl(content);
+            delayedRunnable.run();
         } catch (Exception ex) {
             assertEquals(exceptionClass, ex.getClass());
+            return;
         }
+        fail("Expected exception " + exception + ", but was never thrown.");
     }
 }
