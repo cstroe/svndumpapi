@@ -7,6 +7,7 @@ import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.CodeLocations;
 import org.jbehave.core.io.LoadFromClasspath;
+import org.jbehave.core.io.LoadFromRelativeFile;
 import org.jbehave.core.junit.JUnitStories;
 import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.parsers.RegexStoryParser;
@@ -17,6 +18,7 @@ import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.InstanceStepsFactory;
 import org.jbehave.core.steps.ParameterConverters;
 
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +40,7 @@ public class RunStories extends JUnitStories {
     @Override
     protected List<String> storyPaths() {
         List<String> stories = new LinkedList<>();
-        stories.add("stories/content_chunk.story");
+        stories.add("content_chunk.story");
         return stories;
     }
 
@@ -56,11 +58,14 @@ public class RunStories extends JUnitStories {
                 new ParameterConverters.ExamplesTableConverter(examplesTableFactory),
                 new ByteArrayConverter()
         );
+
+        final URL codeLocation = CodeLocations.codeLocationFromClass(embeddableClass);
+
         return new MostUsefulConfiguration()
-                .useStoryLoader(new LoadFromClasspath(embeddableClass))
+                .useStoryLoader(new LoadFromRelativeFile(codeLocation, LoadFromRelativeFile.mavenModuleTestStoryFilePath("src/test/stories")))
                 .useStoryParser(new RegexStoryParser(examplesTableFactory))
                 .useStoryReporterBuilder(new StoryReporterBuilder()
-                        .withCodeLocation(CodeLocations.codeLocationFromClass(embeddableClass))
+                        .withCodeLocation(codeLocation)
                         .withDefaultFormats()
                         .withViewResources(viewResources)
                         .withFormats(Format.CONSOLE, Format.HTML_TEMPLATE)
