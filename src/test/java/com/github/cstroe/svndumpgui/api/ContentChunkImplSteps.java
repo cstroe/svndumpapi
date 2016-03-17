@@ -20,6 +20,11 @@ public class ContentChunkImplSteps {
     private ContentChunk contentChunk;
     private ContentChunk newContentChunk;
 
+    @Given("a byte array with the content \"$content\"")
+    public void aByteArray(byte[] content) {
+        byteArray = content;
+    }
+
     @Given("a null byte array")
     public void aNullByteArray() {
         byteArray = null;
@@ -53,7 +58,17 @@ public class ContentChunkImplSteps {
     @When("we pass it to the constructor of ContentChunkImpl")
     public void defineAConstructorRunnable() {
         chunkConstructor = () -> new ContentChunkImpl(byteArray);
-        delayedRunnable = () -> chunkConstructor.get();
+        delayedRunnable = () -> contentChunk = chunkConstructor.get();
+    }
+
+    @When("we set the chunk's content to \"$content\"")
+    public void setContent(byte[] content) {
+        delayedRunnable = () -> contentChunk.setContent(content);
+    }
+
+    @When("we set the chunk's content to null")
+    public void setContentToNull() {
+        delayedRunnable = () -> contentChunk.setContent(null);
     }
 
     @When("we pass it to the copy constructor of ContentChunkImpl")
@@ -87,5 +102,16 @@ public class ContentChunkImplSteps {
             return;
         }
         fail("Expected exception " + exception + ", but was never thrown.");
+    }
+
+    @Then("the chunk's content should be \"$content\"")
+    public void checkContent(byte[] content) {
+        delayedRunnable.run();
+        assertTrue(Arrays.equals(content, contentChunk.getContent()));
+    }
+
+    @Then("the toString method should return \"$toString\"")
+    public void toStringExpected(String toString) {
+        assertEquals(toString, contentChunk.toString());
     }
 }
