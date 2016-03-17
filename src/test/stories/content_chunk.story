@@ -1,5 +1,5 @@
 Description:
-Define the behaviour of our implementation of the ContentChunk interface.
+A default implementation of the ContentChunk interface.
 
 Scenario: The copy constructor should make a deep copy.
 
@@ -38,6 +38,14 @@ Scenario: The content setter does not allow null content.
 Given a ContentChunkImpl with the content "1234"
 When we set the chunk's content to null
 Then it should throw an java.lang.IllegalArgumentException
+
+Scenario: The content setter makes a deep copy.
+
+Given a ContentChunkImpl with the content "abcd"
+And a byte array with the content "12345"
+When we set the chunk's content to the byte array
+And update the byte array to have the content "54123"
+Then the chunk's content should be "12345"
 
 Scenario: The toString method should print the length.
 

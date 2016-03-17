@@ -48,6 +48,17 @@ public class ContentChunkImplSteps {
         };
     }
 
+    @When("we set the chunk's content to the byte array")
+    public void updateChunkContentWithByteArray() {
+        delayedRunnable = () -> {};
+        contentChunk.setContent(byteArray);
+    }
+
+    @When("update the byte array to have the content \"$content\"")
+    public void updateByteArray(byte[] content) {
+        System.arraycopy(content, 0, byteArray, 0, byteArray.length);
+    }
+
     @When("set the content of the new copy to \"$content\"")
     public void setNewContentChunkContent(byte[] content) {
         newContentChunk = chunkConstructor.get();
@@ -107,7 +118,7 @@ public class ContentChunkImplSteps {
     @Then("the chunk's content should be \"$content\"")
     public void checkContent(byte[] content) {
         delayedRunnable.run();
-        assertTrue(Arrays.equals(content, contentChunk.getContent()));
+        assertTrue("Content should be '" + new String(content) + "'", Arrays.equals(content, contentChunk.getContent()));
     }
 
     @Then("the toString method should return \"$toString\"")

@@ -2,6 +2,8 @@ package com.github.cstroe.svndumpgui.internal;
 
 import com.github.cstroe.svndumpgui.api.ContentChunk;
 
+import java.util.Arrays;
+
 public class ContentChunkImpl implements ContentChunk {
     private byte[] content;
 
@@ -33,7 +35,7 @@ public class ContentChunkImpl implements ContentChunk {
         if(content == null) {
             throw new IllegalArgumentException("A ContentChunk must have some content.");
         }
-        this.content = content;
+        this.content = Arrays.copyOf(content, content.length);
     }
 
     @Override
