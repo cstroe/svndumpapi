@@ -62,8 +62,8 @@ public class ContentChunkImplSteps {
     @When("set the content of the new copy to \"$content\"")
     public void setNewContentChunkContent(byte[] content) {
         newContentChunk = chunkConstructor.get();
-        byte[] oldContent = newContentChunk.getContent();
-        System.arraycopy(content, 0, oldContent, 0, content.length);
+        byte[] newContent = newContentChunk.getContent();
+        System.arraycopy(content, 0, newContent, 0, content.length);
     }
 
     @When("we pass it to the constructor of ContentChunkImpl")
