@@ -60,35 +60,27 @@ public class NodeImplTest {
 
         {
             assertThat(secondNode.getHeaders().size(), is(3));
-            Iterator<Map.Entry<NodeHeader, String>> headerIterator = secondNode.getHeaders().entrySet().iterator();
 
-            Map.Entry<NodeHeader, String> currentHeader = headerIterator.next();
-            assertThat(currentHeader.getKey(), is(NodeHeader.ACTION));
-            assertThat(currentHeader.getValue(), is(equalTo("add")));
+            assertTrue(secondNode.getHeaders().containsKey(NodeHeader.ACTION));
+            assertThat("add", is(equalTo(secondNode.getHeaders().get(NodeHeader.ACTION))));
 
-            currentHeader = headerIterator.next();
-            assertThat(currentHeader.getKey(), is(NodeHeader.PATH));
-            assertThat(currentHeader.getValue(), is(equalTo("someDir")));
+            assertTrue(secondNode.getHeaders().containsKey(NodeHeader.PATH));
+            assertThat("someDir", is(equalTo(secondNode.getHeaders().get(NodeHeader.PATH))));
 
-            currentHeader = headerIterator.next();
-            assertThat(currentHeader.getKey(), is(NodeHeader.KIND));
-            assertThat(currentHeader.getValue(), is(equalTo("dir")));
+            assertTrue(secondNode.getHeaders().containsKey(NodeHeader.KIND));
+            assertThat("dir", is(equalTo(secondNode.getHeaders().get(NodeHeader.KIND))));
         }
         {
             assertThat(secondNode.getProperties().size(), is(3));
-            Iterator<Map.Entry<String, String>> propertiesIterator = secondNode.getProperties().entrySet().iterator();
 
-            Map.Entry<String, String> currentProperty = propertiesIterator.next();
-            assertThat(currentProperty.getKey(), is(equalTo("prop1")));
-            assertThat(currentProperty.getValue(), is(equalTo("valX")));
+            assertTrue(secondNode.getProperties().containsKey("prop1"));
+            assertThat("valX", is(equalTo(secondNode.getProperties().get("prop1"))));
 
-            currentProperty = propertiesIterator.next();
-            assertThat(currentProperty.getKey(), is(equalTo("prop3")));
-            assertThat(currentProperty.getValue(), is(equalTo("valZ")));
+            assertTrue(secondNode.getProperties().containsKey("prop3"));
+            assertThat("valZ", is(equalTo(secondNode.getProperties().get("prop3"))));
 
-            currentProperty = propertiesIterator.next();
-            assertThat(currentProperty.getKey(), is(equalTo("prop2")));
-            assertThat(currentProperty.getValue(), is(equalTo("valY")));
+            assertTrue(secondNode.getProperties().containsKey("prop2"));
+            assertThat("valY", is(equalTo(secondNode.getProperties().get("prop2"))));
         }
     }
 

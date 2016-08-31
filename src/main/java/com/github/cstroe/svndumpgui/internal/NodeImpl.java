@@ -6,6 +6,7 @@ import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,22 +14,22 @@ import java.util.Map;
 import java.util.Optional;
 
 public class NodeImpl implements Node {
-    private Optional<Revision> revision;
-    private Map<NodeHeader, String> headers = new LinkedHashMap<>();
+    private Revision revision;
+    private Map<NodeHeader, String> headers = new EnumMap<>(NodeHeader.class);
     private Map<String, String> properties = new LinkedHashMap<>();
     private List<ContentChunk> content = new LinkedList<>();
 
     public NodeImpl() {
-        this.revision = Optional.empty();
+        this.revision = null;
     }
 
     public NodeImpl(Revision revision) {
-        this.revision = Optional.ofNullable(revision);
+        this.revision = revision;
     }
 
     public NodeImpl(Node node) {
-        this.revision = Optional.ofNullable(node.getRevision().orElse(null));
-        this.headers = new LinkedHashMap<>(node.getHeaders());
+        this.revision = node.getRevision().orElse(null);
+        this.headers = new EnumMap<>(node.getHeaders());
         if(node.getProperties() != null) {
             this.properties = new LinkedHashMap<>(node.getProperties());
         }
@@ -42,12 +43,12 @@ public class NodeImpl implements Node {
 
     @Override
     public Optional<Revision> getRevision() {
-        return revision;
+        return Optional.ofNullable(revision);
     }
 
     @Override
     public void setRevision(Revision revision) {
-        this.revision = Optional.of(revision);
+        this.revision = revision;
     }
 
     @Override
