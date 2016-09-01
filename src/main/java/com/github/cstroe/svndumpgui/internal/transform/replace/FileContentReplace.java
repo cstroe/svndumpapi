@@ -8,6 +8,7 @@ import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
 import com.github.cstroe.svndumpgui.internal.consumer.ImmutableTreeOfKnowledge;
+import com.github.cstroe.svndumpgui.internal.consumer.RequiresTreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledgeImpl;
 import com.github.cstroe.svndumpgui.internal.transform.AbstractRepositoryMutator;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
@@ -18,7 +19,7 @@ import java.util.function.Predicate;
 
 import static com.github.cstroe.svndumpgui.internal.utility.Preconditions.checkNotNull;
 
-public class FileContentReplace extends AbstractRepositoryMutator {
+public class FileContentReplace extends AbstractRepositoryMutator implements RequiresTreeOfKnowledge {
     private final Predicate<Node> nodeMatcher;
     private final Function<Node, ContentChunk> contentChunkGenerator;
 
@@ -73,7 +74,8 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         return immutableToK;
     }
 
-    protected void setTreeOfKnowledge(TreeOfKnowledge tok) {
+    @Override
+    public void setTreeOfKnowledge(TreeOfKnowledge tok) {
         this.tok = tok;
         if(tok instanceof ImmutableTreeOfKnowledge) {
             this.immutableToK = (ImmutableTreeOfKnowledge) tok;
@@ -206,8 +208,8 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     @Override
     public void continueTo(RepositoryConsumer nextConsumer) {
         super.continueTo(nextConsumer);
-        if(nextConsumer instanceof FileContentReplace) {
-            FileContentReplace fcr = (FileContentReplace) nextConsumer;
+        if(nextConsumer instanceof RequiresTreeOfKnowledge) {
+            RequiresTreeOfKnowledge fcr = (RequiresTreeOfKnowledge) nextConsumer;
             fcr.setTreeOfKnowledge(getTreeOfKnowledge());
         }
     }

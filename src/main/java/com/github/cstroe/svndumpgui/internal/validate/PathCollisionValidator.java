@@ -4,6 +4,8 @@ import com.github.cstroe.svndumpgui.api.RepositoryValidationError;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
+import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
+import com.github.cstroe.svndumpgui.internal.consumer.RequiresTreeOfKnowledge;
 import com.github.cstroe.svndumpgui.internal.utility.Pair;
 
 import java.util.HashMap;
@@ -11,11 +13,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class PathCollisionValidator extends AbstractRepositoryValidator {
+public class PathCollisionValidator extends AbstractRepositoryValidator implements RequiresTreeOfKnowledge {
     private RepositoryValidationError error = null;
 
     private Map<Integer, Map<String, Pair<Integer, Node>>> revisionSnapshots = new HashMap<>();
     private Revision previousRevision = null;
+    private TreeOfKnowledge tok;
 
     @Override
     public void consume(Revision revision) {
@@ -55,6 +58,8 @@ public class PathCollisionValidator extends AbstractRepositoryValidator {
         final String path = node.get(NodeHeader.PATH);
         final String copyFromRevision = node.get(NodeHeader.COPY_FROM_REV);
         final String copyFromPath = node.get(NodeHeader.COPY_FROM_PATH);
+
+        Node anOldNote = tok.tellMeAbout(revision.getNumber(), path);
 
         if("add".equals(action)) {
             if(currentRevisionPaths.containsKey(path)) {
@@ -133,5 +138,10 @@ public class PathCollisionValidator extends AbstractRepositoryValidator {
         }
 
         return subPaths;
+    }
+
+    @Override
+    public void setTreeOfKnowledge(TreeOfKnowledge tree) {
+        this.tok = tree;
     }
 }
