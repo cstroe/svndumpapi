@@ -3,3 +3,6 @@ svndumpapi.iml
 svndumpapi.iws
 target/
 .idea/
+.classpath
+.project
+.settings/
