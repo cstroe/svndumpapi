@@ -163,7 +163,6 @@ public class TreeOfKnowledgeImplTest {
         consume("dumps/binary_commit.dump");
         consume("dumps/simple_branch_and_merge.dump");
         consume("dumps/add_file_no_node_properties.dump");
-        consume("dumps/invalid/composite_commit.dump");
         consume("dumps/svn_copy_file_many_times.dump");
         consume("dumps/add_and_change_copy_delete.dump");
         consume("dumps/svn_delete_file.dump");
