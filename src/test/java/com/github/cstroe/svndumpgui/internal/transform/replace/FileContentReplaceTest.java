@@ -29,6 +29,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -342,5 +344,18 @@ public class FileContentReplaceTest {
         fcr1.continueTo(fcr2);
 
         fcr1.consume(mockNode);
+    }
+
+    @Test
+    public void glob_path_matcher() {
+        Predicate<Node> nodePredicate = FileContentReplace.regexMatch("add", ".+\\.war$");
+
+        Node testNode = new NodeImpl();
+        Map<NodeHeader, String> headers = new HashMap<>();
+        headers.put(NodeHeader.ACTION, "add");
+        headers.put(NodeHeader.PATH, "some/path/to/a/big.war");
+        testNode.setHeaders(headers);
+
+        assertTrue(nodePredicate.test(testNode));
     }
 }

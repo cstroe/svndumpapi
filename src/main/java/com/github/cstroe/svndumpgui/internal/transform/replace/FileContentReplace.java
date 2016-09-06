@@ -15,6 +15,7 @@ import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import static com.github.cstroe.svndumpgui.internal.utility.Preconditions.checkNotNull;
 
@@ -37,6 +38,13 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             n.getRevision().get().getNumber() == revision &&
             action.equals(n.get(NodeHeader.ACTION)) &&
             path.equals(n.get(NodeHeader.PATH));
+    }
+
+    public static Predicate<Node> regexMatch(String action, String pathRegex) {
+        Pattern pattern = Pattern.compile(pathRegex);
+        return n ->
+                action.equals(n.get(NodeHeader.ACTION)) &&
+                pattern.matcher(n.get(NodeHeader.PATH)).matches();
     }
 
     /**
