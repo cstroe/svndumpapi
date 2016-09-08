@@ -179,24 +179,6 @@ public class FileContentReplaceTest {
     }
 
     @Test
-    public void tracks_files_across_deletes_with_external_tok() throws ParseException, IOException {
-        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
-
-        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
-        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
-        svnDumpWriter.writeTo(newDumpStream);
-
-        fileContentReplace.continueTo(svnDumpWriter);
-
-        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), fileContentReplace);
-
-        TestUtil.assertEqualStreams(
-                TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"),
-                new ByteArrayInputStream(newDumpStream.toByteArray()));
-    }
-
-    @Test
     public void tracks_node_in_directory() throws ParseException, IOException {
         Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 2 && "dir1/dir2/dir3/README.txt".equals(n.get(NodeHeader.PATH));
         FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
@@ -270,14 +252,35 @@ public class FileContentReplaceTest {
 
     @Test
     public void glob_path_matcher() {
-        Predicate<Node> nodePredicate = FileContentReplace.regexMatch("add", ".+\\.war$");
+        Predicate<Node> nodePredicate = FileContentReplace.regexMatch(".+\\.war");
 
         Node testNode = new NodeImpl();
         Map<NodeHeader, String> headers = new HashMap<>();
         headers.put(NodeHeader.ACTION, "add");
+        headers.put(NodeHeader.KIND, "file");
         headers.put(NodeHeader.PATH, "some/path/to/a/big.war");
         testNode.setHeaders(headers);
 
         assertTrue(nodePredicate.test(testNode));
+
+        testNode.getHeaders().put(NodeHeader.PATH, "some/path/middle/more/path/bigfile.dat");
+        assertTrue(FileContentReplace.regexMatch(".*middle.*/bigfile.dat$").test(testNode));
+    }
+
+    @Test
+    public void glob_path_matcher_with_action() {
+        Predicate<Node> nodePredicate = FileContentReplace.regexMatchWithAction("add", ".+\\.war");
+
+        Node testNode = new NodeImpl();
+        Map<NodeHeader, String> headers = new HashMap<>();
+        headers.put(NodeHeader.ACTION, "add");
+        headers.put(NodeHeader.KIND, "file");
+        headers.put(NodeHeader.PATH, "some/path/to/a/big.war");
+        testNode.setHeaders(headers);
+
+        assertTrue(nodePredicate.test(testNode));
+
+        testNode.getHeaders().put(NodeHeader.PATH, "some/path/middle/more/path/bigfile.dat");
+        assertTrue(FileContentReplace.regexMatchWithAction("add", ".*middle.*/bigfile.dat$").test(testNode));
     }
 }

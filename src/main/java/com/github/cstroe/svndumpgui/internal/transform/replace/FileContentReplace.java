@@ -41,10 +41,19 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             path.equals(n.get(NodeHeader.PATH));
     }
 
-    public static Predicate<Node> regexMatch(String action, String pathRegex) {
+    public static Predicate<Node> regexMatchWithAction(String action, String pathRegex) {
         Pattern pattern = Pattern.compile(pathRegex);
         return n ->
+                "file".equals(n.get(NodeHeader.KIND)) &&
                 action.equals(n.get(NodeHeader.ACTION)) &&
+                pattern.matcher(n.get(NodeHeader.PATH)).matches();
+    }
+
+    public static Predicate<Node> regexMatch(String pathRegex) {
+        Pattern pattern = Pattern.compile(pathRegex);
+        return n ->
+                "file".equals(n.get(NodeHeader.KIND)) &&
+                !"delete".equals(n.get(NodeHeader.ACTION)) && // delete actions don't have content
                 pattern.matcher(n.get(NodeHeader.PATH)).matches();
     }
 
