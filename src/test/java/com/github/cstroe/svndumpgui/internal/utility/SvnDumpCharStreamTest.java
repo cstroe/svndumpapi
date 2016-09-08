@@ -293,4 +293,29 @@ public class SvnDumpCharStreamTest {
 
         NEWLINE();
     }
+
+    @Test
+    public void parse_lower_UTF8_chars() throws IOException {
+        final String utf8String = "abČdԵfgђlͷȎ";
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("READ: ");
+        builder.append(utf8String.length());
+        builder.append("\n");
+        builder.append(utf8String);
+        builder.append("\n");
+
+        charStream = new SvnDumpCharStream(new ByteArrayInputStream(builder.toString().getBytes()));
+
+        int number;
+        READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
+        assertThat(number, is(utf8String.length()));
+
+        String chars = "";
+        for(int i = 0; i < number; i++) {
+            chars += charStream.readChar();
+        }
+
+        assertThat(chars, is(equalTo(utf8String)));
+    }
 }
