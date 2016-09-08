@@ -4,15 +4,17 @@ import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Property;
-import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
-import com.github.cstroe.svndumpgui.api.TreeOfKnowledge;
+import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.internal.ContentChunkImpl;
-import com.github.cstroe.svndumpgui.internal.consumer.ImmutableTreeOfKnowledge;
-import com.github.cstroe.svndumpgui.internal.consumer.TreeOfKnowledgeImpl;
+import com.github.cstroe.svndumpgui.internal.NodeImpl;
 import com.github.cstroe.svndumpgui.internal.transform.AbstractRepositoryMutator;
 import com.github.cstroe.svndumpgui.internal.utility.Md5;
 import com.github.cstroe.svndumpgui.internal.utility.Sha1;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -23,10 +25,9 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     private final Function<Node, ContentChunk> contentChunkGenerator;
 
     private boolean nodeMatched = false;
-    private ContentChunk generatedChunk = null;
 
-    private TreeOfKnowledge tok;
-    private ImmutableTreeOfKnowledge immutableToK;
+    private Map<Integer, Set<Node>> previouslyUpdated = new HashMap<>();
+    private int currentRevision;
 
     /**
      * Helper method to generate a predicate that matches a node,
@@ -63,76 +64,90 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
         this.nodeMatcher = checkNotNull(nodeMatcher);
         this.contentChunkGenerator = checkNotNull(contentChunkGenerator);
-        this.tok = new TreeOfKnowledgeImpl();
     }
 
-    protected TreeOfKnowledge getTreeOfKnowledge() {
-        if(immutableToK == null) {
-            immutableToK = new ImmutableTreeOfKnowledge(tok);
-        }
-        return immutableToK;
-    }
-
-    protected void setTreeOfKnowledge(TreeOfKnowledge tok) {
-        this.tok = tok;
-        if(tok instanceof ImmutableTreeOfKnowledge) {
-            this.immutableToK = (ImmutableTreeOfKnowledge) tok;
-        } else {
-            this.immutableToK = new ImmutableTreeOfKnowledge(tok);
-        }
+    @Override
+    public void consume(Revision revision) {
+        currentRevision = revision.getNumber();
+        super.consume(revision);
     }
 
     @Override
     public void consume(Node node) {
-        if(!(tok instanceof ImmutableTreeOfKnowledge)) {
-            tok.consume(node);
+        final String nodeAction = node.get(NodeHeader.ACTION);
+        if("delete".equals(nodeAction)) {
+            // we don't care about deletes
+            super.consume(node);
+            return;
         }
 
-        if("file".equals(node.get(NodeHeader.KIND))) {
-            if(nodeMatcher.test(node)) {
-                nodeMatched = true;
-                generatedChunk = checkNotNull(contentChunkGenerator.apply(node));
-                return; // we're outta here
-            } else {
-                // node was not matched, but it might be a copy of a previously replaced node
-                Node previousNode;
-                String copyFromRev = node.get(NodeHeader.COPY_FROM_REV);
-                if (copyFromRev != null) {
-                    int copyRevision = Integer.parseInt(copyFromRev);
-                    String copyPath = node.get(NodeHeader.COPY_FROM_PATH);
+        final String nodeKind = node.get(NodeHeader.KIND);
+        if("file".equals(nodeKind) && nodeMatcher.test(node)) {
+            // we found a match for replacement
+            nodeMatched = true;
+            return;
+        }
 
-                    previousNode = tok.tellMeAbout(copyRevision, copyPath);
+        // node was not matched, but it might be a copy of a previously replaced node
+        String copyFromRev = node.get(NodeHeader.COPY_FROM_REV);
+        if(copyFromRev == null) {
+            // nope, it's not a copy
+            super.consume(node);
+            return;
+        }
 
-                    if (previousNode != null) {
-                        // node was previously matched
-                        String previousMd5 = previousNode.get(NodeHeader.MD5);
-                        String previousSha1 = previousNode.get(NodeHeader.SHA1);
-                        String previousCopyMd5 = previousNode.get(NodeHeader.SOURCE_MD5);
-                        String previousCopySha1 = previousNode.get(NodeHeader.SOURCE_SHA1);
-                        String currentSourceMd5 = node.get(NodeHeader.SOURCE_MD5);
-                        String currentSourceSha1 = node.get(NodeHeader.SOURCE_SHA1);
+        int copyRevision = Integer.parseInt(copyFromRev);
+        String copyPath = node.get(NodeHeader.COPY_FROM_PATH);
 
-                        String md5 = previousMd5;
-                        if (md5 == null) {
-                            md5 = previousCopyMd5;
-                        }
+        Node previousNode = findPreviouslyUpdatedNode(copyRevision, copyPath);
+        if (previousNode != null) {
+            // node was previously matched
+            recordNodeUpdate(currentRevision, node);
 
-                        if (!md5.equals(currentSourceMd5)) {
-                            node.getHeaders().put(NodeHeader.SOURCE_MD5, md5);
-                        }
+            String previousMd5 = previousNode.get(NodeHeader.MD5);
+            String previousSha1 = previousNode.get(NodeHeader.SHA1);
+            String previousCopyMd5 = previousNode.get(NodeHeader.SOURCE_MD5);
+            String previousCopySha1 = previousNode.get(NodeHeader.SOURCE_SHA1);
+            String currentSourceMd5 = node.get(NodeHeader.SOURCE_MD5);
+            String currentSourceSha1 = node.get(NodeHeader.SOURCE_SHA1);
 
-                        String sha1 = previousSha1;
-                        if (sha1 == null) {
-                            sha1 = previousCopySha1;
-                        }
-
-                        if (!sha1.equals(currentSourceSha1)) {
-                            node.getHeaders().put(NodeHeader.SOURCE_SHA1, sha1);
-                        }
-                    }
-                }
+            String md5 = previousMd5;
+            if (md5 == null) {
+                md5 = previousCopyMd5;
             }
+
+            if (!md5.equals(currentSourceMd5)) {
+                node.getHeaders().put(NodeHeader.SOURCE_MD5, md5);
+            }
+
+            String sha1 = previousSha1;
+            if (sha1 == null) {
+                sha1 = previousCopySha1;
+            }
+
+            if (!sha1.equals(currentSourceSha1)) {
+                node.getHeaders().put(NodeHeader.SOURCE_SHA1, sha1);
+            }
+            super.consume(node);
+            return;
         }
+
+        if("dir".equals(nodeKind) && "add".equals(nodeAction)) {
+            // we might be moving the directory that contains a previously replaced node
+            Node previouslyContainedNode = findPreviouslyUpdatedNodeFromDirectory(copyRevision, copyPath);
+            if(previouslyContainedNode != null) {
+                // yes, we're moving the directory that contains this node
+                String newDirectoryPath = node.get(NodeHeader.PATH);
+                Node nodeCopy = new NodeImpl(previouslyContainedNode);
+                String nodePath = nodeCopy.get(NodeHeader.PATH);
+                String newPath = newDirectoryPath + nodePath.substring(copyPath.length());
+                nodeCopy.getHeaders().put(NodeHeader.PATH, newPath);
+                recordNodeUpdate(currentRevision, nodeCopy);
+            }
+            super.consume(node);
+            return;
+        }
+
         super.consume(node);
     }
 
@@ -155,18 +170,50 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         if(!nodeMatched) {
             super.endNode(node);
         } else {
-            updateHeaders(node);
+            ContentChunk generatedChunk = checkNotNull(contentChunkGenerator.apply(node));
+            updateHeaders(node, generatedChunk);
 
             node.getContent().clear();
             node.addFileContentChunk(generatedChunk);
 
             continueNodeConsumption(node);
+            recordNodeUpdate(currentRevision, node);
+            nodeMatched = false;
         }
-        nodeMatched = false;
-        generatedChunk = null;
     }
 
-    private void updateHeaders(Node node) {
+    private void recordNodeUpdate(int currentRevision, Node node) {
+        if(!previouslyUpdated.containsKey(currentRevision)) {
+            previouslyUpdated.put(currentRevision, new HashSet<>());
+        }
+        previouslyUpdated.get(currentRevision).add(node);
+    }
+
+    private Node findPreviouslyUpdatedNode(int copyRevision, String copyPath) {
+        Set<Node> nodeSet = previouslyUpdated.get(copyRevision);
+        if(nodeSet != null) {
+            for(Node previouslyReplacedNode : nodeSet) {
+                if(copyPath.equals(previouslyReplacedNode.get(NodeHeader.PATH))) {
+                    return previouslyReplacedNode;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Node findPreviouslyUpdatedNodeFromDirectory(int copyRevision, String directoryPath) {
+        Set<Node> nodeSet = previouslyUpdated.get(copyRevision);
+        if(nodeSet != null) {
+            for(Node previouslyReplacedNode : nodeSet) {
+                if(previouslyReplacedNode.get(NodeHeader.PATH).startsWith(directoryPath)) {
+                    return previouslyReplacedNode;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void updateHeaders(Node node, ContentChunk generatedChunk) {
         node.getHeaders().put(NodeHeader.TEXT_CONTENT_LENGTH, Integer.toString(generatedChunk.getContent().length));
 
         String propContentLengthRaw = node.get(NodeHeader.PROP_CONTENT_LENGTH);
@@ -193,7 +240,9 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         node.getProperties().remove(Property.TRAILING_NEWLINE_HINT);
 
         super.consume(node);
-        super.consume(generatedChunk);
+        for(ContentChunk generatedChunk : node.getContent()) {
+            super.consume(generatedChunk);
+        }
         super.endChunks();
 
         if(trailingNewLine != null) {
@@ -201,14 +250,5 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         }
 
         super.endNode(node);
-    }
-
-    @Override
-    public void continueTo(RepositoryConsumer nextConsumer) {
-        super.continueTo(nextConsumer);
-        if(nextConsumer instanceof FileContentReplace) {
-            FileContentReplace fcr = (FileContentReplace) nextConsumer;
-            fcr.setTreeOfKnowledge(getTreeOfKnowledge());
-        }
     }
 }
