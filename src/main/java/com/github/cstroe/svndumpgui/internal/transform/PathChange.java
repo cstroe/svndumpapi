@@ -47,25 +47,20 @@ public class PathChange extends AbstractRepositoryMutator {
      * @return null if the string was not updated
      */
     private String updateMergeInfo(String currentMergeInfo) {
-        MergeInfoData data;
-        try {
-            data = MergeInfoParser.parse(currentMergeInfo);
-        } catch(ParseException ex) {
-            throw new RuntimeException(ex);
-        }
+        String[] mergeinfoLines = currentMergeInfo.split("\n");
 
         boolean changedMergeInfo = false;
-        for(MergeInfoData.Path path : data.getPaths()) {
-            String pathName = path.getPath();
-            if(pathName.startsWith("/" + oldPath)) {
-                final String newPathName = "/" + newPath + pathName.substring(oldPath.length() + 1);
-                path.setPath(newPathName);
+        for(int i = 0; i < mergeinfoLines.length; i++) {
+            String currentLine = mergeinfoLines[i];
+            if(currentLine.startsWith("/" + oldPath)) {
+                final String newPathName = "/" + newPath + currentLine.substring(oldPath.length() + 1);
+                mergeinfoLines[i] = newPathName;
                 changedMergeInfo = true;
             }
         }
 
         if(changedMergeInfo) {
-            return data.toString();
+            return String.join("\n", mergeinfoLines);
         } else {
             return null;
         }
