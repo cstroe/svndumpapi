@@ -35,58 +35,26 @@ public abstract class AbstractRepositoryConsumer implements RepositoryConsumer {
     }
 
     @Override
-    public void consume(Preamble preamble) {
-        if(nextConsumer != null) {
-            nextConsumer.consume(preamble);
-        }
-    }
+    public void consume(Preamble preamble) {}
 
     @Override
-    public void consume(Revision revision) {
-        if(nextConsumer != null) {
-            nextConsumer.consume(revision);
-        }
-    }
+    public void consume(Revision revision) {}
 
     @Override
-    public void endRevision(Revision revision) {
-        if(nextConsumer != null) {
-            nextConsumer.endRevision(revision);
-        }
-    }
+    public void endRevision(Revision revision) {}
 
     @Override
-    public void consume(Node node) {
-        if(nextConsumer != null) {
-            nextConsumer.consume(node);
-        }
-    }
+    public void consume(Node node) {}
 
     @Override
-    public void endNode(Node node) {
-        if(nextConsumer != null) {
-            nextConsumer.endNode(node);
-        }
-    }
+    public void endNode(Node node) {}
 
     @Override
-    public void consume(ContentChunk chunk) {
-        if(nextConsumer != null) {
-            nextConsumer.consume(chunk);
-        }
-    }
+    public void consume(ContentChunk chunk) {}
 
     @Override
-    public void endChunks() {
-        if(nextConsumer != null) {
-            nextConsumer.endChunks();
-        }
-    }
+    public void endChunks() {}
 
     @Override
-    public void finish() {
-        if(nextConsumer != null) {
-            nextConsumer.finish();
-        }
-    }
+    public void finish() {}
 }

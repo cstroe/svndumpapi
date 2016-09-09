@@ -1,5 +1,6 @@
 package com.github.cstroe.svndumpgui.internal;
 
+import com.github.cstroe.svndumpgui.api.ConsumerExecutor;
 import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
@@ -67,7 +68,7 @@ public class SvnDumpFileParserTest {
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(dumpFile);
 
-        return consume(is, consumer);
+        return consume(is, new ConsumerExecutor(consumer));
     }
 
     /**

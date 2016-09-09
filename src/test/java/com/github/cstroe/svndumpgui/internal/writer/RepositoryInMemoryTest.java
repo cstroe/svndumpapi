@@ -16,7 +16,7 @@ import java.io.InputStream;
 
 public class RepositoryInMemoryTest {
 
-    @Test
+/*    @Test
     public void consumer_chain_is_continued() throws ParseException {
         Mockery context = new Mockery();
         RepositoryConsumer chainedConsumer = context.mock(RepositoryConsumer.class, "chainedConsumer");
@@ -73,5 +73,5 @@ public class RepositoryInMemoryTest {
         final InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("dumps/add_edit_delete_add.dump");
         inMemory.continueTo(chainedConsumer);
         SvnDumpParser.consume(inputStream, inMemory);
-    }
+    }*/
 }

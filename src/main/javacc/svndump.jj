@@ -21,6 +21,7 @@ PARSER_BEGIN(SvnDumpParser)
   import java.util.LinkedHashMap;
   import java.security.MessageDigest;
 
+  import com.github.cstroe.svndumpgui.api.ConsumerExecutor;
   import com.github.cstroe.svndumpgui.api.ContentChunk;
   import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
   import com.github.cstroe.svndumpgui.api.Preamble;
@@ -123,7 +124,7 @@ PARSER_BEGIN(SvnDumpParser)
     }
 
     public static void consume(InputStream inputStream, RepositoryConsumer consumer) throws ParseException {
-        new SvnDumpParser(new SvnDumpCharStream(inputStream)).Start(consumer);
+        new SvnDumpParser(new SvnDumpCharStream(inputStream)).Start(new ConsumerExecutor(consumer));
     }
   }
 PARSER_END(SvnDumpParser)
