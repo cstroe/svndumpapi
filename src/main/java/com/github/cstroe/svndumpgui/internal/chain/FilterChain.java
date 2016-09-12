@@ -1,4 +1,4 @@
-package com.github.cstroe.svndumpgui.internal;
+package com.github.cstroe.svndumpgui.internal.chain;
 
 import java.util.List;
 import java.util.Arrays;
@@ -9,6 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.Consumer;
 import com.github.cstroe.svndumpgui.api.RepositoryFilter;
 import com.github.cstroe.svndumpgui.api.Preamble;
 import com.github.cstroe.svndumpgui.api.Revision;
@@ -31,42 +32,36 @@ public class FilterChain implements RepositoryFilter {
 
 	@Override
 	public void consume(Preamble preamble) {
-		final int batchSize = nFilter / nThread;
-		int batchRemainder = nFilter % nThread;
-
-		final ArrayList<BlockingQueue<Preamble>> pipes = new ArrayList<BlockingQueue<Preamble>>(nThread);
-		for (int i = 0; i < pipes.size(); i++)
-			pipes.set(i, new ArrayBlockingQueue<Preamble>(1));
-
-		int start = 0;
-		for (int i = 0; i < pipes.size(); i++) {
-			int end = start + nFilter;
-			if (batchRemainder-- > 0)
-				end++;
-
+		final ArrayList<Consumer<Preamble>> ops = new ArrayList<Consumer<Preamble>>(nThread);
+		for (int i = 0; i < ops.size(); i++) {
 			final int ti = i;
-			final int tstart = start;
-			final int tend = end;
-			threadPool.submit(() -> {
-				try {
-					Preamble p = pipes.get(ti).take();
+			ops.set(i, p -> filters[ti].consume(p));
+		}
 
-					for (int j = tstart; j < tend; j++)
-						filters[j].consume(p);
-
-					if(ti+1 < nThread)
-						pipes.get(ti+1).put(p);
-				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
-					return;
-				}
-			});
-			start = end;
+		final Pipeline<Preamble> pipeline = new Pipeline<Preamble>(ops, threadPool, nThread);
+		try {
+			pipeline.run(preamble);
+		} catch (InterruptedException ie) {
+			return;
 		}
 	}
 
 	@Override
-    public void consume(Revision revision){}
+    public void consume(Revision revision){
+		final ArrayList<Consumer<Revision>> ops = new ArrayList<Consumer<Revision>>(nThread);
+		for (int i = 0; i < ops.size(); i++) {
+			final int ti = i;
+			ops.set(i, r -> filters[ti].consume(r));
+		}
+
+		final Pipeline<Revision> pipeline = new Pipeline<Revision>(ops, threadPool, nThread);
+		try {
+			pipeline.run(revision);
+		} catch (InterruptedException ie) {
+			return;
+		}
+	}
+
 	@Override
     public void endRevision(Revision revision){}
 	@Override
