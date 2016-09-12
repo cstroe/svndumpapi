@@ -24,7 +24,15 @@ public class Pipeline<T> {
 		this.nThread = nThread;
 	}
 
-	public void run(T svnChunk) throws InterruptedException {
+	public void start(T svnChunk) {
+		try {
+			pipes.get(0).put(svnChunk);
+		} catch (InterruptedException ie) {
+			return;
+		}
+	}
+
+	public void run() {
 		final int batchSize = nFilter / nThread;
 		int batchRemainder = nFilter % nThread;
 
@@ -52,7 +60,5 @@ public class Pipeline<T> {
 			});
 			start = end;
 		}
-		// Starts the pipeline running.
-		pipes.get(0).put(svnChunk);
 	}
 }

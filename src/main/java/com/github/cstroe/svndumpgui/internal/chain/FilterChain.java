@@ -22,6 +22,8 @@ public class FilterChain implements RepositoryFilter {
 	private final int nThread;
 	private final int nFilter;
 	private final ExecutorService threadPool;
+	private Pipeline<Preamble> preamblePipe;
+	private Pipeline<Revision> revisionPipe;
 
 	public FilterChain(List<RepositoryFilter> filters, int nThread) {
 		this.filters = filters.toArray(new RepositoryFilter[filters.size()]);
@@ -38,12 +40,11 @@ public class FilterChain implements RepositoryFilter {
 			ops.set(i, p -> filters[ti].consume(p));
 		}
 
-		final Pipeline<Preamble> pipeline = new Pipeline<Preamble>(ops, threadPool, nThread);
-		try {
-			pipeline.run(preamble);
-		} catch (InterruptedException ie) {
-			return;
+		if(preamblePipe == null) {
+			preamblePipe = new Pipeline<Preamble>(ops, threadPool, nThread);
+			preamblePipe.run();
 		}
+		preamblePipe.start(preamble);
 	}
 
 	@Override
@@ -54,12 +55,11 @@ public class FilterChain implements RepositoryFilter {
 			ops.set(i, r -> filters[ti].consume(r));
 		}
 
-		final Pipeline<Revision> pipeline = new Pipeline<Revision>(ops, threadPool, nThread);
-		try {
-			pipeline.run(revision);
-		} catch (InterruptedException ie) {
-			return;
+		if(revisionPipe == null) {
+			revisionPipe = new Pipeline<Revision>(ops, threadPool, nThread);
+			revisionPipe.run();
 		}
+		revisionPipe.start(revision);
 	}
 
 	@Override
