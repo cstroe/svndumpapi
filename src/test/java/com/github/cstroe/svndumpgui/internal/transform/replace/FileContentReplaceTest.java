@@ -247,4 +247,22 @@ public class FileContentReplaceTest {
                 TestUtil.openResource("dumps/add_and_change_copy_delete.dump"),
                 new ByteArrayInputStream(newDumpStream.toByteArray()));
     }
+
+    @Test
+    public void handle_multiple_matches_across_simple_copies() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> n.get(NodeHeader.PATH).endsWith("README.txt");
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, FileContentReplace.chunkFromString("this text is different\n"));
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/simple_copy.dump"), fileContentReplace);
+
+        TestUtil.assertEqualStreams(
+                TestUtil.openResource("dumps/simple_copy2.dump"),
+                new ByteArrayInputStream(newDumpStream.toByteArray()));
+    }
 }

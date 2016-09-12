@@ -16,6 +16,11 @@ svn_multi_file_delete:
 simple_branch_and_merge:
 	./scripts/simple_branch_and_merge.sh > simple_branch_and_merge.dump
 
+simple_copy:
+	./scripts/simple_copy.sh > simple_copy.dump
+	./scripts/simple_copy2.sh > simple_copy2.dump
+	echo "Further manual changes are required to update UUID and timestamps in simple_copy2.dump"
+
 utf8_log_message:
 	./scripts/utf8_log_message.sh > utf8_log_message.dump
 
