@@ -10,7 +10,6 @@ public class ClearRevision extends AbstractRepositoryMutator {
     private final int fromRevision;
     private final int toRevision;
 
-    private boolean matchedSomething = false;
     private boolean inClearedRevision = false;
 
     public ClearRevision(int revision) {
@@ -41,7 +40,6 @@ public class ClearRevision extends AbstractRepositoryMutator {
     public void consume(Revision revision) {
         if(revisionMatches(revision)) {
             inClearedRevision = true;
-            matchedSomething = true;
         }
         super.consume(revision);
     }
@@ -78,14 +76,6 @@ public class ClearRevision extends AbstractRepositoryMutator {
     public void endRevision(Revision revision) {
         inClearedRevision = false;
         super.endRevision(revision);
-    }
-
-    @Override
-    public void finish() {
-        if(!matchedSomething) {
-            throw new IllegalArgumentException("No revisions matched: " + toString());
-        }
-        super.finish();
     }
 
     @Override
