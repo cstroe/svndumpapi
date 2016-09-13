@@ -177,24 +177,6 @@ public class FileContentReplaceTest {
     }
 
     @Test
-    public void tracks_files_across_deletes_with_external_tok() throws ParseException, IOException {
-        Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 1 && "README.txt".equals(n.get(NodeHeader.PATH));
-        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("i replaced the content\n".getBytes()));
-
-        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
-        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
-        svnDumpWriter.writeTo(newDumpStream);
-
-        fileContentReplace.continueTo(svnDumpWriter);
-
-        SvnDumpParser.consume(TestUtil.openResource("dumps/svn_copy_and_delete.before.dump"), fileContentReplace);
-
-        TestUtil.assertEqualStreams(
-                TestUtil.openResource("dumps/svn_copy_and_delete.after.dump"),
-                new ByteArrayInputStream(newDumpStream.toByteArray()));
-    }
-
-    @Test
     public void tracks_node_in_directory() throws ParseException, IOException {
         Predicate<Node> nodeMatcher = n -> n.getRevision().get().getNumber() == 2 && "dir1/dir2/dir3/README.txt".equals(n.get(NodeHeader.PATH));
         FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, n -> new ContentChunkImpl("new content\n".getBytes()));
@@ -263,6 +245,24 @@ public class FileContentReplaceTest {
 
         TestUtil.assertEqualStreams(
                 TestUtil.openResource("dumps/add_and_change_copy_delete.dump"),
+                new ByteArrayInputStream(newDumpStream.toByteArray()));
+    }
+
+    @Test
+    public void handle_multiple_matches_across_simple_copies() throws ParseException, IOException {
+        Predicate<Node> nodeMatcher = n -> n.get(NodeHeader.PATH).endsWith("README.txt");
+        FileContentReplace fileContentReplace = new FileContentReplace(nodeMatcher, FileContentReplace.chunkFromString("this text is different\n"));
+
+        ByteArrayOutputStream newDumpStream = new ByteArrayOutputStream();
+        RepositoryWriter svnDumpWriter = new SvnDumpWriter();
+        svnDumpWriter.writeTo(newDumpStream);
+
+        fileContentReplace.continueTo(svnDumpWriter);
+
+        SvnDumpParser.consume(TestUtil.openResource("dumps/simple_copy.dump"), fileContentReplace);
+
+        TestUtil.assertEqualStreams(
+                TestUtil.openResource("dumps/simple_copy2.dump"),
                 new ByteArrayInputStream(newDumpStream.toByteArray()));
     }
 }

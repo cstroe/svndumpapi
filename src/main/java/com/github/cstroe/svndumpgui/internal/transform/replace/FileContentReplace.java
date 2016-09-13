@@ -28,6 +28,7 @@ public class FileContentReplace extends AbstractRepositoryMutator {
 
     private Map<Integer, Set<Node>> previouslyUpdated = new HashMap<>();
     private int currentRevision;
+    private int chunkCount;
 
     /**
      * Helper method to generate a predicate that matches a node,
@@ -85,6 +86,7 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         if("file".equals(nodeKind) && nodeMatcher.test(node)) {
             // we found a match for replacement
             nodeMatched = true;
+            chunkCount = 0;
             return;
         }
 
@@ -155,6 +157,8 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     public void consume(ContentChunk chunk) {
         if(!nodeMatched) {
             super.consume(chunk);
+        } else {
+            chunkCount++;
         }
     }
 
@@ -172,13 +176,10 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         } else {
             ContentChunk generatedChunk = checkNotNull(contentChunkGenerator.apply(node));
             updateHeaders(node, generatedChunk);
-
-            node.getContent().clear();
-            node.addFileContentChunk(generatedChunk);
-
-            continueNodeConsumption(node);
+            continueNodeConsumption(node, generatedChunk);
             recordNodeUpdate(currentRevision, node);
             nodeMatched = false;
+            chunkCount = 0;
         }
     }
 
@@ -214,7 +215,9 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     }
 
     private void updateHeaders(Node node, ContentChunk generatedChunk) {
-        node.getHeaders().put(NodeHeader.TEXT_CONTENT_LENGTH, Integer.toString(generatedChunk.getContent().length));
+        if(node.getHeaders().get(NodeHeader.TEXT_CONTENT_LENGTH) != null) {
+            node.getHeaders().put(NodeHeader.TEXT_CONTENT_LENGTH, Integer.toString(generatedChunk.getContent().length));
+        }
 
         String propContentLengthRaw = node.get(NodeHeader.PROP_CONTENT_LENGTH);
         long propContentLength = 0;
@@ -222,7 +225,9 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             propContentLength = Long.parseLong(propContentLengthRaw);
         }
 
-        node.getHeaders().put(NodeHeader.CONTENT_LENGTH, Long.toString(propContentLength + generatedChunk.getContent().length));
+        if(node.getHeaders().get(NodeHeader.CONTENT_LENGTH) != null) {
+            node.getHeaders().put(NodeHeader.CONTENT_LENGTH, Long.toString(propContentLength + generatedChunk.getContent().length));
+        }
 
         if (node.get(NodeHeader.MD5) != null) {
             final String md5hash = new Md5().hash(generatedChunk.getContent());
@@ -233,17 +238,32 @@ public class FileContentReplace extends AbstractRepositoryMutator {
             final String sha1hash = new Sha1().hash(generatedChunk.getContent());
             node.getHeaders().put(NodeHeader.SHA1, sha1hash);
         }
+
+        if(node.get(NodeHeader.COPY_FROM_REV) != null) {
+            int copyRevision = Integer.parseInt(node.get(NodeHeader.COPY_FROM_REV));
+            String copyPath = node.get(NodeHeader.COPY_FROM_PATH);
+
+            Node previouslyUpdatedNode = findPreviouslyUpdatedNode(copyRevision, copyPath);
+            if (previouslyUpdatedNode != null) {
+                if (node.get(NodeHeader.SOURCE_MD5) != null) {
+                    node.getHeaders().put(NodeHeader.SOURCE_MD5, previouslyUpdatedNode.get(NodeHeader.MD5));
+                }
+                if (node.get(NodeHeader.SOURCE_SHA1) != null) {
+                    node.getHeaders().put(NodeHeader.SOURCE_SHA1, previouslyUpdatedNode.get(NodeHeader.SHA1));
+                }
+            }
+        }
     }
 
-    private void continueNodeConsumption(Node node) {
+    private void continueNodeConsumption(Node node, ContentChunk generatedChunk) {
         final String trailingNewLine = node.getProperties().get(Property.TRAILING_NEWLINE_HINT);
         node.getProperties().remove(Property.TRAILING_NEWLINE_HINT);
 
         super.consume(node);
-        for(ContentChunk generatedChunk : node.getContent()) {
+        if(chunkCount > 0) {
             super.consume(generatedChunk);
+            super.endChunks();
         }
-        super.endChunks();
 
         if(trailingNewLine != null) {
             node.getProperties().put(Property.TRAILING_NEWLINE_HINT, trailingNewLine);
