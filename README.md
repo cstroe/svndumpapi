@@ -4,7 +4,7 @@
 
 # SVN Dump API
 
-An API for editing SVN dump files.
+An API for reading, editing, and writing SVN dump files.
 
 ## Background
 
