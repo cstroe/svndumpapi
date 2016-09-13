@@ -24,6 +24,7 @@ public class FilterChain implements RepositoryFilter {
 	private final ExecutorService threadPool;
 	private Pipeline<Preamble> preamblePipe;
 	private Pipeline<Revision> revisionPipe;
+	private Pipeline<Node> nodePipe;
 
 	public FilterChain(List<RepositoryFilter> filters, int nThread) {
 		this.filters = filters.toArray(new RepositoryFilter[filters.size()]);
@@ -42,8 +43,8 @@ public class FilterChain implements RepositoryFilter {
 
 		if(preamblePipe == null) {
 			preamblePipe = new Pipeline<Preamble>(ops, threadPool, nThread);
-			preamblePipe.run();
 		}
+		preamblePipe.run();
 		preamblePipe.start(preamble);
 	}
 
@@ -57,15 +58,40 @@ public class FilterChain implements RepositoryFilter {
 
 		if(revisionPipe == null) {
 			revisionPipe = new Pipeline<Revision>(ops, threadPool, nThread);
-			revisionPipe.run();
 		}
+		revisionPipe.run();
 		revisionPipe.start(revision);
 	}
 
 	@Override
-    public void endRevision(Revision revision){}
+    public void endRevision(Revision revision){
+		final ArrayList<Consumer<Revision>> ops = new ArrayList<Consumer<Revision>>(nThread);
+		for (int i = 0; i < ops.size(); i++) {
+			final int ti = i;
+			ops.set(i, r -> filters[ti].endRevision(r));
+		}
+
+		if(revisionPipe == null) {
+			revisionPipe = new Pipeline<Revision>(ops, threadPool, nThread);
+		}
+		revisionPipe.run();
+		revisionPipe.start(revision);
+	}
+
 	@Override
-    public void consume(Node node){}
+    public void consume(Node node){
+		final ArrayList<Consumer<Node>> ops = new ArrayList<Consumer<Node>>(nThread);
+		for (int i = 0; i < ops.size(); i++) {
+			final int ti = i;
+			ops.set(i, n -> filters[ti].consume(n));
+		}
+
+		if(nodePipe == null) {
+			nodePipe = new Pipeline<Node>(ops, threadPool, nThread);
+		}
+		nodePipe.run();
+		nodePipe.start(node);
+	}
 	@Override
     public void endNode(Node node){}
 	@Override

@@ -38,9 +38,13 @@ public class Pipeline<T> {
 
 		int start = 0;
 		for (int i = 0; i < nThread; i++) {
-			int end = start + nFilter;
-			if (batchRemainder-- > 0)
+			int end = start + batchSize;
+			if (batchRemainder > 0) {
+				batchRemainder--;
 				end++;
+			}
+			if (end == 0)
+				break;
 
 			final int ti = i;
 			final int tstart = start;
@@ -55,7 +59,7 @@ public class Pipeline<T> {
 					if(ti+1 < nThread)
 						pipes.get(ti+1).put(chunk);
 				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt();
+					return;
 				}
 			});
 			start = end;
