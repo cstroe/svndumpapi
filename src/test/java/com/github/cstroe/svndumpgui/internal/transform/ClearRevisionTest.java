@@ -96,12 +96,6 @@ public class ClearRevisionTest {
         new ClearRevision(2,1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void cant_change_non_existent_revision() throws ParseException {
-        RepositoryConsumer cr = new ClearRevision(3);
-        SvnDumpFileParserTest.consume("dumps/svn_multi_file_delete.dump", cr);
-    }
-
     @Test
     public void consumer_chaining_works() throws ParseException {
         Mockery context = new Mockery();
