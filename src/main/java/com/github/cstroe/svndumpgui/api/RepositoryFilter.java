@@ -1,12 +1,12 @@
 package com.github.cstroe.svndumpgui.api;
 
 public interface RepositoryFilter {
-    void consume(Preamble preamble);
-    void consume(Revision revision);
-    void endRevision(Revision revision);
-    void consume(Node node);
-    void endNode(Node node);
-    void consume(ContentChunk chunk);
-    void endChunks();
-    void finish();
+    Preamble consume(Preamble preamble);
+    Revision consume(Revision revision);
+    Revision endRevision(Revision revision);
+    Node consume(Node node);
+    Node endNode(Node node);
+    ContentChunk consume(ContentChunk chunk);
+    Object endChunks();
+    Object finish();
 }
