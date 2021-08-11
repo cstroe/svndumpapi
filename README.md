@@ -33,7 +33,7 @@ parse SVN dump files into a [`Repository`](src/main/java/com/github/cstroe/svndu
 The `Repository` representation is
 meant to be very light-weight and does minimal validation.
 
-The parser is auto-generated using JavaCC from the [`svndump.jj`](src/main/javacc/svndump.jj) gramar file.
+The parser is auto-generated using [JavaCC](https://javacc.github.io/javacc/) (Java Compiler Compiler) from the [`svndump.jj`](src/main/javacc/svndump.jj) gramar file.
 This grammar generates a parser that is dependenent on the Java interfaces and 
 classes in this project.
 
