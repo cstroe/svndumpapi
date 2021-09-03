@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface Node {
     /**
-     * @return An Node can be "detached", i.e., not belong to a revision.
+     * @return A node can be "detached", i.e., not belong to a revision.
      */
     Optional<Revision> getRevision();
     void setRevision(Revision revision);
@@ -20,7 +20,9 @@ public interface Node {
     List<ContentChunk> getContent();
     void addFileContentChunk(ContentChunk chunk);
 
-    // utility method
+    /**
+     * @return the value of a header defined in this node
+     */
     String get(NodeHeader header);
 
     /**

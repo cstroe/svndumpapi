@@ -14,6 +14,11 @@ public interface Revision {
     void setNodes(List<Node> nodes);
     void addNode(Node node);
 
-    // utility method
+    /**
+     * Utility method to look up the value of a revision property in the {@link #getProperties()} map.
+     *
+     * @param name the name of a revision property
+     * @return the value of the given property
+     */
     String get(String name);
 }

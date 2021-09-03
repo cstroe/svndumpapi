@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * It knows everything that has ever happened.
+ * It knows everything that has ever happened.  See {@link TreeOfKnowledge} for more documentation.
  *
  * @see com.github.cstroe.svndumpgui.api.TreeOfKnowledge
  */
