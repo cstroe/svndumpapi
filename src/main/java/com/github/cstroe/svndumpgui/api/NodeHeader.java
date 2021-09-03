@@ -18,13 +18,17 @@ public enum NodeHeader {
 
     ;
 
-    private final String image;
-    NodeHeader(String image) {
-        this.image = image;
+    private final String rawText;
+
+    /**
+     * @param rawText the text representation of this node header
+     */
+    NodeHeader(String rawText) {
+        this.rawText = rawText;
     }
 
     @Override
     public String toString() {
-        return image;
+        return rawText;
     }
 }

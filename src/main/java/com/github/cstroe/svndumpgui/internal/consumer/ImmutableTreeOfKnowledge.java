@@ -4,7 +4,7 @@ import com.github.cstroe.svndumpgui.api.*;
 import com.github.cstroe.svndumpgui.internal.AbstractRepositoryConsumer;
 
 public class ImmutableTreeOfKnowledge extends AbstractRepositoryConsumer implements TreeOfKnowledge {
-    private static final String CANNOT_MUTATE = "Cannot mutate immutable object.";
+    private static final String CANNOT_MUTATE = "Cannot mutate immutable object";
     private TreeOfKnowledge tok;
 
     public ImmutableTreeOfKnowledge(TreeOfKnowledge tok) {
