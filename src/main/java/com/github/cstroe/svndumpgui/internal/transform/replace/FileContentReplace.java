@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.github.cstroe.svndumpgui.internal.utility.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class FileContentReplace extends AbstractRepositoryMutator {
     private final Predicate<Node> nodeMatcher;
@@ -63,8 +63,8 @@ public class FileContentReplace extends AbstractRepositoryMutator {
     }
 
     public FileContentReplace(Predicate<Node> nodeMatcher, Function<Node, ContentChunk> contentChunkGenerator) {
-        this.nodeMatcher = checkNotNull(nodeMatcher);
-        this.contentChunkGenerator = checkNotNull(contentChunkGenerator);
+        this.nodeMatcher = requireNonNull(nodeMatcher);
+        this.contentChunkGenerator = requireNonNull(contentChunkGenerator);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class FileContentReplace extends AbstractRepositoryMutator {
         if(!nodeMatched) {
             super.endNode(node);
         } else {
-            ContentChunk generatedChunk = checkNotNull(contentChunkGenerator.apply(node));
+            ContentChunk generatedChunk = requireNonNull(contentChunkGenerator.apply(node));
             updateHeaders(node, generatedChunk);
             continueNodeConsumption(node, generatedChunk);
             recordNodeUpdate(currentRevision, node);
