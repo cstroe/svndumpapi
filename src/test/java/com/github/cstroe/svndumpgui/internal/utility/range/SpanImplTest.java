@@ -132,4 +132,17 @@ public class SpanImplTest {
             assertTrue(s2.overlaps(s1));
         }
     }
+
+    @Test
+    public void cutoff() {
+        Span s1 = span(3, 20);
+        s1.cutoff(15);
+        assertEquals(15, s1.high());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cutoff_low_range() {
+        Span s1 = span(10, 20);
+        s1.cutoff(5);
+    }
 }
