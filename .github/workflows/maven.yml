@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    environment: default
+    #environment: default
 
     runs-on: ubuntu-latest
 
