@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/cstroe/svndumpapi.svg?branch=master)](https://travis-ci.org/cstroe/svndumpapi)
 [![codecov](https://codecov.io/gh/cstroe/svndumpapi/branch/master/graph/badge.svg?token=EVA6JOOV7B)](https://codecov.io/gh/cstroe/svndumpapi)
+[![Coverage Status](https://coveralls.io/repos/github/cstroe/svndumpapi/badge.svg)](https://coveralls.io/github/cstroe/svndumpapi)
 ![GNU Affero GPL v3](https://img.shields.io/badge/license-Affero%20GPL%20v3-blue.svg)
 
 # SVN Dump API
