@@ -25,15 +25,18 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package --file pom.xml
-    - name: Coveralls
-      run: >-
-        mvn -B coveralls:report
-        -D repoToken=${{ secrets.COVERALLS_TOKEN }}
-        -D serviceName=github
-        -D serviceBuildUrl=https://github.com/${{ github.repository }}/commit/${{ github.sha }}/checks
-        -D branch=$BRANCH_NAME
-        -D pullRequest=$PR_NUMBER
-    - name: Codecov
+    - name: "Report: Coverage via coveralls.io"
+      run: |
+        export CI_BRANCH=${BRANCH_NAME_OR_REF#refs/heads/}
+        export CI_PULL_REQUEST=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+        mvn -B coveralls:report --no-transfer-progress -DrepoToken=$COVERALLS_SECRET
+      env:
+        CI_NAME: github
+        BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
+        CI_BUILD_NUMBER: ${{ github.run_id }}
+        CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
+        COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
+    - name: "Report: Coverage via codecov.io"
       uses: codecov/codecov-action@v2.0.3
       with:
         file: target/site/jacoco/jacoco.xml
