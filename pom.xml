@@ -77,7 +77,28 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
+                <configuration>
+                    <!--
+                        sourceDirectories required so that generated files are found by the plugin
+                        See: https://github.com/trautonen/coveralls-maven-plugin/issues/57
+                    -->
+                    <sourceDirectories>
+                        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+                        <sourceDirectory>${basedir}/target/generated-sources/svndumpgui</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
+                <!--
+                    dependencies tag fixes issue with Java 11
+                    See: https://github.com/trautonen/coveralls-maven-plugin/issues/141
+                -->
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.2.3</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
