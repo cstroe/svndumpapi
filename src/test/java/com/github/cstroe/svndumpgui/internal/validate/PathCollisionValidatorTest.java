@@ -24,7 +24,9 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class PathCollisionValidatorTest {
 
@@ -134,12 +136,12 @@ public class PathCollisionValidatorTest {
         } {
             Revision r1 = new RevisionImpl(1, "2015-08-30T07:24:07.042627Z");
             r1.getProperties().put(Property.AUTHOR, "testUser");
-            r1.getNodes().add(createErrorTriggerringNode(r1));
+            r1.getNodes().add(createErrorTriggeringNode(r1));
             dump.getRevisions().add(r1);
         } {
             Revision r2 = new RevisionImpl(2, "2015-08-30T07:25:07.042627Z");
             r2.getProperties().put(Property.AUTHOR, "testUser");
-            r2.getNodes().add(createErrorTriggerringNode(r2));
+            r2.getNodes().add(createErrorTriggeringNode(r2));
             dump.getRevisions().add(r2);
         } {
             Mockery mockery = new Mockery();
@@ -165,7 +167,7 @@ public class PathCollisionValidatorTest {
         assertFalse(pcValidator.isValid());
     }
 
-    private Node createErrorTriggerringNode(Revision r) {
+    private Node createErrorTriggeringNode(Revision r) {
         Node duplicateNode = new NodeImpl(r);
         duplicateNode.getHeaders().put(NodeHeader.ACTION, "add");
         duplicateNode.getHeaders().put(NodeHeader.KIND, "dir");

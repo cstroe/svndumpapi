@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 
 public class SvnDumpCharStreamTest {
 
@@ -29,68 +28,68 @@ public class SvnDumpCharStreamTest {
 
         int number;
         READ();
-        assertThat(charStream.getStreamPosition(), is(4l));
+        assertThat(charStream.getStreamPosition(), is(4L));
 
         COLON();
-        assertThat(charStream.getStreamPosition(), is(5l));
+        assertThat(charStream.getStreamPosition(), is(5L));
 
         SPACE();
-        assertThat(charStream.getStreamPosition(), is(6l));
+        assertThat(charStream.getStreamPosition(), is(6L));
 
         number = NUMBER();
-        assertThat(charStream.getStreamPosition(), is(8l));
+        assertThat(charStream.getStreamPosition(), is(8L));
         assertThat(number, is(16));
 
         NEWLINE();
-        assertThat(charStream.getStreamPosition(), is(9l));
+        assertThat(charStream.getStreamPosition(), is(9L));
 
         assertThat(readData(number), is(equalTo("abcdefghijklmnop")));
-        assertThat(charStream.getStreamPosition(), is(25l));
+        assertThat(charStream.getStreamPosition(), is(25L));
 
         NEWLINE();
-        assertThat(charStream.getStreamPosition(), is(26l));
+        assertThat(charStream.getStreamPosition(), is(26L));
 
         READ();
-        assertThat(charStream.getStreamPosition(), is(30l));
+        assertThat(charStream.getStreamPosition(), is(30L));
 
         COLON();
-        assertThat(charStream.getStreamPosition(), is(31l));
+        assertThat(charStream.getStreamPosition(), is(31L));
 
         SPACE();
-        assertThat(charStream.getStreamPosition(), is(32l));
+        assertThat(charStream.getStreamPosition(), is(32L));
 
         number = NUMBER();
-        assertThat(charStream.getStreamPosition(), is(33l));
+        assertThat(charStream.getStreamPosition(), is(33L));
         assertThat(number, is(3));
 
         NEWLINE();
-        assertThat(charStream.getStreamPosition(), is(34l));
+        assertThat(charStream.getStreamPosition(), is(34L));
 
         assertThat(readData(number), is(equalTo("abc")));
-        assertThat(charStream.getStreamPosition(), is(37l));
+        assertThat(charStream.getStreamPosition(), is(37L));
 
         NEWLINE();
-        assertThat(charStream.getStreamPosition(), is(38l));
+        assertThat(charStream.getStreamPosition(), is(38L));
 
         READ();
-        assertThat(charStream.getStreamPosition(), is(42l));
+        assertThat(charStream.getStreamPosition(), is(42L));
 
         COLON();
-        assertThat(charStream.getStreamPosition(), is(43l));
+        assertThat(charStream.getStreamPosition(), is(43L));
 
         SPACE();
-        assertThat(charStream.getStreamPosition(), is(44l));
+        assertThat(charStream.getStreamPosition(), is(44L));
 
         number = NUMBER();
         assertThat(number, is(5));
-        assertThat(charStream.getStreamPosition(), is(45l));
+        assertThat(charStream.getStreamPosition(), is(45L));
 
         NEWLINE();
-        assertThat(charStream.getStreamPosition(), is(46l));
+        assertThat(charStream.getStreamPosition(), is(46L));
 
 
         assertThat(readData(number), is(equalTo("abcde")));
-        assertThat(charStream.getStreamPosition(), is(51l));
+        assertThat(charStream.getStreamPosition(), is(51L));
 
         assertThat(charStream.buffer.length, is(SvnDumpCharStream.INITAL_BUFFER_LENGTH));
     }
@@ -158,21 +157,21 @@ public class SvnDumpCharStreamTest {
         assertThat(number, is(16));
 
         assertThat(new String(charStream.readBytes(number)), is(equalTo("abcdefghijklmnop")));
-        assertThat(charStream.getStreamPosition(), is(25l));
+        assertThat(charStream.getStreamPosition(), is(25L));
 
         NEWLINE();
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(3));
 
         assertThat(new String(charStream.readBytes(number)), is(equalTo("abc")));
-        assertThat(charStream.getStreamPosition(), is(37l));
+        assertThat(charStream.getStreamPosition(), is(37L));
         NEWLINE();
 
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(5));
 
         assertThat(new String(charStream.readBytes(number)), is(equalTo("abcde")));
-        assertThat(charStream.getStreamPosition(), is(51l));
+        assertThat(charStream.getStreamPosition(), is(51L));
 
         assertThat(charStream.buffer.length, is(SvnDumpCharStream.INITAL_BUFFER_LENGTH));
     }
@@ -221,37 +220,37 @@ public class SvnDumpCharStreamTest {
         {
             READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
             assertThat(number, is(8192));
-            assertThat(charStream.getStreamPosition(), is(11l));
+            assertThat(charStream.getStreamPosition(), is(11L));
 
             byte[] firstBuffer = charStream.readBytes(number);
-            assertThat(charStream.getStreamPosition(), is(11l + 8192l));
+            assertThat(charStream.getStreamPosition(), is(11L + 8192L));
 
             assertThat(firstBuffer.length, is(8192));
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] md5sum_firstBuffer = md5.digest(firstBuffer);
-            assertTrue(Arrays.equals(md5sum_8192, md5sum_firstBuffer));
+            assertArrayEquals(md5sum_8192, md5sum_firstBuffer);
         } {
             NEWLINE();
             READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
             assertThat(number, is(10000));
-            assertThat(charStream.getStreamPosition(), is(8216l));
+            assertThat(charStream.getStreamPosition(), is(8216L));
 
             byte[] secondBuffer = charStream.readBytes(number);
-            assertThat(charStream.getStreamPosition(), is(18216l));
+            assertThat(charStream.getStreamPosition(), is(18216L));
 
             assertThat(secondBuffer.length, is(10000));
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] md5sum_secondbuffer = md5.digest(secondBuffer);
-            assertTrue(Arrays.equals(md5sum_10000, md5sum_secondbuffer));
+            assertArrayEquals(md5sum_10000, md5sum_secondbuffer);
             NEWLINE();
         }
 
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(4));
-        assertThat(charStream.getStreamPosition(), is(18225l));
+        assertThat(charStream.getStreamPosition(), is(18225L));
 
         assertThat(new String(charStream.readBytes(number)), is(equalTo("abcd")));
-        assertThat(charStream.getStreamPosition(), is(18229l));
+        assertThat(charStream.getStreamPosition(), is(18229L));
 
         assertThat(charStream.buffer.length, is(SvnDumpCharStream.INITAL_BUFFER_LENGTH));
     }
@@ -298,24 +297,22 @@ public class SvnDumpCharStreamTest {
     public void parse_lower_UTF8_chars() throws IOException {
         final String utf8String = "abČdԵfgђlͷȎ";
 
-        StringBuilder builder = new StringBuilder();
-        builder.append("READ: ");
-        builder.append(utf8String.length());
-        builder.append("\n");
-        builder.append(utf8String);
-        builder.append("\n");
-
-        charStream = new SvnDumpCharStream(new ByteArrayInputStream(builder.toString().getBytes()));
+        String builder = "READ: " +
+                utf8String.length() +
+                "\n" +
+                utf8String +
+                "\n";
+        charStream = new SvnDumpCharStream(new ByteArrayInputStream(builder.getBytes()));
 
         int number;
         READ(); COLON(); SPACE(); number = NUMBER(); NEWLINE();
         assertThat(number, is(utf8String.length()));
 
-        String chars = "";
+        StringBuilder chars = new StringBuilder();
         for(int i = 0; i < number; i++) {
-            chars += charStream.readChar();
+            chars.append(charStream.readChar());
         }
 
-        assertThat(chars, is(equalTo(utf8String)));
+        assertThat(chars.toString(), is(equalTo(utf8String)));
     }
 }

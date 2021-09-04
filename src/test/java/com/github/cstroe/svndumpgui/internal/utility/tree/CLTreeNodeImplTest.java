@@ -1,8 +1,5 @@
 package com.github.cstroe.svndumpgui.internal.utility.tree;
 
-import com.github.cstroe.svndumpgui.api.Node;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.junit.Test;
 
 import java.util.List;
@@ -10,7 +7,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class CLTreeNodeImplTest {

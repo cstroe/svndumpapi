@@ -40,12 +40,12 @@ public class TestUtil {
     // swiped from http://stackoverflow.com/questions/415953
     public static String toHex(byte[] digest, int length) {
         BigInteger bitInt = new BigInteger(1, digest);
-        String hashText = bitInt.toString(16);
+        StringBuilder hashText = new StringBuilder(bitInt.toString(16));
 
         while(hashText.length() < length) {
-            hashText = "0" + hashText;
+            hashText.insert(0, "0");
         }
 
-        return hashText;
+        return hashText.toString();
     }
 }
