@@ -3,3 +3,5 @@ svndumpapi.iml
 svndumpapi.iws
 target/
 .idea/
+
+/bazel-*

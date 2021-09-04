@@ -1,0 +1,17 @@
+# Source: https://github.com/bazel-packages/xyz_yannic_rules_javacc
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_javacc",
+    strip_prefix = "xyz_yannic_rules_javacc-018b3dce543e445ffa32e47471ca011e499581be",
+    urls = [
+	"https://github.com/cstroe/xyz_yannic_rules_javacc/archive/018b3dce543e445ffa32e47471ca011e499581be.tar.gz",
+    ],
+    sha256 = "e8a688c5d8ee760a89ead7f2d743e679d5eeeffb4014e7290287994de41f972e",
+)
+
+load("@rules_javacc//javacc:repositories.bzl", "rules_javacc_dependencies", "rules_javacc_toolchains")
+
+rules_javacc_dependencies()
+rules_javacc_toolchains()

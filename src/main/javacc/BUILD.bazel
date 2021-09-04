@@ -1,0 +1,10 @@
+# https://github.com/bazel-packages/xyz_yannic_rules_javacc
+load("@rules_javacc//javacc:defs.bzl", "javacc_java_library")
+
+javacc_java_library(
+    name = "mergeinfo_parser",
+    srcs = ["mergeinfo.jj"],
+    deps = [
+        "//src/main/java/com/github/cstroe/svndumpgui/internal/transform/property:default_java_library",
+    ],
+)

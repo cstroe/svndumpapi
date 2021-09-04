@@ -1,0 +1,13 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
+java_library(
+    name = "libJavaCC",
+    srcs = glob([
+        "generated-sources/org/javacc/*.java",
+        "java/org/javacc/*.java",
+    ]),
+    javacopts = [
+        "-XepAllErrorsAsWarnings",
+    ],
+    resources = glob(["resources/**/*"]),
+)
