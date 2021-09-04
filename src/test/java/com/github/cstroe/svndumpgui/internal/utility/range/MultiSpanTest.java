@@ -3,7 +3,9 @@ package com.github.cstroe.svndumpgui.internal.utility.range;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class MultiSpanTest {
     @Test

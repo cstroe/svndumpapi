@@ -22,7 +22,7 @@ import java.io.InputStream;
  * Useful in tests.
  */
 public class SvnDumpParserDoppelganger {
-    private Repository dump;
+    private final Repository dump;
 
     public SvnDumpParserDoppelganger(Repository dump) {
         this.dump = dump;

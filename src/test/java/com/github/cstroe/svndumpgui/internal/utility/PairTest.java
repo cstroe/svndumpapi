@@ -5,6 +5,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 public class PairTest {
@@ -24,10 +25,9 @@ public class PairTest {
         assertThat(Pair.of(one, two), is(not(equalTo(Pair.of(two, one)))));
 
         Pair<String, String> aPair = Pair.of(one, two);
-        assertTrue(aPair.equals(aPair));
+        assertEquals(aPair, aPair);
 
-        //noinspection EqualsBetweenInconvertibleTypes
-        assertFalse(aPair.equals(one));
+        assertNotEquals(aPair, one);
 
         assertThat(Pair.of(null, two), is(equalTo(Pair.of(null, two))));
         assertThat(Pair.of(one, null), is(equalTo(Pair.of(one, null))));
