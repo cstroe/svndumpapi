@@ -3,7 +3,5 @@ load("@rules_java//java:defs.bzl", "java_library")
 java_library(
     name = "default_java_library",
     visibility = ["//visibility:public"],
-    srcs = [
-        "MergeInfoData.java",
-    ],
+    srcs = glob(["*.java"])
 )
