@@ -7,6 +7,10 @@
 
 An API for reading, editing, and writing SVN dump files.
 
+## Quickstart
+
+Generate an SVN dump file
+
 ## Background
 
 SVN dump files are created via the `svnadmin dump` command, and contain all the 

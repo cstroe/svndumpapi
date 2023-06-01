@@ -18,6 +18,9 @@ public abstract class AbstractRepositoryWriter extends AbstractRepositoryConsume
     }
 
     public SimplePrintStream ps() {
+        if (ps == null) {
+            ps = new SimplePrintStream(System.out);
+        }
         return ps;
     }
 }

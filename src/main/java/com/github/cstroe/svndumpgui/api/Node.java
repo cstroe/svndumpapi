@@ -42,4 +42,32 @@ public interface Node {
 
         return bigByte;
     }
+
+    default Optional<String> getPath() {
+        return Optional.ofNullable(getHeaders().get(NodeHeader.PATH));
+    }
+
+    default Optional<String> getKind() {
+        return Optional.ofNullable(getHeaders().get(NodeHeader.KIND));
+    }
+
+    default Optional<String> getAction() {
+        return Optional.ofNullable(getHeaders().get(NodeHeader.ACTION));
+    }
+
+    default boolean isDir() {
+        return getKind().filter("dir"::equals).isPresent();
+    }
+
+    default boolean isFile() {
+        return getKind().filter("file"::equals).isPresent();
+    }
+
+    default boolean isAdd() {
+        return getAction().filter("add"::equals).isPresent();
+    }
+
+    default boolean isDelete() {
+        return getAction().filter("delete"::equals).isPresent();
+    }
 }
