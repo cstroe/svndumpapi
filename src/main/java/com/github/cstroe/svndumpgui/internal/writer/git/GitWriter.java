@@ -33,7 +33,7 @@ public class GitWriter extends AbstractRepositoryWriter {
     private String authorName = "Dan Langille";
     private String authorEmail = "dan@langille.org";
 
-    private Map<Integer, String> svnRevisionToGitHash = new HashMap<>(9182);
+    private Map<Integer, List<String>> svnRevisionToGitHash = new HashMap<>(9182);
     private SvnBranchState branchState = new SvnBranchState();
 
     private final Integer resumeFromRevision;
@@ -44,7 +44,9 @@ public class GitWriter extends AbstractRepositoryWriter {
     }
 
     public GitWriter(Integer resumeFromRevision, String gitDir) throws IOException, GitAPIException {
-        this.gitDir = new File(gitDir);
+        File tmp = new File(gitDir);
+        String dirName = tmp.getName();
+        this.gitDir = new File("/tmpfs/" + dirName);
         this.resumeFromRevision = resumeFromRevision;
         System.out.println("Git directory: " + this.gitDir.getAbsolutePath());
         git = Git.init()
@@ -78,7 +80,10 @@ public class GitWriter extends AbstractRepositoryWriter {
         }
 
         nodes.forEach(this::processNode);
+        doCommit(revision);
+    }
 
+    private void doCommit(Revision revision) {
         try {
             Status status = git.status().call();
             if (status.isClean()) {
@@ -100,7 +105,9 @@ public class GitWriter extends AbstractRepositoryWriter {
                     .setMessage(message)
                     .call();
             ps().println(String.format("[%5s] Committed: %s", revision.getNumber(), revCommit.getName()));
-            svnRevisionToGitHash.put(revision.getNumber(), revCommit.getName());
+            svnRevisionToGitHash
+                    .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
+                    .add(revCommit.getName());
         } catch (GitAPIException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -224,10 +231,12 @@ public class GitWriter extends AbstractRepositoryWriter {
             return false;
         }
 
+        String path = node.getPath().get();
+        String[] split = path.split("/");
+
         final Map<NodeHeader, String> headers = node.getHeaders();
         return node.isDir() && node.isAdd() &&
-                headers.get(NodeHeader.COPY_FROM_REV) != null &&
-                headers.get(NodeHeader.COPY_FROM_PATH) != null;
+                split.length == 3 && "branches".equals(split[1]);
     }
 
     // write a Node file out
@@ -238,6 +247,7 @@ public class GitWriter extends AbstractRepositoryWriter {
         }
 
         if (node.isDir()) {
+            ps().println(String.format("[%5s] Skipping directory node: %s", node.getRevision().get().getNumber(), node.getPath().get()));
             return; // git doesn't track directories
         }
 
@@ -245,8 +255,16 @@ public class GitWriter extends AbstractRepositoryWriter {
             if (branchState.isInBranch(node)) {
                 try {
                     SvnBranch branch = branchState.getBranch(node).get();
-                    Ref ref = git.checkout().setName(branch.getGitName()).call();
-                } catch (GitAPIException e) {
+
+                    if (!branch.equals(git.getRepository().getBranch())) {
+                        Status status = git.status().call();
+                        if (!status.isClean()) {
+                            doCommit(node.getRevision().get());
+                        }
+
+                        Ref ref = git.checkout().setName(branch.getGitName()).call();
+                    }
+                } catch (GitAPIException | IOException e) {
                     throw new RuntimeException(e);
                 }
             } else {
@@ -260,7 +278,7 @@ public class GitWriter extends AbstractRepositoryWriter {
             }
 
             if (branchState.isInTags(node)) {
-
+                ps().println(String.format("[%5s] Skipping tags node: %s", node.getRevision().get().getNumber(), node.getPath().get()));
                 return; // ignore tags for now
             }
 
@@ -282,7 +300,11 @@ public class GitWriter extends AbstractRepositoryWriter {
         }
 
         if (node.isDelete()) {
-            deleteNode(node);
+            if (branchState.isInTags(node)) {
+                ps().println(String.format("[%5s] Skipping tags node: %s", node.getRevision().get().getNumber(), node.getPath().get()));
+            } else {
+                deleteNode(node);
+            }
             return;
         }
 
@@ -292,8 +314,6 @@ public class GitWriter extends AbstractRepositoryWriter {
     private void createBranch(Node node) {
         SvnBaseDir baseDir = branchState.getBranchDir(node).get();
         String branchName = baseDir.stripBranchPrefix(node.getPath().get()).get();
-//        String gitBranchName = baseDir.getBaseDir() + "-" + branchName;
-        String gitBranchName = branchName;
         List<Ref> refs = null;
         try {
             refs = git.branchList().call();
@@ -301,12 +321,34 @@ public class GitWriter extends AbstractRepositoryWriter {
             throw new RuntimeException(e);
         }
         try {
-            if (refs.stream().noneMatch(r -> ("refs/heads/" + gitBranchName).equals(r.getName()))) {
+            if (refs.stream().noneMatch(r -> ("refs/heads/" + branchName).equals(r.getName()))) {
                 Ref ref = git.branchCreate()
-                        .setName(gitBranchName)
+                        .setName(branchName)
+                        .call();
+                ps().println(String.format("[%5s] Created branch: %s", node.getRevision().get().getNumber(), ref.getName()));
+            }
+            branchState.addBranch(baseDir, SvnBranch.of(branchName, branchName));
+
+            // check out the branch
+            git.checkout().setName(branchName).call();
+            ps().println(String.format("[%5s] Checked out branch: %s", node.getRevision().get().getNumber(), branchName));
+
+            String copyFromPath = node.get(NodeHeader.COPY_FROM_PATH);
+            if (copyFromPath != null) {
+                String cleanCopyFromPath = cleanPath(copyFromPath);
+                Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
+                List<String> gitShas = svnRevisionToGitHash.get(copyFromRevision);
+                if (gitShas.size() != 1) {
+                    throw new RuntimeException("Not the correct number of git shas: " + gitShas.size());
+                }
+
+                String copyFromGitSha = gitShas.get(0);
+
+                git.checkout()
+                        .setStartPoint(copyFromGitSha)
+                        .addPath(cleanCopyFromPath)
                         .call();
             }
-            branchState.addBranch(baseDir, SvnBranch.of(branchName, gitBranchName));
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         }
@@ -354,9 +396,46 @@ public class GitWriter extends AbstractRepositoryWriter {
         if (nodePath == null) {
             throw new RuntimeException("missing path for node deletion");
         }
-        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
+        String cleanNodePath = cleanPath(nodePath);
 
-        new File(absolutePath).delete();
+        try {
+            Status status = git.status().call();
+             if (status.getAdded().contains(cleanNodePath)) {
+                 git.reset().addPath(cleanNodePath).call();
+             }
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+
+        String absolutePath = gitDir.getAbsolutePath() + File.separator + cleanNodePath;
+
+        File toDelete = new File(absolutePath);
+        if (!toDelete.exists()) {
+            throw new RuntimeException("Cannot delete missing file: " + absolutePath);
+        }
+
+        if (toDelete.isDirectory()) {
+            boolean deleted = deleteDirectory(toDelete);
+            if (!deleted) {
+                throw new RuntimeException("Did not delete directory: " + absolutePath);
+            }
+        } else {
+            boolean deleted = new File(absolutePath).delete();
+            if (!deleted) {
+                throw new RuntimeException("Did not delete file: " + absolutePath);
+            }
+        }
+    }
+
+    // from https://www.baeldung.com/java-delete-directory
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
     }
 
 //    private Revision printRevisionInfo(@NotNull Revision revision) {
