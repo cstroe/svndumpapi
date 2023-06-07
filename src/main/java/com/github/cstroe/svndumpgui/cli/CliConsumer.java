@@ -16,8 +16,8 @@ public class CliConsumer {
         AbstractRepositoryWriter gitWriter;
         try {
 //            gitWriter = new GitWriter(743, "/tmpfs/svndumpadmin-git-3448828562389816950");
-            gitWriter = new GitWriterNoBranching();
-        } catch (IOException | GitAPIException ex) {
+            gitWriter = new GitWriterNoBranching("svndumpadmin-git-5483822688254000915", 5068);
+        } catch (GitAPIException | IOException ex) {
             ex.printStackTrace(System.err);
             return;
         }
