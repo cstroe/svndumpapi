@@ -13,12 +13,9 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,45 +33,21 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private Ref gitBranchForSvnRevision;
     private Map<Integer, List<String>> svnRevisionToGitHash = new HashMap<>(9182);
 
-    public GitWriterNoBranching() throws IOException, GitAPIException {
-        File tmpDir = Files.createTempDirectory("svndumpadmin-git-").toFile();
-        String dirName = tmpDir.getName();
-        this.gitDir = new File("/tmpfs/" + dirName);
-        this.startFromRev = 0;
-
-        System.out.println("Git directory: " + this.gitDir.getAbsolutePath());
-        this.git = Git.init()
-                .setDirectory(this.gitDir)
-                .call();
+    public GitWriterNoBranching(String gitDir) throws IOException, GitAPIException {
+        this(gitDir, 0);
     }
 
     public GitWriterNoBranching(String gitDir, int startFromRev) throws GitAPIException, IOException {
-        if (gitDir.startsWith("/tmpfs/")) {
-            throw new RuntimeException("Please remove the '/tmpfs/' prefix from your git directory.");
-        }
-
-        File tmp = new File(gitDir);
-        String dirName = tmp.getName();
-        this.gitDir = new File("/tmpfs/" + dirName);
+        this.gitDir = new File(gitDir);
         this.startFromRev = startFromRev;
 
-        System.out.println("Git directory: " + this.gitDir.getAbsolutePath());
-        this.git = Git.open(this.gitDir);
-
-        Pattern revCommitMsgPattern = Pattern.compile("(SVN revision: [0-9]+)");
-        for(RevCommit commit : this.git.log().all().call()) {
-            String message = commit.getFullMessage();
-            Matcher m = revCommitMsgPattern.matcher(message);
-            if (m.find()) {
-                String revisionFragment = m.group(1);
-                String[] splits = revisionFragment.split(": ");
-                int revisionNumber = Integer.parseInt(splits[1]);
-                svnRevisionToGitHash
-                        .computeIfAbsent(revisionNumber, s -> new ArrayList<>())
-                        .add(commit.getName());
-            }
+        if (!this.gitDir.exists()) {
+            throw new RuntimeException("Directory does not exist: " + this.gitDir.getAbsolutePath());
         }
-        ps().println("Found " + svnRevisionToGitHash.size() + " revisions.");
+
+        this.git = Git.init()
+                .setDirectory(this.gitDir)
+                .call();
     }
 
     @Override
@@ -186,7 +159,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             RevCommit revCommit = git.commit()
                     .setAuthor(ident)
                     .setCommitter(ident)
-                    .setMessage("Initial commit. (SVN revision " + revision.getNumber() + ")")
+                    .setMessage("Initial commit.\nSVN revision: " + revision.getNumber())
                     .call();
             svnRevisionToGitHash
                     .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
@@ -609,6 +582,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             throw new RuntimeException(e);
         }
 
-        return new PersonIdent("Dan", "dan@example.com", parsedDate, TimeZone.getTimeZone("UTC"));
+        return new PersonIdent("Dan", "dan@langille.org", parsedDate, TimeZone.getTimeZone("UTC"));
     }
 }

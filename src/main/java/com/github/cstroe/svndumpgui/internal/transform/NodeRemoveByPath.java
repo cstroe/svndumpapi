@@ -8,11 +8,17 @@ import java.util.regex.Pattern;
 
 public class NodeRemoveByPath extends AbstractRepositoryMutator {
     private final Pattern pathPattern;
+    private final boolean invert;
 
     private boolean inRemovedNode = false;
 
     public NodeRemoveByPath(Pattern nodePathPattern) {
+        this(nodePathPattern, false);
+    }
+
+    public NodeRemoveByPath(Pattern nodePathPattern, boolean invert) {
         this.pathPattern = nodePathPattern;
+        this.invert = invert;
     }
 
     @Override
@@ -20,6 +26,10 @@ public class NodeRemoveByPath extends AbstractRepositoryMutator {
         String nodePath = node.getPath().get();
         Matcher matcher = pathPattern.matcher(nodePath);
         boolean nodeMatches = matcher.find();
+
+        if (invert) {
+            nodeMatches = !nodeMatches;
+        }
 
         if(nodeMatches) {
             inRemovedNode = true;

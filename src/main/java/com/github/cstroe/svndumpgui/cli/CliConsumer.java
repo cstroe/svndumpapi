@@ -26,7 +26,7 @@ public class CliConsumer {
         FileInputStream fis = new FileInputStream("/home/cosmin/Zoo/freshports/fp.svndump");
         AbstractRepositoryWriter gitWriter;
         try {
-            gitWriter = new GitWriterNoBranching();
+            gitWriter = new GitWriterNoBranching(null);
         } catch (GitAPIException | IOException ex) {
             ex.printStackTrace(System.err);
             return;
@@ -68,6 +68,11 @@ public class CliConsumer {
                 "scripts/tags",
                 "walkports/tags"
         ));
+
+        chain.continueTo(new NodeRemoveByPath(
+                Pattern.compile(
+                        String.format("^(%s|%s/.+)$", "api.freshports.org", "api.freshports.org"),
+                        Pattern.MULTILINE), true));
 
         try (FileOutputStream log = new FileOutputStream("/tmpfs/repo_summary.txt")) {
             RepositorySummary summary = new RepositorySummary();
