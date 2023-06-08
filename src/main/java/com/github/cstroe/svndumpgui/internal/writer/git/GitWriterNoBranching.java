@@ -39,7 +39,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     public GitWriterNoBranching() throws IOException, GitAPIException {
         File tmpDir = Files.createTempDirectory("svndumpadmin-git-").toFile();
         String dirName = tmpDir.getName();
-        this.gitDir = new File("/tmpfs/");
+        this.gitDir = new File("/tmpfs/" + dirName);
         this.startFromRev = 0;
 
         System.out.println("Git directory: " + this.gitDir.getAbsolutePath());
@@ -75,7 +75,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             }
         }
         ps().println("Found " + svnRevisionToGitHash.size() + " revisions.");
-        //throw new RuntimeException("boom");
     }
 
     @Override
@@ -132,32 +131,23 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         if (revision.getNumber() == 0) {
-            try {
-                Process touch = new ProcessBuilder()
-                        .command("touch", ".gitignore")
-                        .directory(gitDir)
-                        .start();
-                int retVal = touch.waitFor();
-                if (retVal != 0) {
-                    throw new RuntimeException("could not run: touch .gitignore, return value = " + retVal);
-                }
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            createInitialCommit(revision);
+            return;
+        }
 
-            try {
-                final PersonIdent ident = getIdent(revision);
-                gitAddAll();
-                git.commit()
-                        .setAuthor(ident)
-                        .setCommitter(ident)
-                        .setMessage("Initial commit. (SVN revision " + revision.getNumber() + ")")
-                        .call();
-            } catch (GitAPIException e) {
-                throw new RuntimeException(e);
+        if (revision.getNodes().isEmpty()) {
+            int previousRevision = revision.getNumber() - 1;
+            List<String> previousShas = svnRevisionToGitHash.get(previousRevision);
+            if (previousShas == null) {
+                throw new RuntimeException("Could not find a previous git SHA for revision " + previousShas);
             }
-
-            ps().println(String.format("[%5s] Created an initial commit.", revision.getNumber()));
+            if (previousShas.size() != 1) {
+                throw new RuntimeException("Found multiple git SHAs for previous revision " + previousShas);
+            }
+            svnRevisionToGitHash
+                    .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
+                    .add(previousShas.get(0));
+            ps().println(String.format("[%5d] Skipping empty revision.", revision.getNumber()));
             return;
         }
 
@@ -174,6 +164,38 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         List<Node> nodes = revision.getNodes();
         nodes.forEach(this::processNode);
         doCommit(revision);
+    }
+
+    private void createInitialCommit(Revision revision) {
+        try {
+            Process touch = new ProcessBuilder()
+                    .command("touch", ".gitignore")
+                    .directory(gitDir)
+                    .start();
+            int retVal = touch.waitFor();
+            if (retVal != 0) {
+                throw new RuntimeException("could not run: touch .gitignore, return value = " + retVal);
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            final PersonIdent ident = getIdent(revision);
+            gitAddAll();
+            RevCommit revCommit = git.commit()
+                    .setAuthor(ident)
+                    .setCommitter(ident)
+                    .setMessage("Initial commit. (SVN revision " + revision.getNumber() + ")")
+                    .call();
+            svnRevisionToGitHash
+                    .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
+                    .add(revCommit.getName());
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+
+        ps().println(String.format("[%5s] Created an initial commit.", revision.getNumber()));
     }
 
     private void processNode(Node node) {
@@ -317,7 +339,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             throw new RuntimeException(e);
         }
 
-
         final Revision revision = node.getRevision().get();
         final PersonIdent ident = getIdent(revision);
         try {
@@ -340,6 +361,10 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
         Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
         List<String> gitShas = svnRevisionToGitHash.get(copyFromRevision);
+        if (gitShas == null) {
+            throw new RuntimeException("Could not find a git commit for revision " + copyFromRevision);
+        }
+
         if (gitShas.size() != 1) {
             throw new RuntimeException("Not the correct number of git shas: " + gitShas.size());
         }
