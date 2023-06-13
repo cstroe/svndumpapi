@@ -13,7 +13,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.regex.Pattern;
 
 /**
@@ -23,8 +25,21 @@ public class Freshports {
     public static void main(String[] args) throws GitAPIException, IOException, ParseException {
         final String inputFile = "/home/cosmin/Zoo/freshports/fp.svndump";
 
+//         createSummary(inputFile, "/tmpfs");
 //        createApiRepo(inputFile, "/tmpfs");
         createDaemontoolsRepo(inputFile, "/tmpfs");
+    }
+
+    private static void createSummary(String inputSvnDump, String outputDir) throws IOException, ParseException {
+        File summaryFile = new File(outputDir + File.separator + "summary_original.txt");
+        if (summaryFile.exists() && !summaryFile.delete()) {
+            throw new RuntimeException("Could not delete output file: " + summaryFile.getAbsolutePath());
+        }
+
+        RepositorySummary repositorySummary = new RepositorySummary();
+        repositorySummary.writeTo(Files.newOutputStream(summaryFile.toPath()));
+        FileInputStream fis = new FileInputStream(inputSvnDump);
+        SvnDumpParser.consume(fis, repositorySummary);
     }
 
     /**
@@ -66,14 +81,17 @@ public class Freshports {
     }
 
     private static void createDaemontoolsRepo(String inputSvnDump, String outputDir) throws IOException, ParseException, GitAPIException {
+        File summaryFile = new File(outputDir + File.separator + "summary_daemontools.txt");
+        if (summaryFile.exists() && !summaryFile.delete()) {
+            throw new RuntimeException("Could not delete output file: " + summaryFile.getAbsolutePath());
+        }
+
         String outputSubDir = outputDir + File.separator + "daemontools";
         deleteDirectory(new File(outputSubDir));
 
         if (!new File(outputSubDir).mkdirs()) {
             throw new RuntimeException("Could not create directory: " + outputSubDir);
         }
-
-        AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir);
 
         RepositoryConsumer chain = new NodeRemoveByPath(
                 Pattern.compile(
@@ -84,9 +102,15 @@ public class Freshports {
                 Pattern.compile(
                         String.format("^(%s|%s/.+)$", "daemontools/tags", "daemontools/tags"),
                         Pattern.MULTILINE)));
+        chain.continueTo(new PathChange("daemontools/trunk/", ""));
         chain.continueTo(new PathChange("daemontools/", ""));
         chain.continueTo(new PathChange("daemontools", ""));
-        chain.continueTo(new RepositorySummary());
+
+        RepositorySummary repositorySummary = new RepositorySummary();
+        repositorySummary.writeTo(Files.newOutputStream(summaryFile.toPath()));
+        chain.continueTo(repositorySummary);
+
+        AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir);
         chain.continueTo(gitWriter);
 
         FileInputStream fis = new FileInputStream(inputSvnDump);

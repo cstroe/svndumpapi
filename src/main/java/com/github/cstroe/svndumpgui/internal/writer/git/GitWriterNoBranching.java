@@ -4,6 +4,7 @@ import com.github.cstroe.svndumpgui.api.ContentChunk;
 import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
+import com.github.cstroe.svndumpgui.internal.utility.Pair;
 import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
@@ -16,14 +17,19 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.lang.String.join;
 
 /**
  * A Git writer that treats all SVN paths as files.  No branches, no tags.
  */
 public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private final File gitDir;
+    private final String mainBranch;
     private final Git git;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX");
     private final int startFromRev;
@@ -34,12 +40,17 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private Map<Integer, List<String>> svnRevisionToGitHash = new HashMap<>(9182);
 
     public GitWriterNoBranching(String gitDir) throws IOException, GitAPIException {
-        this(gitDir, 0);
+        this(gitDir, "master");
     }
 
-    public GitWriterNoBranching(String gitDir, int startFromRev) throws GitAPIException, IOException {
+    public GitWriterNoBranching(String gitDir, String mainBranch) throws IOException, GitAPIException {
+        this(gitDir, mainBranch, 0);
+    }
+
+    public GitWriterNoBranching(String gitDir, String mainBranch, int startFromRev) throws GitAPIException, IOException {
         this.gitDir = new File(gitDir);
         this.startFromRev = startFromRev;
+        this.mainBranch = mainBranch;
 
         if (!this.gitDir.exists()) {
             throw new RuntimeException("Directory does not exist: " + this.gitDir.getAbsolutePath());
@@ -108,11 +119,18 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             return;
         }
 
-        if (revision.getNodes().isEmpty()) {
+        List<Node> revisionNodes = revision.getNodes().stream().filter(node -> {
+            boolean isDirCreate = node.isDir() && node.getHeaders().get(NodeHeader.COPY_FROM_REV) == null;
+            if (isDirCreate) {
+                ps().println(String.format("[%5s] Skipping empty directory node: %s", node.getRevision().get().getNumber(), node.getPath().get()));
+            }
+            return !isDirCreate;
+        }).collect(Collectors.toList());
+        if (revisionNodes.isEmpty()) {
             int previousRevision = revision.getNumber() - 1;
             List<String> previousShas = svnRevisionToGitHash.get(previousRevision);
             if (previousShas == null) {
-                throw new RuntimeException("Could not find a previous git SHA for revision " + previousShas);
+                throw new RuntimeException("Could not find a previous git SHA for revision " + previousRevision);
             }
             if (previousShas.size() != 1) {
                 throw new RuntimeException("Found multiple git SHAs for previous revision " + previousShas);
@@ -124,19 +142,57 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             return;
         }
 
-        // start a new branch
-        String gitBranchName = "rev-" + revision.getNumber();
-        try {
-            Ref gitBranchCreated = git.checkout().setName(gitBranchName).setCreateBranch(true).call();
-            this.gitBranchForSvnRevision = gitBranchCreated;
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        ps().println(String.format("[%5d] Created branch %s.", revision.getNumber(), gitBranchName));
+        Map<String, List<Pair<Node, String>>> nodesByBranch = separateNodesByBranch(revisionNodes);
+        for (Map.Entry<String, List<Pair<Node, String>>> entry : nodesByBranch.entrySet()) {
+            String parentBranch = entry.getKey();
+            try {
+                if (!parentBranch.equals(git.getRepository().getBranch())) {
+                    git.checkout().setName(parentBranch).call();
+                }
+                ps().println(String.format("[%5d] Checked out branch: %s", revision.getNumber(), parentBranch));
+            } catch (GitAPIException | IOException e) {
+                throw new RuntimeException(e);
+            }
 
-        List<Node> nodes = revision.getNodes();
-        nodes.forEach(this::processNode);
-        doCommit(revision);
+            // start a new branch
+            String workingBranch = parentBranch + "-rev-" + revision.getNumber();
+            try {
+                Ref gitBranchCreated = git.checkout().setName(workingBranch).setCreateBranch(true).call();
+                this.gitBranchForSvnRevision = gitBranchCreated;
+            } catch (GitAPIException e) {
+                throw new RuntimeException(e);
+            }
+            ps().println(String.format("[%5d] Created new branch %s.", revision.getNumber(), workingBranch));
+
+            boolean changed = false;
+            for (Pair<Node, String> nodeWithPath : entry.getValue()) {
+                boolean hasChanged = processNode(nodeWithPath.first, parentBranch, workingBranch, nodeWithPath.second);
+                changed = changed || hasChanged;
+            }
+
+            doCommit(revision, parentBranch, workingBranch, changed);
+        }
+    }
+
+    private Map<String, List<Pair<Node, String>>> separateNodesByBranch(List<Node> nodes) {
+        Map<String, List<Pair<Node, String>>> nodesByBranch = new HashMap<>();
+
+        for(Node node : nodes) {
+            String nodePath = node.getPath().get();
+            Matcher inBranchMatcher = isInBranchPattern.matcher(nodePath);
+            if (inBranchMatcher.matches()) {
+                String branchName = inBranchMatcher.group(1);
+                String branchPath = inBranchMatcher.group(2);
+                nodesByBranch.computeIfAbsent(branchName, s -> new ArrayList<>())
+                        .add(Pair.of(node, branchPath));
+            } else {
+                // main branch
+                nodesByBranch.computeIfAbsent(this.mainBranch, s -> new ArrayList<>())
+                        .add(Pair.of(node, nodePath));
+            }
+        }
+
+        return nodesByBranch;
     }
 
     private void createInitialCommit(Revision revision) {
@@ -171,48 +227,98 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         ps().println(String.format("[%5s] Created an initial commit.", revision.getNumber()));
     }
 
-    private void processNode(Node node) {
+    private static Pattern branchPattern = Pattern.compile("^branches/([a-zA-Z0-9]+)$", Pattern.MULTILINE);
+    private static Pattern isInBranchPattern = Pattern.compile("^branches/([a-zA-Z0-9]+)/(.+)$", Pattern.MULTILINE);
+
+    /**
+     * @return true if a change was committed
+     */
+    private boolean processNode(Node node, String parentBranch, String workingBranch, String path) {
         if (node.isDir() && node.getHeaders().get(NodeHeader.COPY_FROM_REV) == null) {
-            ps().println(String.format("[%5s] Skipping empty directory node: %s", node.getRevision().get().getNumber(), node.getPath().get()));
-            return;
+            throw new RuntimeException("node should have been filtered out:\n" + node);
+        } else if (node.isDir() && branchPattern.matcher(node.getPath().get()).matches()) {
+            try {
+                String currentBranch = git.getRepository().getBranch();
+                createBranch(node);
+                // checkout previous branch
+                if (!currentBranch.equals(git.getRepository().getBranch())) {
+                    git.checkout().setName(currentBranch).call();
+                }
+            } catch (GitAPIException | IOException e) {
+                throw new RuntimeException(e);
+            }
+            return false;
         } else if (node.isDir()) {
-            createDirectoryFromHistory(node);
-            return;
+            createDirectoryFromHistory(node, path);
+            return true;
         }
 
         // write the file
         Optional<String> maybeAction = node.getAction();
         if (!maybeAction.isPresent()) {
-            return;
+            return false;
         }
         switch (maybeAction.get()) {
             case "add":
-                addNewFile(node);
-                return;
+                addNewFile(node, path);
+                return true;
             case "change":
-                changeExistingFile(node);
-                return;
+                changeExistingFile(node, path);
+                return true;
             case "delete":
-                deleteNode(node);
-                return;
+                deleteNode(node, path);
+                return true;
             case "replace":
-                replaceNode(node);
-                return;
+                replaceNode(node, path);
+                return true;
             default:
                 throw new RuntimeException("Can't handle node action: " + maybeAction.get());
         }
     }
 
-    private void replaceNode(Node node) {
-        changeExistingFile(node);
+    private void createBranch(Node node) {
+        Matcher branchMatcher = branchPattern.matcher(node.getPath().get());
+        if (!branchMatcher.find()) {
+            throw new RuntimeException("createBranch called with non-branch node");
+        }
+
+        String branchName = branchMatcher.group(1);
+
+        try {
+            int revision = Integer.valueOf(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
+            List<String> shas = svnRevisionToGitHash.get(revision);
+            if (shas.size() != 1) {
+                throw new RuntimeException("Revision " + revision + " has more than one sha: " + join(", ", shas));
+            }
+
+            Ref ref = git.branchCreate()
+                    .setStartPoint(shas.get(0))
+                    .setName(branchName)
+                    .call();
+
+            ps().println(String.format("[%5s] Created branch: %s", node.getRevision().get().getNumber(), ref.getName()));
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void createDirectoryFromHistory(Node node) {
+    private void replaceNode(Node node, String nodePath) {
+        changeExistingFile(node, nodePath);
+    }
+
+    private void createDirectoryFromHistory(Node node, String nodePath) {
         String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
         String copyFromPath = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
         if (copyFromRev == null || copyFromPath == null) {
             throw new RuntimeException("A revision is missing a path");
         }
+
+        // remove branch path
+        Matcher m = isInBranchPattern.matcher(copyFromPath);
+        if (m.matches()) {
+            copyFromPath = m.group(2);
+        }
+
         Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
         List<String> gitShas = svnRevisionToGitHash.get(copyFromRevision);
         if (gitShas == null) {
@@ -250,7 +356,25 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             for (int i = 0; i < result.size(); i++) {
                 List<String> fileInfo = resultIter.next();
                 String originalFile = fileInfo.get(3);
-                String newFile = node.getPath().get() + File.separator + originalFile.substring(copyFromPath.length() + 1);
+
+                // remove branch path
+                Matcher m2 = isInBranchPattern.matcher(originalFile);
+                if (m2.matches()) {
+                    originalFile = m2.group(2);
+                }
+
+
+                String newFilePath = node.getPath().get();
+                // remove branch path
+                Matcher m3 = isInBranchPattern.matcher(newFilePath);
+                if (m3.matches()) {
+                    newFilePath = m3.group(2);
+                }
+
+
+
+                String newFile = newFilePath + File.separator + originalFile.substring(copyFromPath.length() + 1);
+
                 File parentDir = new File(gitDir.getAbsolutePath() + File.separator + newFile).getParentFile();
                 if (!parentDir.exists() && !parentDir.mkdirs()) {
                     throw new RuntimeException("could not create directory: " + parentDir.getAbsolutePath());
@@ -291,16 +415,11 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         ps().println(String.format("[%5d] Finished processing files.", node.getRevision().get().getNumber()));
     }
 
-    private void addNewFile(Node node) {
+    private void addNewFile(Node node, String nodePath) {
         if (node.getHeaders().get(NodeHeader.COPY_FROM_REV) != null) {
-            addNewFileFromHistory(node);
+            addNewFileFromHistory(node, nodePath);
             return;
         }
-        String nodePath = node.getHeaders().get(NodeHeader.PATH);
-        if (nodePath == null) {
-            throw new RuntimeException("missing path for node add");
-        }
-
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
 
         File newFile = new File(absolutePath);
@@ -326,12 +445,20 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void addNewFileFromHistory(Node node) {
+    private void addNewFileFromHistory(Node node, String nodePath) {
         String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
         String copyFromPath = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
+
         if (copyFromRev == null || copyFromPath == null) {
             throw new RuntimeException("A revision is missing a path");
         }
+
+        // remove branch path
+        Matcher m = isInBranchPattern.matcher(copyFromPath);
+        if (m.matches()) {
+            copyFromPath = m.group(2);
+        }
+
         Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
         List<String> gitShas = svnRevisionToGitHash.get(copyFromRevision);
         if (gitShas == null) {
@@ -425,11 +552,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void changeExistingFile(Node node) {
-        String nodePath = node.getHeaders().get(NodeHeader.PATH);
-        if (nodePath == null) {
-            throw new RuntimeException("missing path for node change");
-        }
+    private void changeExistingFile(Node node, String nodePath) {
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
         writeFile(absolutePath, node.getByteContent());
 
@@ -457,12 +580,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void deleteNode(Node node) {
-        String nodePath = node.getHeaders().get(NodeHeader.PATH);
-        if (nodePath == null) {
-            throw new RuntimeException("missing path for node deletion");
-        }
-
+    private void deleteNode(Node node, String nodePath) {
         try {
             Status status = git.status().call();
             if (status.getAdded().contains(nodePath)) {
@@ -532,20 +650,43 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         return directoryToBeDeleted.delete();
     }
 
-    private void doCommit(Revision revision) {
-        try {
-            git.checkout().setName("master").call();
-            ps().println(String.format("[%5d] Checked out 'master' branch.", revision.getNumber()));
+    private void doCommit(Revision revision, String parentBranch, String workingBranch, boolean changed) {
+        if (!changed) {
+            try {
+                git.checkout().setName(parentBranch).call();
+                git.branchDelete().setBranchNames(workingBranch).call();
+                ps().println(String.format("[%5d] Deleted empty branch '%s', back to '%s'.", revision.getNumber(), workingBranch, parentBranch));
 
-            final String gitBranchName = gitBranchForSvnRevision.getName();
+                int previousRevision = revision.getNumber() - 1;
+                List<String> previousShas = svnRevisionToGitHash.get(previousRevision);
+                if (previousShas == null) {
+                    throw new RuntimeException("Could not find a previous git SHA for revision " + previousRevision);
+                }
+                if (previousShas.size() != 1) {
+                    throw new RuntimeException("Found multiple git SHAs for previous revision " + previousShas);
+                }
+                svnRevisionToGitHash
+                        .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
+                        .add(previousShas.get(0));
+                ps().println(String.format("[%5d] Did not change anything in this revision.", revision.getNumber()));
+            } catch (GitAPIException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+
+        try {
+            git.checkout().setName(parentBranch).call();
+            ps().println(String.format("[%5d] Checked out '%s' branch.", revision.getNumber(), parentBranch));
+
             ps().print(String.format("[%5d] Executing a merge --squash ...", revision.getNumber()));
             ps().flush();
             Process gitMergeCommand = new ProcessBuilder(
-                    "/usr/bin/git", "merge", "--squash", "-q", gitBranchName
+                    "/usr/bin/git", "merge", "--squash", "-q", workingBranch
             ).directory(this.gitDir).start();
             int retVal = gitMergeCommand.waitFor();
             if (retVal != 0) {
-                throw new RuntimeException("could not execute: git merge --squash " + gitBranchName + ", return value: " + retVal);
+                throw new RuntimeException("could not execute: git merge --squash " + workingBranch + ", return value: " + retVal);
             }
             ps().println("done.");
 
@@ -559,7 +700,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                     .call();
             ps().println("done.");
 
-            git.branchDelete().setForce(true).setBranchNames(gitBranchName).call();
+            git.branchDelete().setForce(true).setBranchNames(workingBranch).call();
             ps().println(String.format("[%5d] Committed: %s", revision.getNumber(), revCommit.getName()));
             svnRevisionToGitHash
                     .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
