@@ -351,6 +351,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             for (int i = 0; i < result.size(); i++) {
                 ps().println(String.format("[%5d] Processing file %d of %d.", revNum, i + 1, result.size()));
                 List<String> fileInfo = resultIter.next();
+                String mode = fileInfo.get(0);
                 String blobSha = fileInfo.get(2);
                 String originalFile = fileInfo.get(3);
                 String newFile = nodePath + File.separator + originalFile.substring(sourcePath.length() + 1);
@@ -368,6 +369,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 }
 
                 String[] showCommand = {"/usr/bin/git", "show", blobSha};
+                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", showCommand)));
                 Process showProc = new ProcessBuilder(showCommand)
                         .redirectOutput(absoluteNewFile)
                         .directory(this.gitDir)
@@ -377,6 +379,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                     throw new RuntimeException("could not execute: '" + String.join(" ", showCommand) + "', return value: " + showProcRetVal);
                 }
 
+                handleMode(mode, absoluteNewFile);
                 Status st = git.status().call();
                 if (!st.isClean()) {
                     quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, newFile));
@@ -387,6 +390,21 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         ps().println(String.format("[%5d] Finished processing files.", node.getRevision().get().getNumber()));
+    }
+
+    private void handleMode(String mode, File file) {
+        switch(mode) {
+            case "100644":
+                // do nothing
+                break;
+            case "100755":
+                if (!file.setExecutable(true)) {
+                    throw new RuntimeException("could not set executable bit for: " + file.getAbsolutePath());
+                }
+                break;
+            default:
+                throw new RuntimeException("don't know how to handle mode: " + mode);
+        }
     }
 
     private void addNewFile(Node node, String nodePath) {
@@ -405,6 +423,8 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             throw new RuntimeException(e);
         }
 
+        setExecutable(node, newFile);
+
         final Revision revision = node.getRevision().get();
         final PersonIdent ident = getIdent(revision);
         try {
@@ -412,6 +432,20 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             quickCommit(ident, "add new file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void setExecutable(Node node, File file) {
+        if (node.getProperties().get("svn:executable") != null) {
+            switch(node.getProperties().get("svn:executable")) {
+                case "*":
+                    if (!file.setExecutable(true)) {
+                        throw new RuntimeException("cannot set file as executable: " + file.getAbsolutePath());
+                    };
+                    break;
+                default:
+                    throw new RuntimeException("don't know how to handle 'svn:executable' property set to '" + node.getProperties().get("svn:executable") + "'");
+            }
         }
     }
 
@@ -458,6 +492,10 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                             ).collect(Collectors.toList())
                     )
                     .collect(Collectors.toList());
+
+            if (result.size() > 1) {
+                throw new RuntimeException("found more than one file when running: " + String.join(" ", gitCommand));
+            }
 
             final Revision revision = node.getRevision().get();
             final PersonIdent ident = getIdent(revision);
@@ -519,7 +557,10 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
     private void changeExistingFile(Node node, String nodePath) {
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
-        writeFile(absolutePath, node.getByteContent());
+        File file = new File(absolutePath);
+        writeFile(file, node.getByteContent());
+
+        setExecutable(node, file);
 
         final Revision revision = node.getRevision().get();
         final PersonIdent ident = getIdent(revision);
@@ -531,9 +572,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void writeFile(String absolutePath, byte[] content) {
-        File newFile = new File(absolutePath);
-
+    private void writeFile(File newFile, byte[] content) {
         try(FileOutputStream fos = new FileOutputStream(newFile, false)){
             fos.write(content);
         } catch (IOException e) {
