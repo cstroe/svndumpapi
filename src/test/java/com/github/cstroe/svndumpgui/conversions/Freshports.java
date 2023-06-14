@@ -109,6 +109,7 @@ public class Freshports {
         RepositorySummary repositorySummary = new RepositorySummary();
         repositorySummary.writeTo(Files.newOutputStream(summaryFile.toPath()));
         chain.continueTo(repositorySummary);
+        chain.continueTo(new RepositorySummary());
 
         AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir);
         chain.continueTo(gitWriter);
