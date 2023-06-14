@@ -5,6 +5,7 @@ import com.github.cstroe.svndumpgui.api.Node;
 import com.github.cstroe.svndumpgui.api.NodeHeader;
 import com.github.cstroe.svndumpgui.api.Revision;
 import com.github.cstroe.svndumpgui.internal.utility.Pair;
+import com.github.cstroe.svndumpgui.internal.utility.Tuple2;
 import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
@@ -12,6 +13,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.javatuples.Tuple;
 
 import java.io.*;
 import java.text.ParseException;
@@ -37,7 +39,8 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private Revision currentRevision;
     private Node currentNode;
     private Ref gitBranchForSvnRevision;
-    private Map<Integer, List<String>> svnRevisionToGitHash = new HashMap<>(9182);
+    //private Map<Integer, List<String>> svnRevisionToGitHash = new HashMap<>(9182);
+    private Map<String, List<Tuple2<Integer, String>>> branchToRevisionToSha = new HashMap<>(9182);
 
     public GitWriterNoBranching(String gitDir) throws IOException, GitAPIException {
         this(gitDir, "master");
@@ -127,17 +130,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             return !isDirCreate;
         }).collect(Collectors.toList());
         if (revisionNodes.isEmpty()) {
-            int previousRevision = revision.getNumber() - 1;
-            List<String> previousShas = svnRevisionToGitHash.get(previousRevision);
-            if (previousShas == null) {
-                throw new RuntimeException("Could not find a previous git SHA for revision " + previousRevision);
-            }
-            if (previousShas.size() != 1) {
-                throw new RuntimeException("Found multiple git SHAs for previous revision " + previousShas);
-            }
-            svnRevisionToGitHash
-                    .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
-                    .add(previousShas.get(0));
             ps().println(String.format("[%5d] Skipping empty revision.", revision.getNumber()));
             return;
         }
@@ -179,17 +171,9 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
         for(Node node : nodes) {
             String nodePath = node.getPath().get();
-            Matcher inBranchMatcher = isInBranchPattern.matcher(nodePath);
-            if (inBranchMatcher.matches()) {
-                String branchName = inBranchMatcher.group(1);
-                String branchPath = inBranchMatcher.group(2);
-                nodesByBranch.computeIfAbsent(branchName, s -> new ArrayList<>())
-                        .add(Pair.of(node, branchPath));
-            } else {
-                // main branch
-                nodesByBranch.computeIfAbsent(this.mainBranch, s -> new ArrayList<>())
-                        .add(Pair.of(node, nodePath));
-            }
+            Pair<String, String> branchInfo = removeBranchPrefix(nodePath);
+            nodesByBranch.computeIfAbsent(branchInfo.first, s -> new ArrayList<>())
+                    .add(Pair.of(node, branchInfo.second));
         }
 
         return nodesByBranch;
@@ -217,9 +201,8 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                     .setCommitter(ident)
                     .setMessage("Initial commit.\nSVN revision: " + revision.getNumber())
                     .call();
-            svnRevisionToGitHash
-                    .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
-                    .add(revCommit.getName());
+            branchToRevisionToSha.computeIfAbsent(this.mainBranch, s -> new ArrayList<>())
+                            .add(Tuple2.of(revision.getNumber(), revCommit.getName()));
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         }
@@ -286,20 +269,41 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
         try {
             int revision = Integer.valueOf(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
-            List<String> shas = svnRevisionToGitHash.get(revision);
-            if (shas.size() != 1) {
-                throw new RuntimeException("Revision " + revision + " has more than one sha: " + join(", ", shas));
+            Tuple2<Integer, String> sha = findGitSha(this.mainBranch, revision);
+            if (sha == null) {
+                throw new RuntimeException("Could not find sha for revision " + revision);
             }
 
             Ref ref = git.branchCreate()
-                    .setStartPoint(shas.get(0))
+                    .setStartPoint(sha._2)
                     .setName(branchName)
                     .call();
 
-            ps().println(String.format("[%5s] Created branch: %s", node.getRevision().get().getNumber(), ref.getName()));
+            ps().println(String.format("[%5s] Created branch '%s' from %s", node.getRevision().get().getNumber(), ref.getName(), sha));
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Tuple2<Integer, String> findGitSha(String branch, int revision) {
+        List<Tuple2<Integer, String>> shas = branchToRevisionToSha.get(branch);
+        if (shas == null) {
+            throw new RuntimeException("branch does not exist: " + branch);
+        }
+
+        if (shas.size() < 1) {
+            throw new RuntimeException("could not find at least one sha for branch: " + branch);
+        }
+
+        Tuple2<Integer, String> currentSha = shas.get(0);
+        for (int i = 1; i < shas.size(); i++) {
+            Tuple2<Integer, String> nextSha = shas.get(i);
+            if (nextSha._1 > revision) {
+                break;
+            }
+            currentSha = nextSha;
+        }
+        return currentSha;
     }
 
     private void replaceNode(Node node, String nodePath) {
@@ -308,34 +312,25 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
     private void createDirectoryFromHistory(Node node, String nodePath) {
         String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
-        String copyFromPath = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
-        if (copyFromRev == null || copyFromPath == null) {
+        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
+        if (copyFromRev == null || copyFromPathRaw == null) {
             throw new RuntimeException("A revision is missing a path");
         }
 
-        // remove branch path
-        Matcher m = isInBranchPattern.matcher(copyFromPath);
-        if (m.matches()) {
-            copyFromPath = m.group(2);
-        }
+        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
+        final String sourceBranch = copyFromPath.first;
 
         Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
-        List<String> gitShas = svnRevisionToGitHash.get(copyFromRevision);
-        if (gitShas == null) {
-            throw new RuntimeException("Could not find a commit for revision: " + copyFromRevision);
-        }
-        if (gitShas.size() != 1) {
-            throw new RuntimeException("Not the correct number of git shas: " + gitShas.size());
-        }
 
-        String copyFromGitSha = gitShas.get(0);
+        Tuple2<Integer, String> copyFromGitSha = findGitSha(sourceBranch, copyFromRevision);
 
         try {
-            ps().println(String.format("[%5d] Restoring directory from: %s:%s at %s",
-                    node.getRevision().get().getNumber(), copyFromPath, copyFromRev, copyFromGitSha));
+            ps().println(String.format("[%5d] Restoring directory '%s' from: %s:%s at %s",
+                    node.getRevision().get().getNumber(), nodePath, copyFromPath, copyFromRev, copyFromGitSha));
 
-            Process gitLsTree = new ProcessBuilder(
-                    "/usr/bin/git", "ls-tree", "-r", copyFromGitSha, copyFromPath)
+            String[] gitCommand = {"/usr/bin/git", "ls-tree", "-r", copyFromGitSha._2, copyFromPath.second};
+            ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", gitCommand)));
+            Process gitLsTree = new ProcessBuilder(gitCommand)
                     .directory(this.gitDir)
                     .start();
 
@@ -350,64 +345,83 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                     )
                     .collect(Collectors.toList());
 
-            ps().println(String.format("[%5d] Processing %d files.",
+            ps().println(String.format("[%5d] Found %d files.",
                     node.getRevision().get().getNumber(), result.size()));
             Iterator<List<String>> resultIter = result.listIterator();
+
+            final Revision revision = node.getRevision().get();
+            final PersonIdent ident = getIdent(revision);
             for (int i = 0; i < result.size(); i++) {
                 List<String> fileInfo = resultIter.next();
                 String originalFile = fileInfo.get(3);
+                String newFile = nodePath + File.separator + originalFile.substring(copyFromPath.second.length() + 1);
+                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + newFile);
 
-                // remove branch path
-                Matcher m2 = isInBranchPattern.matcher(originalFile);
-                if (m2.matches()) {
-                    originalFile = m2.group(2);
+                if (!absoluteNewFile.exists()) {
+                    String[] checkoutCommand = {"/usr/bin/git", "checkout", copyFromGitSha._2, "--", originalFile};
+                    ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", checkoutCommand)));
+                    Process gitCheckout = new ProcessBuilder()
+                            .command(checkoutCommand)
+                            .directory(gitDir)
+                            .start();
+
+                    int gitCheckoutRetVal = gitCheckout.waitFor();
+                    if (gitCheckoutRetVal != 0) {
+                        throw new RuntimeException("could not execute: '" + String.join(" ", checkoutCommand) + "', return value: " + gitCheckoutRetVal);
+                    }
+
+                    Status st = git.status().call();
+                    if (!st.isClean()) {
+                        git.commit()
+                                .setAuthor(ident)
+                                .setCommitter(ident)
+                                .setMessage("restore [" + originalFile + "] into ["+ newFile +"] (SVN revision " + node.getRevision().get().getNumber() + ")")
+                                .call();
+                    }
+
+                    File parentDir = absoluteNewFile.getParentFile();
+                    if (!parentDir.exists() && !parentDir.mkdirs()) {
+                        throw new RuntimeException("could not create directory: " + parentDir.getAbsolutePath());
+                    }
+
+
+                    if (!originalFile.equals(newFile)) {
+                        String[] mvCommand = {"/usr/bin/git", "mv", originalFile, newFile};
+                        ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", mvCommand)));
+                        Process gitMvCommand = new ProcessBuilder(mvCommand)
+                                .directory(this.gitDir).start();
+                        int retVal = gitMvCommand.waitFor();
+                        if (retVal != 0) {
+                            throw new RuntimeException("could not execute: '" + String.join(" ", mvCommand) + "', return value: " + retVal);
+                        }
+
+                        git.commit()
+                                .setAuthor(ident)
+                                .setCommitter(ident)
+                                .setMessage("move [" + originalFile + "] to [" + nodePath + "] " + " (SVN revision " + revision.getNumber() + ")")
+                                .call();
+
+
+                        // restore moved file
+                        git.checkout().setStartPoint("HEAD~").addPath(originalFile).call();
+
+                        git.commit()
+                                .setAuthor(ident)
+                                .setCommitter(ident)
+                                .setMessage("restore [" + originalFile + "] (SVN revision " + revision.getNumber() + ")")
+                                .call();
+                    }
                 }
 
 
-                String newFilePath = node.getPath().get();
-                // remove branch path
-                Matcher m3 = isInBranchPattern.matcher(newFilePath);
-                if (m3.matches()) {
-                    newFilePath = m3.group(2);
-                }
-
-
-
-                String newFile = newFilePath + File.separator + originalFile.substring(copyFromPath.length() + 1);
-
-                File parentDir = new File(gitDir.getAbsolutePath() + File.separator + newFile).getParentFile();
-                if (!parentDir.exists() && !parentDir.mkdirs()) {
-                    throw new RuntimeException("could not create directory: " + parentDir.getAbsolutePath());
-                };
-                Process gitMvCommand = new ProcessBuilder(
-                        "/usr/bin/git", "mv", originalFile, newFile
-                ).directory(this.gitDir).start();
-                int retVal = gitMvCommand.waitFor();
-                if (retVal != 0) {
-                    throw new RuntimeException("could not execute: git mv " + originalFile + " " + newFile + ", return value: " + retVal);
-                }
-
-                final Revision revision = node.getRevision().get();
-                final PersonIdent ident = getIdent(revision);
-                git.commit()
-                        .setAuthor(ident)
-                        .setCommitter(ident)
-                        .setMessage("move [" + originalFile + "] to [" + newFile + "] " + " (SVN revision " + revision.getNumber() + ")")
-                        .call();
-
-                git.checkout().setStartPoint("HEAD~").addPath(originalFile).call();
-
-                git.commit()
-                        .setAuthor(ident)
-                        .setCommitter(ident)
-                        .setMessage("restore [" + originalFile + "] (SVN revision " + revision.getNumber() + ")")
-                        .call();
 
                 if (i % 50 == 0) {
                     ps().println(String.format("[%5d] Processing file %d of %d.",
                             node.getRevision().get().getNumber(), i + 1, result.size()));
                 }
             }
+            ps().println(String.format("[%5d] Processing file %d of %d.",
+                    node.getRevision().get().getNumber(), result.size(), result.size()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -447,36 +461,24 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
     private void addNewFileFromHistory(Node node, String nodePath) {
         String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
-        String copyFromPath = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
+        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
 
-        if (copyFromRev == null || copyFromPath == null) {
+        if (copyFromRev == null || copyFromPathRaw == null) {
             throw new RuntimeException("A revision is missing a path");
         }
 
-        // remove branch path
-        Matcher m = isInBranchPattern.matcher(copyFromPath);
-        if (m.matches()) {
-            copyFromPath = m.group(2);
-        }
-
+        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
         Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
-        List<String> gitShas = svnRevisionToGitHash.get(copyFromRevision);
-        if (gitShas == null) {
-            throw new RuntimeException("Could not find a git commit for revision " + copyFromRevision);
-        }
-
-        if (gitShas.size() != 1) {
-            throw new RuntimeException("Not the correct number of git shas: " + gitShas.size());
-        }
-
-        String copyFromGitSha = gitShas.get(0);
+        Tuple2<Integer, String> copyFromGitSha = findGitSha(copyFromPath.first, copyFromRevision);
 
         try {
             ps().println(String.format("[%5d] Restoring file %s@%s from %s",
                     node.getRevision().get().getNumber(), copyFromPath, copyFromRev, copyFromGitSha));
 
-            Process gitLsTree = new ProcessBuilder(
-                    "/usr/bin/git", "ls-tree", "-r", copyFromGitSha, copyFromPath)
+            String[] gitCommand = {"/usr/bin/git", "ls-tree", "-r", copyFromGitSha._2, copyFromPath.second};
+            ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", gitCommand)));
+
+            Process gitLsTree = new ProcessBuilder(gitCommand)
                     .directory(this.gitDir)
                     .start();
 
@@ -496,26 +498,28 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
             for (List<String> file : result) {
                 String originalFile = file.get(3);
-                String newFile = node.getPath().get();
+                Pair<String, String> branchPath = removeBranchPrefix(node.getPath().get());
 
-                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + newFile);
-                if (!absoluteNewFile.exists()) {
-                    Process gitCheckout = new ProcessBuilder()
-                            .command("/usr/bin/git", "checkout", copyFromGitSha, "--", copyFromPath)
-                            .directory(gitDir)
-                            .start();
+                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + branchPath.second);
+                String[] checkoutCommand = {"/usr/bin/git", "checkout", copyFromGitSha._2, "--", copyFromPath.second};
+                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", checkoutCommand)));
+                Process gitCheckout = new ProcessBuilder()
+                        .command(checkoutCommand)
+                        .directory(gitDir)
+                        .start();
 
-                    int gitCheckoutRetVal = gitCheckout.waitFor();
-                    if (gitCheckoutRetVal != 0) {
-                        throw new RuntimeException("could not execute: git checkout " + copyFromGitSha + " -- " + copyFromPath + ", return value: " + gitCheckoutRetVal);
-                    }
+                int gitCheckoutRetVal = gitCheckout.waitFor();
+                if (gitCheckoutRetVal != 0) {
+                    throw new RuntimeException("could not execute: '" + String.join(" ", checkoutCommand) + "', return value: " + gitCheckoutRetVal);
+                }
 
+                Status st = git.status().call();
+                if (!st.isClean()) {
                     git.commit()
                             .setAuthor(ident)
                             .setCommitter(ident)
                             .setMessage("restore [" + originalFile + "] (SVN revision " + revision.getNumber() + ")")
                             .call();
-
                 }
 
                 File parentDir = absoluteNewFile.getParentFile();
@@ -523,19 +527,18 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                     throw new RuntimeException("could not create directory: " + parentDir.getAbsolutePath());
                 }
 
-
-                Process gitMvCommand = new ProcessBuilder(
-                        "/usr/bin/git", "mv", originalFile, newFile
-                ).directory(this.gitDir).start();
+                String[] mvCommand = {"/usr/bin/git", "mv", "-f", originalFile, branchPath.second};
+                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", mvCommand)));
+                Process gitMvCommand = new ProcessBuilder(mvCommand).directory(this.gitDir).start();
                 int retVal = gitMvCommand.waitFor();
                 if (retVal != 0) {
-                    throw new RuntimeException("could not execute: git mv " + originalFile + " " + newFile + ", return value: " + retVal);
+                    throw new RuntimeException("could not execute: '"+ String.join(" ", mvCommand) +"', return value: " + retVal);
                 }
 
                 git.commit()
                         .setAuthor(ident)
                         .setCommitter(ident)
-                        .setMessage("move [" + originalFile + "] to [" + newFile + "] " + " (SVN revision " + revision.getNumber() + ")")
+                        .setMessage("move [" + originalFile + "] to [" + branchPath.second + "] " + " (SVN revision " + revision.getNumber() + ")")
                         .call();
 
                 git.checkout().setStartPoint("HEAD~").addPath(originalFile).call();
@@ -550,6 +553,17 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Pair<String, String> removeBranchPrefix(final String nodePath) {
+        // remove branch path
+        Matcher m = isInBranchPattern.matcher(nodePath);
+        if (m.matches()) {
+            String branch = m.group(1);
+            String path = m.group(2);
+            return Pair.of(branch, path);
+        }
+        return Pair.of(this.mainBranch, nodePath);
     }
 
     private void changeExistingFile(Node node, String nodePath) {
@@ -656,18 +670,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 git.checkout().setName(parentBranch).call();
                 git.branchDelete().setBranchNames(workingBranch).call();
                 ps().println(String.format("[%5d] Deleted empty branch '%s', back to '%s'.", revision.getNumber(), workingBranch, parentBranch));
-
-                int previousRevision = revision.getNumber() - 1;
-                List<String> previousShas = svnRevisionToGitHash.get(previousRevision);
-                if (previousShas == null) {
-                    throw new RuntimeException("Could not find a previous git SHA for revision " + previousRevision);
-                }
-                if (previousShas.size() != 1) {
-                    throw new RuntimeException("Found multiple git SHAs for previous revision " + previousShas);
-                }
-                svnRevisionToGitHash
-                        .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
-                        .add(previousShas.get(0));
                 ps().println(String.format("[%5d] Did not change anything in this revision.", revision.getNumber()));
             } catch (GitAPIException e) {
                 throw new RuntimeException(e);
@@ -679,14 +681,15 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             git.checkout().setName(parentBranch).call();
             ps().println(String.format("[%5d] Checked out '%s' branch.", revision.getNumber(), parentBranch));
 
-            ps().print(String.format("[%5d] Executing a merge --squash ...", revision.getNumber()));
+            String[] gitCommand = {"/usr/bin/git", "merge", "--squash", "-q", workingBranch};
+            ps().print(String.format("[%5d] Executing '%s' ...", revision.getNumber(), String.join(" ", gitCommand)));
             ps().flush();
-            Process gitMergeCommand = new ProcessBuilder(
-                    "/usr/bin/git", "merge", "--squash", "-q", workingBranch
-            ).directory(this.gitDir).start();
+            Process gitMergeCommand = new ProcessBuilder(gitCommand).directory(this.gitDir).start();
             int retVal = gitMergeCommand.waitFor();
             if (retVal != 0) {
-                throw new RuntimeException("could not execute: git merge --squash " + workingBranch + ", return value: " + retVal);
+                throw new RuntimeException(String.format(
+                        "could not execute: '%s', return value: %d",
+                        String.join(" ", gitCommand), retVal));
             }
             ps().println("done.");
 
@@ -702,9 +705,10 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
             git.branchDelete().setForce(true).setBranchNames(workingBranch).call();
             ps().println(String.format("[%5d] Committed: %s", revision.getNumber(), revCommit.getName()));
-            svnRevisionToGitHash
-                    .computeIfAbsent(revision.getNumber(), s -> new ArrayList<>())
-                    .add(revCommit.getName());
+
+            branchToRevisionToSha.computeIfAbsent(parentBranch, s -> new ArrayList<>())
+                    .add(Tuple2.of(revision.getNumber(), revCommit.getName()));
+
         } catch (GitAPIException | IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
