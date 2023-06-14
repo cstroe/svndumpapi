@@ -460,6 +460,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     }
 
     private void addNewFileFromHistory(Node node, String nodePath) {
+        final int revNum = node.getRevision().get().getNumber();
         String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
         String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
 
@@ -468,6 +469,9 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
+        final String sourceBranch = copyFromPath.first;
+        final String sourcePath = copyFromPath.second;
+
         Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
         Tuple2<Integer, String> copyFromGitSha = findGitSha(copyFromPath.first, copyFromRevision);
 
@@ -500,44 +504,40 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             final Revision revision = node.getRevision().get();
             final PersonIdent ident = getIdent(revision);
 
-            for (List<String> file : result) {
-                String originalFile = file.get(3);
-                Pair<String, String> branchPath = removeBranchPrefix(node.getPath().get());
+            for (List<String> fileInfo : result) {
+                String mode = fileInfo.get(0);
+                String blobSha = fileInfo.get(2);
+                String originalFile = fileInfo.get(3);
+                String newFile = nodePath;
+                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + newFile);
 
-                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + branchPath.second);
-                String[] checkoutCommand = {"/usr/bin/git", "checkout", copyFromGitSha._2, "--", copyFromPath.second};
-                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", checkoutCommand)));
-                Process gitCheckout = new ProcessBuilder()
-                        .command(checkoutCommand)
-                        .directory(gitDir)
-                        .start();
+                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, newFile));
 
-                int gitCheckoutRetVal = gitCheckout.waitFor();
-                if (gitCheckoutRetVal != 0) {
-                    throw new RuntimeException("could not execute: '" + String.join(" ", checkoutCommand) + "', return value: " + gitCheckoutRetVal);
+
+                if (!absoluteNewFile.getParentFile().exists() && !absoluteNewFile.getParentFile().mkdirs()) {
+                    throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
                 }
 
+                if (!absoluteNewFile.createNewFile()) {
+                    throw new RuntimeException("could not create file: " + absoluteNewFile.getAbsolutePath());
+                }
+
+                String[] showCommand = {"/usr/bin/git", "show", blobSha};
+                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", showCommand)));
+                Process showProc = new ProcessBuilder(showCommand)
+                        .redirectOutput(absoluteNewFile)
+                        .directory(this.gitDir)
+                        .start();
+                int showProcRetVal = showProc.waitFor();
+                if (showProcRetVal != 0) {
+                    throw new RuntimeException("could not execute: '" + String.join(" ", showCommand) + "', return value: " + showProcRetVal);
+                }
+
+                handleMode(mode, absoluteNewFile);
                 Status st = git.status().call();
                 if (!st.isClean()) {
-                    quickCommit(ident, "restore [" + originalFile + "] (SVN revision " + revision.getNumber() + ")");
+                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, newFile));
                 }
-
-                File parentDir = absoluteNewFile.getParentFile();
-                if (!parentDir.exists() && !parentDir.mkdirs()) {
-                    throw new RuntimeException("could not create directory: " + parentDir.getAbsolutePath());
-                }
-
-                String[] mvCommand = {"/usr/bin/git", "mv", "-f", originalFile, branchPath.second};
-                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", mvCommand)));
-                Process gitMvCommand = new ProcessBuilder(mvCommand).directory(this.gitDir).start();
-                int retVal = gitMvCommand.waitFor();
-                if (retVal != 0) {
-                    throw new RuntimeException("could not execute: '"+ String.join(" ", mvCommand) +"', return value: " + retVal);
-                }
-                quickCommit(ident, "move [" + originalFile + "] to [" + branchPath.second + "] " + " (SVN revision " + revision.getNumber() + ")");
-
-                git.checkout().setStartPoint("HEAD~").addPath(originalFile).call();
-                quickCommit(ident, "restore [" + originalFile + "] (SVN revision " + revision.getNumber() + ")");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -704,6 +704,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             throw new RuntimeException(e);
         }
 
-        return new PersonIdent("Dan", "dan@langille.org", parsedDate, TimeZone.getTimeZone("UTC"));
+        return new PersonIdent("Dan Langille", "dan@langille.org", parsedDate, TimeZone.getTimeZone("UTC"));
     }
 }
