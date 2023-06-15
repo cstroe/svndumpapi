@@ -139,6 +139,12 @@
             <artifactId>org.eclipse.jgit.pgm</artifactId>
             <version>6.5.0.202303070854-r</version>
         </dependency>
+        <dependency>
+            <!-- https://github.com/LeakyAbstractions/result -->
+            <groupId>com.leakyabstractions</groupId>
+            <artifactId>result</artifactId>
+            <version>0.14.1.2</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

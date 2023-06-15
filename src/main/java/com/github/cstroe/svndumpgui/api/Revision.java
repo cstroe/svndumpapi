@@ -21,4 +21,8 @@ public interface Revision {
      * @return the value of the given property
      */
     String get(String name);
+
+    default String getAuthor() {
+        return get("svn:author");
+    }
 }

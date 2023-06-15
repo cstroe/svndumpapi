@@ -25,12 +25,12 @@ public class CliConsumer {
     public static void main(final String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException {
         FileInputStream fis = new FileInputStream("/home/cosmin/Zoo/freshports/fp.svndump");
         AbstractRepositoryWriter gitWriter;
-        try {
-            gitWriter = new GitWriterNoBranching(null);
-        } catch (GitAPIException | IOException ex) {
-            ex.printStackTrace(System.err);
-            return;
-        }
+//        try {
+//            gitWriter = new GitWriterNoBranching(null);
+//        } catch (GitAPIException | IOException ex) {
+//            ex.printStackTrace(System.err);
+//            return;
+//        }
 
         // bad commits (ingress/.git, ingress/DELETEME)
         RepositoryConsumer chain = new ClearRevision(5261, 5263);
@@ -80,7 +80,7 @@ public class CliConsumer {
             chain.continueTo(summary);
             RepositorySummary summaryAgain = new RepositorySummary();
             chain.continueTo(summaryAgain);
-            chain.continueTo(gitWriter);
+//            chain.continueTo(gitWriter);
             RepositoryValidator pathCollisionValidator = new PathCollisionValidator();
             RepositoryValidator terminator = new TerminatingValidator(pathCollisionValidator);
             chain.continueTo(terminator);

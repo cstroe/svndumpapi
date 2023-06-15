@@ -8,6 +8,7 @@ import com.github.cstroe.svndumpgui.internal.transform.NodeRemoveByPath;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
+import com.github.cstroe.svndumpgui.internal.writer.git.AuthorIdentities;
 import com.github.cstroe.svndumpgui.internal.writer.git.GitWriterNoBranching;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -22,6 +23,9 @@ import java.util.regex.Pattern;
  * Contains code to convert the Freshports SVN repository to Git.
  */
 public class Freshports {
+    private static final AuthorIdentities identities = new AuthorIdentities()
+            .add("dan", "Dan Langille", "dan@langille.org");
+
     public static void main(String[] args) throws GitAPIException, IOException, ParseException {
         final String inputFile = "/home/cosmin/Zoo/freshports/fp.svndump";
 
@@ -54,7 +58,7 @@ public class Freshports {
             throw new RuntimeException("Could not create directory: " + outputSubDir);
         }
 
-        AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir);
+        AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir, identities);
 
         RepositoryConsumer chain = new NodeRemoveByPath(
                 Pattern.compile(
@@ -111,7 +115,7 @@ public class Freshports {
         chain.continueTo(repositorySummary);
         chain.continueTo(new RepositorySummary());
 
-        AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir);
+        AbstractRepositoryWriter gitWriter = new GitWriterNoBranching(outputSubDir, identities);
         chain.continueTo(gitWriter);
 
         FileInputStream fis = new FileInputStream(inputSvnDump);

@@ -13,18 +13,13 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.javatuples.Tuple;
 
 import java.io.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.lang.String.join;
 
 /**
  * A Git writer that treats all SVN paths as files.  No branches, no tags.
@@ -33,27 +28,26 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private final File gitDir;
     private final String mainBranch;
     private final Git git;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX");
     private final int startFromRev;
+    private final AuthorIdentities identities;
 
     private Revision currentRevision;
     private Node currentNode;
-    private Ref gitBranchForSvnRevision;
-    //private Map<Integer, List<String>> svnRevisionToGitHash = new HashMap<>(9182);
     private Map<String, List<Tuple2<Integer, String>>> branchToRevisionToSha = new HashMap<>(9182);
 
-    public GitWriterNoBranching(String gitDir) throws IOException, GitAPIException {
-        this(gitDir, "master");
+    public GitWriterNoBranching(String gitDir, AuthorIdentities identities) throws IOException, GitAPIException {
+        this(gitDir, "master", identities);
     }
 
-    public GitWriterNoBranching(String gitDir, String mainBranch) throws IOException, GitAPIException {
-        this(gitDir, mainBranch, 0);
+    public GitWriterNoBranching(String gitDir, String mainBranch, AuthorIdentities identities) throws IOException, GitAPIException {
+        this(gitDir, mainBranch, 0, identities);
     }
 
-    public GitWriterNoBranching(String gitDir, String mainBranch, int startFromRev) throws GitAPIException, IOException {
+    public GitWriterNoBranching(String gitDir, String mainBranch, int startFromRev, AuthorIdentities identities) throws GitAPIException, IOException {
         this.gitDir = new File(gitDir);
         this.startFromRev = startFromRev;
         this.mainBranch = mainBranch;
+        this.identities = identities;
 
         if (!this.gitDir.exists()) {
             throw new RuntimeException("Directory does not exist: " + this.gitDir.getAbsolutePath());
@@ -150,7 +144,6 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             String workingBranch = parentBranch + "-rev-" + revision.getNumber();
             try {
                 Ref gitBranchCreated = git.checkout().setName(workingBranch).setCreateBranch(true).call();
-                this.gitBranchForSvnRevision = gitBranchCreated;
             } catch (GitAPIException e) {
                 throw new RuntimeException(e);
             }
@@ -194,7 +187,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         try {
-            final PersonIdent ident = getIdent(revision);
+            final PersonIdent ident = identities.from(revision);
             gitAddAll();
             RevCommit revCommit = quickCommit(ident, "Initial commit.\nSVN revision: " + revision.getNumber());
             branchToRevisionToSha.computeIfAbsent(this.mainBranch, s -> new ArrayList<>())
@@ -347,7 +340,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             Iterator<List<String>> resultIter = result.listIterator();
 
             final Revision revision = node.getRevision().get();
-            final PersonIdent ident = getIdent(revision);
+            final PersonIdent ident = identities.from(revision);
             for (int i = 0; i < result.size(); i++) {
                 ps().println(String.format("[%5d] Processing file %d of %d.", revNum, i + 1, result.size()));
                 List<String> fileInfo = resultIter.next();
@@ -426,7 +419,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         setExecutable(node, newFile);
 
         final Revision revision = node.getRevision().get();
-        final PersonIdent ident = getIdent(revision);
+        final PersonIdent ident = identities.from(revision);
         try {
             gitAddAll();
             quickCommit(ident, "add new file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
@@ -502,7 +495,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             }
 
             final Revision revision = node.getRevision().get();
-            final PersonIdent ident = getIdent(revision);
+            final PersonIdent ident = identities.from(revision);
 
             for (List<String> fileInfo : result) {
                 String mode = fileInfo.get(0);
@@ -563,7 +556,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         setExecutable(node, file);
 
         final Revision revision = node.getRevision().get();
-        final PersonIdent ident = getIdent(revision);
+        final PersonIdent ident = identities.from(revision);
         try {
             gitAddAll();
             quickCommit(ident, "change file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
@@ -612,7 +605,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         final Revision revision = node.getRevision().get();
-        final PersonIdent ident = getIdent(revision);
+        final PersonIdent ident = identities.from(revision);
         try {
             gitAddAll();
             quickCommit(ident, "deleted [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
@@ -674,7 +667,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             }
             ps().println("done.");
 
-            PersonIdent author = getIdent(revision);
+            PersonIdent author = identities.from(revision);
             ps().print(String.format("[%5d] Committing the merge commit ... ", revision.getNumber()));
             ps().flush();
             RevCommit revCommit = quickCommit(author, getMessage(revision));
@@ -693,17 +686,5 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
     private String getMessage(Revision revision) {
         return revision.get("svn:log") + "\nSVN revision: " + revision.getNumber();
-    }
-
-    private PersonIdent getIdent(Revision revision) {
-        String date = revision.getProperties().get("svn:date");
-        Date parsedDate = null;
-        try {
-            parsedDate = dateFormat.parse(date);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-
-        return new PersonIdent("Dan Langille", "dan@langille.org", parsedDate, TimeZone.getTimeZone("UTC"));
     }
 }
