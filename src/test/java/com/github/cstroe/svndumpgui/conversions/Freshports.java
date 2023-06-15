@@ -6,6 +6,7 @@ import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
 import com.github.cstroe.svndumpgui.internal.transform.NodeRemoveByPath;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
+import com.github.cstroe.svndumpgui.internal.utility.Tuple2;
 import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
 import com.github.cstroe.svndumpgui.internal.writer.git.AuthorIdentities;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  * Contains code to convert the Freshports SVN repository to Git.
  */
 public class Freshports {
-    private static final AuthorIdentities identities = new AuthorIdentities()
+    private static final AuthorIdentities identities = new AuthorIdentities(Tuple2.of("Dan Langille", "dan@langille.org"))
             .add("dan", "Dan Langille", "dan@langille.org");
 
     public static void main(String[] args) throws GitAPIException, IOException, ParseException {
@@ -97,15 +98,8 @@ public class Freshports {
             throw new RuntimeException("Could not create directory: " + outputSubDir);
         }
 
-        RepositoryConsumer chain = new NodeRemoveByPath(
-                Pattern.compile(
-                        String.format("^(%s|%s/.+)$", "daemontools", "daemontools"),
-                        Pattern.MULTILINE), true);
-
-        chain.continueTo(new NodeRemoveByPath(
-                Pattern.compile(
-                        String.format("^(%s|%s/.+)$", "daemontools/tags", "daemontools/tags"),
-                        Pattern.MULTILINE)));
+        RepositoryConsumer chain = keepOnly("^(daemontools|daemontools/.+)$");
+        chain.continueTo(remove("^(daemontools/tags|daemontools/tags/.+)$"));
         chain.continueTo(new PathChange("daemontools/trunk/", ""));
         chain.continueTo(new PathChange("daemontools/", ""));
         chain.continueTo(new PathChange("daemontools", ""));
@@ -120,5 +114,13 @@ public class Freshports {
 
         FileInputStream fis = new FileInputStream(inputSvnDump);
         SvnDumpParser.consume(fis, chain);
+    }
+
+    private static NodeRemoveByPath keepOnly(String regex) {
+        return new NodeRemoveByPath(Pattern.compile(regex, Pattern.MULTILINE), true);
+    }
+
+    private static NodeRemoveByPath remove(String regex) {
+        return new NodeRemoveByPath(Pattern.compile(regex, Pattern.MULTILINE));
     }
 }
