@@ -211,10 +211,10 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         ps().println(String.format("[%5s] Created an initial commit.", revision.getNumber()));
     }
 
-    private static Pattern branchPattern = Pattern.compile("^branches/([^/]+)$", Pattern.MULTILINE);
-    private static Pattern isInBranchPattern = Pattern.compile("^branches/([^/]+)/(.+)$", Pattern.MULTILINE);
-    private static Pattern tagPattern = Pattern.compile("^tags/([^/]+)$", Pattern.MULTILINE);
-    private static Pattern isInTagPattern = Pattern.compile("^tags/([^/]+)/(.+)$", Pattern.MULTILINE);
+    private static final Pattern branchPattern = Pattern.compile("^branches/([^/]+)$", Pattern.MULTILINE);
+    private static final Pattern isInBranchPattern = Pattern.compile("^branches/([^/]+)/(.+)$", Pattern.MULTILINE);
+    private static final Pattern tagPattern = Pattern.compile("^tags/([^/]+)$", Pattern.MULTILINE);
+    private static final Pattern isInTagPattern = Pattern.compile("^tags/([^/]+)/(.+)$", Pattern.MULTILINE);
 
     /**
      * @return true if a change was committed
