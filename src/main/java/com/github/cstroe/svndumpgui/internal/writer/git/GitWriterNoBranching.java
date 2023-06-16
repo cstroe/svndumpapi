@@ -525,7 +525,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         final String sourceBranch = copyFromPath.first;
         final String sourcePath = copyFromPath.second;
 
-        Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
+        int copyFromRevision = Integer.parseInt(node.get(NodeHeader.COPY_FROM_REV));
         Tuple2<Integer, String> copyFromGitSha = findGitSha(copyFromPath.first, copyFromRevision);
 
         try {
@@ -561,11 +561,9 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 String mode = fileInfo.get(0);
                 String blobSha = fileInfo.get(2);
                 String originalFile = fileInfo.get(3);
-                String newFile = nodePath;
-                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + newFile);
 
-                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, newFile));
-
+                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + nodePath);
+                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, nodePath));
 
                 if (!absoluteNewFile.getParentFile().exists() && !absoluteNewFile.getParentFile().mkdirs()) {
                     throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
@@ -589,7 +587,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 handleMode(mode, absoluteNewFile);
                 Status st = git.status().call();
                 if (!st.isClean()) {
-                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, newFile));
+                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, nodePath));
                 }
             }
         } catch (Exception e) {
