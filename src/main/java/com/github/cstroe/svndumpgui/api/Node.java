@@ -70,4 +70,12 @@ public interface Node {
     default boolean isDelete() {
         return getAction().filter("delete"::equals).isPresent();
     }
+
+    default Optional<String> getCopyFromRev() {
+        return Optional.ofNullable(getHeaders().get(NodeHeader.COPY_FROM_REV));
+    }
+
+    default Optional<String> getCopyFromPath() {
+        return Optional.ofNullable(getHeaders().get(NodeHeader.COPY_FROM_PATH));
+    }
 }

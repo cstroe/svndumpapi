@@ -9,10 +9,15 @@ import com.github.cstroe.svndumpgui.internal.utility.Tuple2;
 import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidTagNameException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import java.io.*;
 import java.util.*;
@@ -129,34 +134,44 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         Map<String, List<Pair<Node, String>>> nodesByBranch = separateNodesByBranch(revisionNodes);
-        for (Map.Entry<String, List<Pair<Node, String>>> entry : nodesByBranch.entrySet()) {
-            String parentBranch = entry.getKey();
-            try {
-                if (!parentBranch.equals(git.getRepository().getBranch())) {
-                    git.checkout().setName(parentBranch).call();
-                }
-                ps().println(String.format("[%5d] Checked out branch: %s", revision.getNumber(), parentBranch));
-            } catch (GitAPIException | IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            // start a new branch
-            String workingBranch = parentBranch + "-rev-" + revision.getNumber();
-            try {
-                Ref gitBranchCreated = git.checkout().setName(workingBranch).setCreateBranch(true).call();
-            } catch (GitAPIException e) {
-                throw new RuntimeException(e);
-            }
-            ps().println(String.format("[%5d] Created new branch %s.", revision.getNumber(), workingBranch));
-
-            boolean changed = false;
-            for (Pair<Node, String> nodeWithPath : entry.getValue()) {
-                boolean hasChanged = processNode(nodeWithPath.first, parentBranch, workingBranch, nodeWithPath.second);
-                changed = changed || hasChanged;
-            }
-
-            doCommit(revision, parentBranch, workingBranch, changed);
+        if (nodesByBranch.containsKey(this.mainBranch)) {
+            processBranchNodes(revision, new AbstractMap.SimpleImmutableEntry<>(this.mainBranch, nodesByBranch.get(this.mainBranch)));
         }
+        for (Map.Entry<String, List<Pair<Node, String>>> entry : nodesByBranch.entrySet()) {
+            if (this.mainBranch.equals(entry.getKey())) {
+                continue;
+            }
+            processBranchNodes(revision, entry);
+        }
+    }
+
+    private void processBranchNodes(Revision revision, Map.Entry<String, List<Pair<Node, String>>> entry) {
+        String parentBranch = entry.getKey();
+        try {
+            if (!parentBranch.equals(git.getRepository().getBranch())) {
+                git.checkout().setName(parentBranch).call();
+            }
+            ps().println(String.format("[%5d] Checked out branch: %s", revision.getNumber(), parentBranch));
+        } catch (GitAPIException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // start a new branch
+        String workingBranch = parentBranch + "-rev-" + revision.getNumber();
+        try {
+            Ref gitBranchCreated = git.checkout().setName(workingBranch).setCreateBranch(true).call();
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+        ps().println(String.format("[%5d] Created new branch %s.", revision.getNumber(), workingBranch));
+
+        boolean changed = false;
+        for (Pair<Node, String> nodeWithPath : entry.getValue()) {
+            boolean hasChanged = processNode(nodeWithPath.first, parentBranch, workingBranch, nodeWithPath.second);
+            changed = changed || hasChanged;
+        }
+
+        doCommit(revision, parentBranch, workingBranch, changed);
     }
 
     private Map<String, List<Pair<Node, String>>> separateNodesByBranch(List<Node> nodes) {
@@ -199,28 +214,65 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         ps().println(String.format("[%5s] Created an initial commit.", revision.getNumber()));
     }
 
-    private static Pattern branchPattern = Pattern.compile("^branches/([a-zA-Z0-9]+)$", Pattern.MULTILINE);
-    private static Pattern isInBranchPattern = Pattern.compile("^branches/([a-zA-Z0-9]+)/(.+)$", Pattern.MULTILINE);
+    private static Pattern branchPattern = Pattern.compile("^branches/([^/]+)$", Pattern.MULTILINE);
+    private static Pattern isInBranchPattern = Pattern.compile("^branches/([^/]+)/(.+)$", Pattern.MULTILINE);
+    private static Pattern tagPattern = Pattern.compile("^tags/([^/]+)$", Pattern.MULTILINE);
+    private static Pattern isInTagPattern = Pattern.compile("^tags/([^/]+)/(.+)$", Pattern.MULTILINE);
 
     /**
      * @return true if a change was committed
      */
     private boolean processNode(Node node, String parentBranch, String workingBranch, String path) {
-        if (node.isDir() && node.getHeaders().get(NodeHeader.COPY_FROM_REV) == null) {
-            throw new RuntimeException("node should have been filtered out:\n" + node);
-        } else if (node.isDir() && branchPattern.matcher(node.getPath().get()).matches()) {
-            try {
-                String currentBranch = git.getRepository().getBranch();
-                createBranch(node);
-                // checkout previous branch
-                if (!currentBranch.equals(git.getRepository().getBranch())) {
-                    git.checkout().setName(currentBranch).call();
-                }
-            } catch (GitAPIException | IOException e) {
-                throw new RuntimeException(e);
+        if (node.isDir()) {
+            if (!node.getCopyFromRev().isPresent()) {
+                throw new RuntimeException("node should have been filtered out:\n" + node);
             }
-            return false;
-        } else if (node.isDir()) {
+
+            if (branchPattern.matcher(node.getPath().get()).matches()) {
+                try {
+                    String currentBranch = git.getRepository().getBranch();
+                    createBranch(node);
+                    // checkout previous branch
+                    if (!currentBranch.equals(git.getRepository().getBranch())) {
+                        git.checkout().setName(currentBranch).call();
+                    }
+                } catch (GitAPIException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return false;
+            }
+
+            Matcher tagMatcher = tagPattern.matcher(node.getPath().get());
+            if (tagMatcher.matches()) {
+                String tagName = tagMatcher.group(1);
+                String copyFromPath = node.getCopyFromPath().get();
+                if (tagPattern.matcher(copyFromPath).matches() || isInTagPattern.matcher(copyFromPath).matches()) {
+                    throw new UnsupportedOperationException("don't know how to handle tag creation from other tags");
+                }
+                Pair<String, String> branchInfo = removeBranchPrefix(copyFromPath);
+                String branchName = branchInfo.first;
+                String branchPath = branchInfo.second;
+                Integer copyFromRev = Integer.valueOf(node.getCopyFromRev().get());
+
+                String gitSha = findGitSha(branchName, copyFromRev)._2;
+
+                // git tag tagName gitSha
+                PersonIdent tagger = identities.from(node.getRevision().get());
+                try {
+                    try(RevWalk walk = new RevWalk(git.getRepository())) {
+                        ObjectId id = git.getRepository().resolve(gitSha);
+                        RevCommit commit = walk.parseCommit(id);
+                        git.tag().setName(tagName).setTagger(tagger).setObjectId(commit).call();
+                    } catch (GitAPIException e) {
+                        throw new RuntimeException(e);
+                    }
+                    ps().println(String.format("[%5d] Created tag '%s' for commit %s",
+                            node.getRevision().get().getNumber(), tagName, gitSha));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             createDirectoryFromHistory(node, path);
             return true;
         }
@@ -257,6 +309,16 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         String branchName = branchMatcher.group(1);
 
         try {
+            List<Ref> branches = git.branchList().call();
+            List<Ref> matchingBranches = branches.stream()
+                    .filter(branch -> branch.getName().equals(branchName))
+                    .collect(Collectors.toList());
+            if (matchingBranches.size() > 0) {
+                throw new RuntimeException(
+                        "Could not create branch '" + branchName + "'. Branch already exists: " +
+                                branches.stream().map(Ref::getName).collect(Collectors.joining(", ")));
+            }
+
             int revision = Integer.valueOf(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
             Tuple2<Integer, String> sha = findGitSha(this.mainBranch, revision);
             if (sha == null) {
@@ -357,7 +419,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                     throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
                 }
 
-                if (!absoluteNewFile.createNewFile()) {
+                if (!absoluteNewFile.exists() && !absoluteNewFile.createNewFile()) {
                     throw new RuntimeException("could not create file: " + absoluteNewFile.getAbsolutePath());
                 }
 
@@ -375,6 +437,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 handleMode(mode, absoluteNewFile);
                 Status st = git.status().call();
                 if (!st.isClean()) {
+                    gitAddAll();
                     quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, newFile));
                 }
             }

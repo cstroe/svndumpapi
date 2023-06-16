@@ -99,8 +99,10 @@ public class Freshports {
         }
 
         RepositoryConsumer chain = keepOnly("^(daemontools|daemontools/.+)$");
-        chain.continueTo(remove("^(daemontools/tags|daemontools/tags/.+)$"));
+        //chain.continueTo(remove("^(daemontools/tags|daemontools/tags/.+)$"));
+        //chain.continueTo(new PathChange("daemontools/tags", "daemontools/branches"));
         chain.continueTo(new PathChange("daemontools/trunk/", ""));
+        chain.continueTo(new PathChange("daemontools/trunk", ""));
         chain.continueTo(new PathChange("daemontools/", ""));
         chain.continueTo(new PathChange("daemontools", ""));
 
