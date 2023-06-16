@@ -249,7 +249,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 Pair<String, String> branchInfo = removeBranchPrefix(copyFromPath);
                 String branchName = branchInfo.first;
                 String branchPath = branchInfo.second;
-                Integer copyFromRev = Integer.valueOf(node.getCopyFromRev().get());
+                int copyFromRev = Integer.parseInt(node.getCopyFromRev().get());
 
                 String gitSha = findGitSha(branchName, copyFromRev)._2;
 
@@ -468,7 +468,9 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
 
         File newFile = new File(absolutePath);
-        newFile.getParentFile().mkdirs();
+        if (!newFile.getParentFile().exists() && !newFile.getParentFile().mkdirs()) {
+            throw new RuntimeException("Could not create directory: " + newFile.getParentFile());
+        };
 
         try(FileOutputStream fos = new FileOutputStream(newFile)){
             fos.write(node.getByteContent());
