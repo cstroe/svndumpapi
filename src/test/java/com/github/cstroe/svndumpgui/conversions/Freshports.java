@@ -4,6 +4,7 @@ package com.github.cstroe.svndumpgui.conversions;
 import com.github.cstroe.svndumpgui.api.RepositoryConsumer;
 import com.github.cstroe.svndumpgui.generated.ParseException;
 import com.github.cstroe.svndumpgui.generated.SvnDumpParser;
+import com.github.cstroe.svndumpgui.internal.transform.ClearRevision;
 import com.github.cstroe.svndumpgui.internal.transform.NodeRemoveByPath;
 import com.github.cstroe.svndumpgui.internal.transform.PathChange;
 import com.github.cstroe.svndumpgui.internal.utility.Tuple2;
@@ -105,6 +106,8 @@ public class Freshports {
         chain.continueTo(new PathChange("daemontools/trunk", ""));
         chain.continueTo(new PathChange("daemontools/", ""));
         chain.continueTo(new PathChange("daemontools", ""));
+        chain.continueTo(new PathChange("tags/fp-listen-git1.0.0", "tags/fp-listen-git-1.0.0"));
+        chain.continueTo(new ClearRevision(5570));
 
         RepositorySummary repositorySummary = new RepositorySummary();
         repositorySummary.writeTo(Files.newOutputStream(summaryFile.toPath()));
