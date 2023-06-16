@@ -187,7 +187,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private void createInitialCommit(Revision revision) {
         try {
             Process touch = new ProcessBuilder()
-                    .command("touch", ".gitignore")
+                    .command("/usr/bin/touch", ".gitignore")
                     .directory(gitDir)
                     .start();
             int retVal = touch.waitFor();
