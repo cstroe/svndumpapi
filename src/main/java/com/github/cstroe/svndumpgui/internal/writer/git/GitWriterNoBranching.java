@@ -492,14 +492,12 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
     private void setExecutable(Node node, File file) {
         if (node.getProperties().get("svn:executable") != null) {
-            switch(node.getProperties().get("svn:executable")) {
-                case "*":
-                    if (!file.setExecutable(true)) {
-                        throw new RuntimeException("cannot set file as executable: " + file.getAbsolutePath());
-                    };
-                    break;
-                default:
-                    throw new RuntimeException("don't know how to handle 'svn:executable' property set to '" + node.getProperties().get("svn:executable") + "'");
+            if (node.getProperties().get("svn:executable").equals("*")) {
+                if (!file.setExecutable(true)) {
+                    throw new RuntimeException("cannot set file as executable: " + file.getAbsolutePath());
+                }
+            } else {
+                throw new RuntimeException("don't know how to handle 'svn:executable' property set to '" + node.getProperties().get("svn:executable") + "'");
             }
         }
     }
