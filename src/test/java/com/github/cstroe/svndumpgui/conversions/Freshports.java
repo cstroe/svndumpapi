@@ -11,14 +11,20 @@ import com.github.cstroe.svndumpgui.internal.utility.Tuple2;
 import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import com.github.cstroe.svndumpgui.internal.writer.RepositorySummary;
 import com.github.cstroe.svndumpgui.internal.writer.git.AuthorIdentities;
+import com.github.cstroe.svndumpgui.internal.writer.git.GitRepo;
+import com.github.cstroe.svndumpgui.internal.writer.git.GitRepoImpl;
 import com.github.cstroe.svndumpgui.internal.writer.git.GitWriterNoBranching;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.javatuples.Triplet;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -33,7 +39,9 @@ public class Freshports {
 
 //         createSummary(inputFile, "/tmpfs");
 //        createApiRepo(inputFile, "/tmpfs");
-        createDaemontoolsRepo(inputFile, "/tmpfs");
+//        createDaemontoolsRepo(inputFile, "/tmpfs");
+        validateDaemontoolsRepo();
+
     }
 
     private static void createSummary(String inputSvnDump, String outputDir) throws IOException, ParseException {
@@ -127,5 +135,78 @@ public class Freshports {
 
     private static NodeRemoveByPath remove(String regex) {
         return new NodeRemoveByPath(Pattern.compile(regex, Pattern.MULTILINE));
+    }
+
+    private static void validateDaemontoolsRepo() throws GitAPIException {
+        String gitPath = "/tmpfs/daemontools";
+        String svnPath = "/home/cosmin/Zoo/freshports/checkouts/daemontools";
+        String tagsDir = svnPath + File.separator + "tags";
+
+        GitRepoImpl repo = new GitRepoImpl(new File(gitPath));
+        repo.open().map(e -> {throw e;});
+        List<Ref> gitTags = repo.getGit().tagList().call();
+
+        File[] svnTags = new File(tagsDir).listFiles();
+        if (svnTags == null) {
+            throw new RuntimeException("cannot list files in: " + tagsDir);
+        }
+
+        System.out.println("Found " + svnTags.length + " SVN tags.");
+
+        Triplet<Set<String>, Set<String>, Set<String>> tags = compareTags(gitTags, svnTags);
+
+        for (File tag : svnTags) {
+            // TODO: Check the file SHAs of each tag
+        }
+    }
+
+    private static Triplet<Set<String>, Set<String>, Set<String>> compareTags(
+            List<Ref> gitTags, File[] svnTags) {
+        Set<String> svnTagsSet = new HashSet<>();
+        for(File tag : svnTags) {
+            svnTagsSet.add(tag.getName());
+        }
+
+        Set<String> gitTagsSet = new HashSet<>();
+        for(Ref tag : gitTags) {
+            String name = tag.getName();
+            String prefix = "refs/tags/";
+            if (name.startsWith(prefix)) {
+                gitTagsSet.add(name.substring(prefix.length()));
+            }
+        }
+
+        Set<String> commonTags = new HashSet<>();
+
+        // tags that are in SVN only
+        Set<String> svnOnlyTags = new HashSet<>();
+        for (String tag : svnTagsSet) {
+            if (!gitTagsSet.contains(tag)) {
+                svnOnlyTags.add(tag);
+            } else {
+                commonTags.add(tag);
+            }
+        }
+        if (!svnOnlyTags.isEmpty()) {
+            System.out.println("SVN only tags:");
+            for(String tag : svnOnlyTags) {
+                System.out.println(tag);
+            }
+        }
+
+        // tags that are in SVN only
+        Set<String> gitOnlyTags = new HashSet<>();
+        for (String tag : gitTagsSet) {
+            if (!svnTagsSet.contains(tag)) {
+                gitOnlyTags.add(tag);
+            }
+        }
+        if (!gitOnlyTags.isEmpty()) {
+            System.out.println("git only tags:");
+            for(String tag : gitOnlyTags) {
+                System.out.println(tag);
+            }
+        }
+        return Triplet.with(gitOnlyTags, svnOnlyTags, commonTags);
     }
 }

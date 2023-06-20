@@ -12,4 +12,6 @@ public interface GitRepo {
      * Initialize the git repository.  This is the equivalent of `git init`.
      */
     Optional<RuntimeException> init();
+
+    Optional<RuntimeException> open();
 }

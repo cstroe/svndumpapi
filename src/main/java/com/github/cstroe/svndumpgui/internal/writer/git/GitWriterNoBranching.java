@@ -287,13 +287,28 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 changeExistingFile(node, path);
                 return true;
             case "delete":
-                deleteNode(node, path);
-                return true;
+                Matcher tagPatternMatcher = tagPattern.matcher(path);
+                if (tagPatternMatcher.matches()) {
+                    deleteTag(node, path, tagPatternMatcher.group(1));
+                    return false;
+                } else {
+                    deleteNode(node, path);
+                    return true;
+                }
             case "replace":
                 replaceNode(node, path);
                 return true;
             default:
                 throw new RuntimeException("Can't handle node action: " + maybeAction.get());
+        }
+    }
+
+    private void deleteTag(Node node, String path, String tagName) {
+        try {
+            git.tagDelete().setTags(tagName).call();
+            ps().println(String.format("[%5d] Deleted tag: %s", node.getRevision().get().getNumber(), tagName));
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -316,7 +331,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                                 branches.stream().map(Ref::getName).collect(Collectors.joining(", ")));
             }
 
-            int revision = Integer.valueOf(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
+            int revision = Integer.parseInt(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
             Tuple2<Integer, String> sha = findGitSha(this.mainBranch, revision);
             if (sha == null) {
                 throw new RuntimeException("Could not find sha for revision " + revision);

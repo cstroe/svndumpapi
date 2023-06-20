@@ -145,6 +145,12 @@
             <artifactId>result</artifactId>
             <version>0.14.1.2</version>
         </dependency>
+        <dependency>
+            <!-- https://www.baeldung.com/java-tuples -->
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

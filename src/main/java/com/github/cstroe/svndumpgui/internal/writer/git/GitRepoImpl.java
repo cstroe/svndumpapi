@@ -4,6 +4,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 public class GitRepoImpl implements GitRepo {
@@ -28,5 +29,23 @@ public class GitRepoImpl implements GitRepo {
         } catch (GitAPIException e) {
             return Optional.of(new RuntimeException(e));
         }
+    }
+
+    @Override
+    public Optional<RuntimeException> open() {
+        if (!this.gitDir.exists()) {
+            return Optional.of(new RuntimeException("Directory does not exist: " + this.gitDir.getAbsolutePath()));
+        }
+
+        try {
+            this.git = Git.open(this.gitDir);
+            return Optional.empty();
+        } catch (IOException e) {
+            return Optional.of(new RuntimeException(e));
+        }
+    }
+
+    public Git getGit() {
+        return git;
     }
 }
