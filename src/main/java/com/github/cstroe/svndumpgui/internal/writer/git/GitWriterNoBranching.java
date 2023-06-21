@@ -130,7 +130,13 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             return;
         }
 
+        // TODO: Change to using a List<Tuple2<String, List<Pair<Node, String>>>> to preserve the order of the nodes
+        //       Or use an ordered map?
         Map<String, List<Pair<Node, String>>> nodesByBranch = separateNodesByBranch(revisionNodes);
+        // process the main branch changes first
+        // TODO: Instead of changing the main branch first, we should follow the order of the nodes.
+        //       You can do some strange things in SVN if you make changes to multiple branches in the
+        //       same revision, and processing the main branch first will lead to incorrect results.
         if (nodesByBranch.containsKey(this.mainBranch)) {
             processBranchNodes(revision, new AbstractMap.SimpleImmutableEntry<>(this.mainBranch, nodesByBranch.get(this.mainBranch)));
         }
