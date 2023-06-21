@@ -268,6 +268,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                return false;
             }
 
             createDirectoryFromHistory(node, path);
@@ -280,21 +281,45 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             return false;
         }
         switch (maybeAction.get()) {
-            case "add":
-                addNewFile(node, path);
-                return true;
-            case "change":
-                changeExistingFile(node, path);
-                return true;
-            case "delete":
-                Matcher tagPatternMatcher = tagPattern.matcher(path);
+            case "add": {
+                Matcher tagPatternMatcher = isInTagPattern.matcher(path);
                 if (tagPatternMatcher.matches()) {
-                    deleteTag(node, path, tagPatternMatcher.group(1));
-                    return false;
+                    final String tagName = tagPatternMatcher.group(1);
+                    final String tagPath = tagPatternMatcher.group(2);
+                    throw new UnsupportedOperationException(String.format("can't add a file [%s] in a tag: %s", tagPath, tagName));
                 } else {
-                    deleteNode(node, path);
+                    addNewFile(node, path);
                     return true;
                 }
+            }
+            case "change": {
+                Matcher tagPatternMatcher = isInTagPattern.matcher(path);
+                if (tagPatternMatcher.matches()) {
+                    final String tagName = tagPatternMatcher.group(0);
+                    final String tagPath = tagPatternMatcher.group(1);
+                    throw new UnsupportedOperationException(String.format("can't change a file [%s] in a tag: %s", tagPath, tagName));
+                } else {
+                    changeExistingFile(node, path);
+                    return true;
+                }
+            }
+            case "delete": {
+                Matcher tagPatternMatcher = tagPattern.matcher(path);
+                if (tagPatternMatcher.matches()) {
+                    final String tagName = tagPatternMatcher.group(1);
+                    deleteTag(node, path, tagName);
+                    return false;
+                }
+                Matcher inTagPatternMatcher = isInTagPattern.matcher(path);
+                if (inTagPatternMatcher.matches()) {
+                    String tagName = inTagPatternMatcher.group(1);
+                    String tagPath = inTagPatternMatcher.group(2);
+                    throw new UnsupportedOperationException(String.format("cannot change file [%s] in tag: %s", tagPath, tagName));
+                }
+
+                deleteNode(node, path);
+                return true;
+            }
             case "replace":
                 replaceNode(node, path);
                 return true;

@@ -39,8 +39,8 @@ public class Freshports {
 
 //         createSummary(inputFile, "/tmpfs");
 //        createApiRepo(inputFile, "/tmpfs");
-//        createDaemontoolsRepo(inputFile, "/tmpfs");
-        validateDaemontoolsRepo();
+        createDaemontoolsRepo(inputFile, "/tmpfs");
+//        validateDaemontoolsRepo();
 
     }
 
@@ -155,8 +155,27 @@ public class Freshports {
 
         Triplet<Set<String>, Set<String>, Set<String>> tags = compareTags(gitTags, svnTags);
 
-        for (File tag : svnTags) {
+        for (String tagName : tags.getValue2()) {
             // TODO: Check the file SHAs of each tag
+            // ./diff_dirs.sh /tmpfs/daemontools /home/cosmin/Zoo/freshports/checkouts/daemontools/trunk
+            try {
+                repo.getGit().checkout().setName(tagName).call();
+                String svnTagPath = tagsDir + File.separator + tagName;
+
+                System.out.println("Diffing: " + gitPath + ":" + svnTagPath);
+                Process diffProc = new ProcessBuilder()
+                        .command(
+                                "/home/cosmin/Zoo/github/cstroe/svndumpapi/bin/diff_dirs.sh",
+                                gitPath,
+                                svnTagPath)
+                        .start();
+
+                if (diffProc.waitFor() != 0) {
+                    throw new RuntimeException("Found diff for tag: " + tagName);
+                }
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
