@@ -37,6 +37,21 @@ public class NodeSeparatorImplTest {
     }
 
     @Test
+    public void detectBranchCreation() {
+        NodeImpl n1 = new NodeImpl();
+        n1.getHeaders().put(NodeHeader.PATH, "some/file.txt");
+        NodeImpl n2 = new NodeImpl();
+        n2.getHeaders().put(NodeHeader.PATH, "branches/mybranch");
+
+        NodeSeparatorImpl separator = new NodeSeparatorImpl();
+        List<Triplet<ChangeType, String, String>> list = separator.separate(listOf(n1, n2));
+
+        assertEquals(2, list.size());
+        assertEquals(Triplet.with(ChangeType.MAIN, "main", "some/file.txt"), list.get(0));
+        assertEquals(Triplet.with(ChangeType.BRANCH_CREATE, "mybranch", null), list.get(1));
+    }
+
+    @Test
     public void separateMainBranchFromTag() {
         NodeImpl n1 = new NodeImpl();
         n1.getHeaders().put(NodeHeader.PATH, "some/file.txt");
@@ -49,6 +64,21 @@ public class NodeSeparatorImplTest {
         assertEquals(2, list.size());
         assertEquals(Triplet.with(ChangeType.MAIN, "main", "some/file.txt"), list.get(0));
         assertEquals(Triplet.with(ChangeType.TAG, "mytag", "some/file2.txt"), list.get(1));
+    }
+
+    @Test
+    public void detectTagCreation() {
+        NodeImpl n1 = new NodeImpl();
+        n1.getHeaders().put(NodeHeader.PATH, "some/file.txt");
+        NodeImpl n2 = new NodeImpl();
+        n2.getHeaders().put(NodeHeader.PATH, "tags/mytag");
+
+        NodeSeparatorImpl separator = new NodeSeparatorImpl();
+        List<Triplet<ChangeType, String, String>> list = separator.separate(listOf(n1, n2));
+
+        assertEquals(2, list.size());
+        assertEquals(Triplet.with(ChangeType.MAIN, "main", "some/file.txt"), list.get(0));
+        assertEquals(Triplet.with(ChangeType.TAG_CREATE, "mytag", null), list.get(1));
     }
 
     private <T> List<T> listOf(T... elems) {

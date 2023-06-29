@@ -1,7 +1,6 @@
 package com.github.cstroe.svndumpgui.internal.writer.git;
 
 import com.github.cstroe.svndumpgui.api.Node;
-import com.github.cstroe.svndumpgui.internal.utility.Tuple2;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -35,11 +34,25 @@ public class NodeSeparatorImpl implements NodeSeparator {
                 throw new RuntimeException("Node doesn't have a path: " + n);
             }
 
+            Matcher branchMatcher = branchPattern.matcher(maybePath.get());
+            if (branchMatcher.matches()) {
+                String branchName = branchMatcher.group(1);
+                list.add(Triplet.with(ChangeType.BRANCH_CREATE, branchName, null));
+                continue;
+            }
+
             Matcher inBranchMatcher = isInBranchPattern.matcher(maybePath.get());
             if (inBranchMatcher.matches()) {
                 String branchName = inBranchMatcher.group(1);
                 String branchPath = inBranchMatcher.group(2);
                 list.add(Triplet.with(ChangeType.BRANCH, branchName, branchPath));
+                continue;
+            }
+
+            Matcher tagMatcher = tagPattern.matcher(maybePath.get());
+            if (tagMatcher.matches()) {
+                String tagName = tagMatcher.group(1);
+                list.add(Triplet.with(ChangeType.TAG_CREATE, tagName, null));
                 continue;
             }
 
