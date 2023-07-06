@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.writer.git;
 
 import com.github.cstroe.svndumpgui.api.Node;
-import org.javatuples.Triplet;
+import org.javatuples.Quartet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +25,8 @@ public class NodeSeparatorImpl implements NodeSeparator {
     }
 
     @Override
-    public List<Triplet<ChangeType, String, String>> separate(List<Node> nodes) {
-        List<Triplet<ChangeType, String, String>> list = new ArrayList<>();
+    public List<Quartet<ChangeType, String, String, Node>> separate(List<Node> nodes) {
+        List<Quartet<ChangeType, String, String, Node>> list = new ArrayList<>();
 
         for (Node n : nodes) {
             Optional<String> maybePath = n.getPath();
@@ -37,7 +37,7 @@ public class NodeSeparatorImpl implements NodeSeparator {
             Matcher branchMatcher = branchPattern.matcher(maybePath.get());
             if (branchMatcher.matches()) {
                 String branchName = branchMatcher.group(1);
-                list.add(Triplet.with(ChangeType.BRANCH_CREATE, branchName, null));
+                list.add(Quartet.with(ChangeType.BRANCH_CREATE, branchName, null, n));
                 continue;
             }
 
@@ -45,14 +45,14 @@ public class NodeSeparatorImpl implements NodeSeparator {
             if (inBranchMatcher.matches()) {
                 String branchName = inBranchMatcher.group(1);
                 String branchPath = inBranchMatcher.group(2);
-                list.add(Triplet.with(ChangeType.BRANCH, branchName, branchPath));
+                list.add(Quartet.with(ChangeType.BRANCH, branchName, branchPath, n));
                 continue;
             }
 
             Matcher tagMatcher = tagPattern.matcher(maybePath.get());
             if (tagMatcher.matches()) {
                 String tagName = tagMatcher.group(1);
-                list.add(Triplet.with(ChangeType.TAG_CREATE, tagName, null));
+                list.add(Quartet.with(ChangeType.TAG_CREATE, tagName, null, n));
                 continue;
             }
 
@@ -60,11 +60,11 @@ public class NodeSeparatorImpl implements NodeSeparator {
             if (inTagMatcher.matches()) {
                 String tagName = inTagMatcher.group(1);
                 String tagPath = inTagMatcher.group(2);
-                list.add(Triplet.with(ChangeType.TAG, tagName, tagPath));
+                list.add(Quartet.with(ChangeType.TAG, tagName, tagPath, n));
                 continue;
             }
 
-            list.add(Triplet.with(ChangeType.MAIN, mainBranch, maybePath.get()));
+            list.add(Quartet.with(ChangeType.TRUNK, mainBranch, maybePath.get(), n));
         }
         return list;
     }

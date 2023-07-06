@@ -15,11 +15,12 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.javatuples.Quartet;
+import org.javatuples.Triplet;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +33,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private final Git git;
     private final int startFromRev;
     private final AuthorIdentities identities;
+    private final NodeSeparator nodeSeparator;
 
     private Revision currentRevision;
     private Node currentNode;
@@ -50,6 +52,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         this.startFromRev = startFromRev;
         this.mainBranch = mainBranch;
         this.identities = identities;
+        this.nodeSeparator = new NodeSeparatorImpl(mainBranch);
 
         if (!this.gitDir.exists()) {
             throw new RuntimeException("Directory does not exist: " + this.gitDir.getAbsolutePath());
@@ -130,65 +133,86 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             return;
         }
 
-        // TODO: Change to using a List<Tuple2<String, List<Pair<Node, String>>>> to preserve the order of the nodes
-        //       Or use an ordered map?
-        Map<String, List<Pair<Node, String>>> nodesByBranch = separateNodesByBranch(revisionNodes);
-        // process the main branch changes first
-        // TODO: Instead of changing the main branch first, we should follow the order of the nodes.
-        //       You can do some strange things in SVN if you make changes to multiple branches in the
-        //       same revision, and processing the main branch first will lead to incorrect results.
-        if (nodesByBranch.containsKey(this.mainBranch)) {
-            processBranchNodes(revision, new AbstractMap.SimpleImmutableEntry<>(this.mainBranch, nodesByBranch.get(this.mainBranch)));
-        }
-        for (Map.Entry<String, List<Pair<Node, String>>> entry : nodesByBranch.entrySet()) {
-            if (this.mainBranch.equals(entry.getKey())) {
-                continue;
-            }
-            processBranchNodes(revision, entry);
-        }
+//        List<Triplet<String, String, Node>> currentBatch = new ArrayList<>();
+//        String currentBatchBranch = null;
+//        String currentBatchTag = null;
+//        for (Quartet<ChangeType, String, String, Node> node : nodeSeparator.separate(revisionNodes)) {
+//            if (node.getValue0() == ChangeType.BRANCH_CREATE) {
+//                processBatch(revision, currentBatchBranch, currentBatchTag, currentBatch);
+//                currentBatchBranch = null;
+//                currentBatchTag = null;
+//                currentBatch.clear();
+//                throw new RuntimeException("branch creation is not implemented");
+//            } else if (node.getValue0() == ChangeType.BRANCH) {
+//                if (currentBatchBranch == null) {
+//                    // accumulate changes
+//                    currentBatchBranch = node.getValue1();
+//                    currentBatch.add(Triplet.with(node.getValue1(), node.getValue2(), node.getValue3()));
+//                    continue;
+//                } else if (!currentBatchBranch.equals(node.getValue1())) {
+//                    processBranchNodes(revision, currentBatch);
+//                    currentBatch.clear();
+//                    currentBatchBranch = node.getValue1();
+//                    currentBatch.add(Triplet.with(node.getValue1(), node.getValue2(), node.getValue3()));
+//                    continue;
+//                }
+//            } else if (node.getValue0() == ChangeType.TAG_CREATE) {
+//                if (currentBatchBranch != null) {
+//                    processBranchNodes(revision, currentBatch);
+//                    currentBatch.clear();
+//                    currentBatchBranch = null;
+//                }
+//                throw new RuntimeException("tag creation is not implemented");
+//            } else if (node.getValue0() == ChangeType.TAG) {
+//                if (currentBatchBranch != null) {
+//                    processBranchNodes(revision, currentBatch);
+//                    currentBatch.clear();
+//                    currentBatchBranch = null;
+//                }
+//            }
+//        }
     }
 
-    private void processBranchNodes(Revision revision, Map.Entry<String, List<Pair<Node, String>>> entry) {
-        String parentBranch = entry.getKey();
-        try {
-            if (!parentBranch.equals(git.getRepository().getBranch())) {
-                git.checkout().setName(parentBranch).call();
-            }
-            ps().println(String.format("[%5d] Checked out branch: %s", revision.getNumber(), parentBranch));
-        } catch (GitAPIException | IOException e) {
-            throw new RuntimeException(e);
-        }
+//    private void processBatch(Revision revision, String currentBatchBranch, String currentBatchTag, List<Triplet<String, String, Node>> currentBatch) {
+//        if (currentBatchBranch != null) {
+//            processBranchNodes(revision, currentBatch);
+//        } else if (currentBatchTag != null) {
+//            processTagNodes(revision, currentBatch);
+//        }
+//    }
 
-        // start a new branch
-        String workingBranch = parentBranch + "-rev-" + revision.getNumber();
-        try {
-            Ref gitBranchCreated = git.checkout().setName(workingBranch).setCreateBranch(true).call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        ps().println(String.format("[%5d] Created new branch %s.", revision.getNumber(), workingBranch));
-
-        boolean changed = false;
-        for (Pair<Node, String> nodeWithPath : entry.getValue()) {
-            boolean hasChanged = processNode(nodeWithPath.first, parentBranch, workingBranch, nodeWithPath.second);
-            changed = changed || hasChanged;
-        }
-
-        doCommit(revision, parentBranch, workingBranch, changed);
+    private void processTagNodes(Revision revision, List<Triplet<String, String, Node>> currentBatch) {
+        throw new RuntimeException("processing tag nodes is not implemented");
     }
 
-    private Map<String, List<Pair<Node, String>>> separateNodesByBranch(List<Node> nodes) {
-        Map<String, List<Pair<Node, String>>> nodesByBranch = new HashMap<>();
-
-        for(Node node : nodes) {
-            String nodePath = node.getPath().get();
-            Pair<String, String> branchInfo = removeBranchPrefix(nodePath);
-            nodesByBranch.computeIfAbsent(branchInfo.first, s -> new ArrayList<>())
-                    .add(Pair.of(node, branchInfo.second));
-        }
-
-        return nodesByBranch;
-    }
+//    private void processBranchNodes(Revision revision, List<Triplet<String, String, Node>> nodes) {
+//        String parentBranch = entry.getValue0();
+//        try {
+//            if (!parentBranch.equals(git.getRepository().getBranch())) {
+//                git.checkout().setName(parentBranch).call();
+//            }
+//            ps().println(String.format("[%5d] Checked out branch: %s", revision.getNumber(), parentBranch));
+//        } catch (GitAPIException | IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        // start a new branch
+//        String workingBranch = parentBranch + "-rev-" + revision.getNumber();
+//        try {
+//            Ref gitBranchCreated = git.checkout().setName(workingBranch).setCreateBranch(true).call();
+//        } catch (GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//        ps().println(String.format("[%5d] Created new branch %s.", revision.getNumber(), workingBranch));
+//
+//        boolean changed = false;
+//        for (Pair<Node, String> nodeWithPath : entry.getValue()) {
+//            boolean hasChanged = processNode(nodeWithPath.first, parentBranch, workingBranch, nodeWithPath.second);
+//            changed = changed || hasChanged;
+//        }
+//
+//        doCommit(revision, parentBranch, workingBranch, changed);
+//    }
 
     private void createInitialCommit(Revision revision) {
         try {
@@ -217,122 +241,117 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         ps().println(String.format("[%5s] Created an initial commit.", revision.getNumber()));
     }
 
-    private static final Pattern branchPattern = Pattern.compile("^branches/([^/]+)$", Pattern.MULTILINE);
-    private static final Pattern isInBranchPattern = Pattern.compile("^branches/([^/]+)/(.+)$", Pattern.MULTILINE);
-    private static final Pattern tagPattern = Pattern.compile("^tags/([^/]+)$", Pattern.MULTILINE);
-    private static final Pattern isInTagPattern = Pattern.compile("^tags/([^/]+)/(.+)$", Pattern.MULTILINE);
-
     /**
      * @return true if a change was committed
      */
-    private boolean processNode(Node node, String parentBranch, String workingBranch, String path) {
-        if (node.isDir()) {
-            if (!node.getCopyFromRev().isPresent()) {
-                throw new RuntimeException("node should have been filtered out:\n" + node);
-            }
-
-            if (branchPattern.matcher(node.getPath().get()).matches()) {
-                try {
-                    String currentBranch = git.getRepository().getBranch();
-                    createBranch(node);
-                    // checkout previous branch
-                    if (!currentBranch.equals(git.getRepository().getBranch())) {
-                        git.checkout().setName(currentBranch).call();
-                    }
-                } catch (GitAPIException | IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return false;
-            }
-
-            Matcher tagMatcher = tagPattern.matcher(node.getPath().get());
-            if (tagMatcher.matches()) {
-                String tagName = tagMatcher.group(1);
-                String copyFromPath = node.getCopyFromPath().get();
-                if (tagPattern.matcher(copyFromPath).matches() || isInTagPattern.matcher(copyFromPath).matches()) {
-                    throw new UnsupportedOperationException("don't know how to handle tag creation from other tags");
-                }
-                Pair<String, String> branchInfo = removeBranchPrefix(copyFromPath);
-                String branchName = branchInfo.first;
-                String branchPath = branchInfo.second;
-                int copyFromRev = Integer.parseInt(node.getCopyFromRev().get());
-
-                String gitSha = findGitSha(branchName, copyFromRev)._2;
-
-                // git tag tagName gitSha
-                PersonIdent tagger = identities.from(node.getRevision().get());
-                try {
-                    try(RevWalk walk = new RevWalk(git.getRepository())) {
-                        ObjectId id = git.getRepository().resolve(gitSha);
-                        RevCommit commit = walk.parseCommit(id);
-                        git.tag().setName(tagName).setTagger(tagger).setObjectId(commit).call();
-                    } catch (GitAPIException e) {
-                        throw new RuntimeException(e);
-                    }
-                    ps().println(String.format("[%5d] Created tag '%s' for commit %s",
-                            node.getRevision().get().getNumber(), tagName, gitSha));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return false;
-            }
-
-            createDirectoryFromHistory(node, path);
-            return true;
-        }
-
-        // write the file
-        Optional<String> maybeAction = node.getAction();
-        if (!maybeAction.isPresent()) {
-            return false;
-        }
-        switch (maybeAction.get()) {
-            case "add": {
-                Matcher tagPatternMatcher = isInTagPattern.matcher(path);
-                if (tagPatternMatcher.matches()) {
-                    final String tagName = tagPatternMatcher.group(1);
-                    final String tagPath = tagPatternMatcher.group(2);
-                    throw new UnsupportedOperationException(String.format("can't add a file [%s] in a tag: %s", tagPath, tagName));
-                } else {
-                    addNewFile(node, path);
-                    return true;
-                }
-            }
-            case "change": {
-                Matcher tagPatternMatcher = isInTagPattern.matcher(path);
-                if (tagPatternMatcher.matches()) {
-                    final String tagName = tagPatternMatcher.group(0);
-                    final String tagPath = tagPatternMatcher.group(1);
-                    throw new UnsupportedOperationException(String.format("can't change a file [%s] in a tag: %s", tagPath, tagName));
-                } else {
-                    changeExistingFile(node, path);
-                    return true;
-                }
-            }
-            case "delete": {
-                Matcher tagPatternMatcher = tagPattern.matcher(path);
-                if (tagPatternMatcher.matches()) {
-                    final String tagName = tagPatternMatcher.group(1);
-                    deleteTag(node, path, tagName);
-                    return false;
-                }
-                Matcher inTagPatternMatcher = isInTagPattern.matcher(path);
-                if (inTagPatternMatcher.matches()) {
-                    String tagName = inTagPatternMatcher.group(1);
-                    String tagPath = inTagPatternMatcher.group(2);
-                    throw new UnsupportedOperationException(String.format("cannot change file [%s] in tag: %s", tagPath, tagName));
-                }
-
-                deleteNode(node, path);
-                return true;
-            }
-            case "replace":
-                replaceNode(node, path);
-                return true;
-            default:
-                throw new RuntimeException("Can't handle node action: " + maybeAction.get());
-        }
-    }
+//    private boolean processNode(Node node, String parentBranch, String workingBranch, String path) {
+//        if (node.isDir()) {
+//            if (!node.getCopyFromRev().isPresent()) {
+//                throw new RuntimeException("node should have been filtered out:\n" + node);
+//            }
+//
+//            if (branchPattern.matcher(node.getPath().get()).matches()) {
+//                try {
+//                    String currentBranch = git.getRepository().getBranch();
+//                    createBranch(node);
+//                    // checkout previous branch
+//                    if (!currentBranch.equals(git.getRepository().getBranch())) {
+//                        git.checkout().setName(currentBranch).call();
+//                    }
+//                } catch (GitAPIException | IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                return false;
+//            }
+//
+//            Matcher tagMatcher = tagPattern.matcher(node.getPath().get());
+//            if (tagMatcher.matches()) {
+//                String tagName = tagMatcher.group(1);
+//                String copyFromPath = node.getCopyFromPath().get();
+//                if (tagPattern.matcher(copyFromPath).matches() || isInTagPattern.matcher(copyFromPath).matches()) {
+//                    throw new UnsupportedOperationException("don't know how to handle tag creation from other tags");
+//                }
+//                Pair<String, String> branchInfo = removeBranchPrefix(copyFromPath);
+//                String branchName = branchInfo.first;
+//                String branchPath = branchInfo.second;
+//                int copyFromRev = Integer.parseInt(node.getCopyFromRev().get());
+//
+//                String gitSha = findGitSha(branchName, copyFromRev)._2;
+//
+//                // git tag tagName gitSha
+//                PersonIdent tagger = identities.from(node.getRevision().get());
+//                try {
+//                    try(RevWalk walk = new RevWalk(git.getRepository())) {
+//                        ObjectId id = git.getRepository().resolve(gitSha);
+//                        RevCommit commit = walk.parseCommit(id);
+//                        git.tag().setName(tagName).setTagger(tagger).setObjectId(commit).call();
+//                    } catch (GitAPIException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    ps().println(String.format("[%5d] Created tag '%s' for commit %s",
+//                            node.getRevision().get().getNumber(), tagName, gitSha));
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                return false;
+//            }
+//
+//            createDirectoryFromHistory(node, path);
+//            return true;
+//        }
+//
+//        // write the file
+//        Optional<String> maybeAction = node.getAction();
+//        if (!maybeAction.isPresent()) {
+//            return false;
+//        }
+//        switch (maybeAction.get()) {
+//            case "add": {
+//                Matcher tagPatternMatcher = isInTagPattern.matcher(path);
+//                if (tagPatternMatcher.matches()) {
+//                    final String tagName = tagPatternMatcher.group(1);
+//                    final String tagPath = tagPatternMatcher.group(2);
+//                    throw new UnsupportedOperationException(String.format("can't add a file [%s] in a tag: %s", tagPath, tagName));
+//                } else {
+//                    addNewFile(node, path);
+//                    return true;
+//                }
+//            }
+//            case "change": {
+//                Matcher tagPatternMatcher = isInTagPattern.matcher(path);
+//                if (tagPatternMatcher.matches()) {
+//                    final String tagName = tagPatternMatcher.group(0);
+//                    final String tagPath = tagPatternMatcher.group(1);
+//                    throw new UnsupportedOperationException(String.format("can't change a file [%s] in a tag: %s", tagPath, tagName));
+//                } else {
+//                    changeExistingFile(node, path);
+//                    return true;
+//                }
+//            }
+//            case "delete": {
+//                Matcher tagPatternMatcher = tagPattern.matcher(path);
+//                if (tagPatternMatcher.matches()) {
+//                    final String tagName = tagPatternMatcher.group(1);
+//                    deleteTag(node, path, tagName);
+//                    return false;
+//                }
+//                Matcher inTagPatternMatcher = isInTagPattern.matcher(path);
+//                if (inTagPatternMatcher.matches()) {
+//                    String tagName = inTagPatternMatcher.group(1);
+//                    String tagPath = inTagPatternMatcher.group(2);
+//                    throw new UnsupportedOperationException(String.format("cannot change file [%s] in tag: %s", tagPath, tagName));
+//                }
+//
+//                deleteNode(node, path);
+//                return true;
+//            }
+//            case "replace":
+//                replaceNode(node, path);
+//                return true;
+//            default:
+//                throw new RuntimeException("Can't handle node action: " + maybeAction.get());
+//        }
+//    }
 
     private void deleteTag(Node node, String path, String tagName) {
         try {
@@ -343,41 +362,41 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void createBranch(Node node) {
-        Matcher branchMatcher = branchPattern.matcher(node.getPath().get());
-        if (!branchMatcher.find()) {
-            throw new RuntimeException("createBranch called with non-branch node");
-        }
-
-        String branchName = branchMatcher.group(1);
-
-        try {
-            List<Ref> branches = git.branchList().call();
-            List<Ref> matchingBranches = branches.stream()
-                    .filter(branch -> branch.getName().equals(branchName))
-                    .collect(Collectors.toList());
-            if (matchingBranches.size() > 0) {
-                throw new RuntimeException(
-                        "Could not create branch '" + branchName + "'. Branch already exists: " +
-                                branches.stream().map(Ref::getName).collect(Collectors.joining(", ")));
-            }
-
-            int revision = Integer.parseInt(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
-            Tuple2<Integer, String> sha = findGitSha(this.mainBranch, revision);
-            if (sha == null) {
-                throw new RuntimeException("Could not find sha for revision " + revision);
-            }
-
-            Ref ref = git.branchCreate()
-                    .setStartPoint(sha._2)
-                    .setName(branchName)
-                    .call();
-
-            ps().println(String.format("[%5s] Created branch '%s' from %s", node.getRevision().get().getNumber(), ref.getName(), sha));
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private void createBranch(Node node) {
+//        Matcher branchMatcher = branchPattern.matcher(node.getPath().get());
+//        if (!branchMatcher.find()) {
+//            throw new RuntimeException("createBranch called with non-branch node");
+//        }
+//
+//        String branchName = branchMatcher.group(1);
+//
+//        try {
+//            List<Ref> branches = git.branchList().call();
+//            List<Ref> matchingBranches = branches.stream()
+//                    .filter(branch -> branch.getName().equals(branchName))
+//                    .collect(Collectors.toList());
+//            if (matchingBranches.size() > 0) {
+//                throw new RuntimeException(
+//                        "Could not create branch '" + branchName + "'. Branch already exists: " +
+//                                branches.stream().map(Ref::getName).collect(Collectors.joining(", ")));
+//            }
+//
+//            int revision = Integer.parseInt(node.getHeaders().get(NodeHeader.COPY_FROM_REV));
+//            Tuple2<Integer, String> sha = findGitSha(this.mainBranch, revision);
+//            if (sha == null) {
+//                throw new RuntimeException("Could not find sha for revision " + revision);
+//            }
+//
+//            Ref ref = git.branchCreate()
+//                    .setStartPoint(sha._2)
+//                    .setName(branchName)
+//                    .call();
+//
+//            ps().println(String.format("[%5s] Created branch '%s' from %s", node.getRevision().get().getNumber(), ref.getName(), sha));
+//        } catch (GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private Tuple2<Integer, String> findGitSha(String branch, int revision) {
         List<Tuple2<Integer, String>> shas = branchToRevisionToSha.get(branch);
@@ -404,92 +423,92 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         changeExistingFile(node, nodePath);
     }
 
-    private void createDirectoryFromHistory(Node node, String nodePath) {
-        final int revNum = node.getRevision().get().getNumber();
-        String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
-        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
-        if (copyFromRev == null || copyFromPathRaw == null) {
-            throw new RuntimeException("A revision is missing a path");
-        }
-
-        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
-        final String sourceBranch = copyFromPath.first;
-        final String sourcePath = copyFromPath.second;
-
-        Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
-
-        Tuple2<Integer, String> copyFromGitSha = findGitSha(sourceBranch, copyFromRevision);
-
-        try {
-            ps().println(String.format("[%5d] Restoring directory '%s' from: %s:%s at %s",
-                    revNum, nodePath, copyFromPath, copyFromRev, copyFromGitSha));
-
-            String[] gitCommand = {"/usr/bin/git", "ls-tree", "-r", copyFromGitSha._2, sourcePath};
-            ps().println(String.format("[%5d] Executing '%s'", revNum, String.join(" ", gitCommand)));
-            Process gitLsTree = new ProcessBuilder(gitCommand)
-                    .directory(this.gitDir)
-                    .start();
-
-            List<List<String>> result = new BufferedReader(new InputStreamReader(gitLsTree.getInputStream()))
-                    .lines()
-                    .map(l -> l.split("\t"))
-                    .map(l ->
-                            Stream.concat(
-                                    Arrays.stream(l[0].split(" ")),
-                                    Arrays.stream(new String[] { l[1] })
-                            ).collect(Collectors.toList())
-                    )
-                    .collect(Collectors.toList());
-
-            ps().println(String.format("[%5d] Found %d files.", revNum, result.size()));
-            Iterator<List<String>> resultIter = result.listIterator();
-
-            final Revision revision = node.getRevision().get();
-            final PersonIdent ident = identities.from(revision);
-            for (int i = 0; i < result.size(); i++) {
-                ps().println(String.format("[%5d] Processing file %d of %d.", revNum, i + 1, result.size()));
-                List<String> fileInfo = resultIter.next();
-                String mode = fileInfo.get(0);
-                String blobSha = fileInfo.get(2);
-                String originalFile = fileInfo.get(3);
-                String newFile = nodePath + File.separator + originalFile.substring(sourcePath.length() + 1);
-                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + newFile);
-
-                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, newFile));
-
-
-                if (!absoluteNewFile.getParentFile().exists() && !absoluteNewFile.getParentFile().mkdirs()) {
-                    throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
-                }
-
-                if (!absoluteNewFile.exists() && !absoluteNewFile.createNewFile()) {
-                    throw new RuntimeException("could not create file: " + absoluteNewFile.getAbsolutePath());
-                }
-
-                String[] showCommand = {"/usr/bin/git", "show", blobSha};
-                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", showCommand)));
-                Process showProc = new ProcessBuilder(showCommand)
-                        .redirectOutput(absoluteNewFile)
-                        .directory(this.gitDir)
-                        .start();
-                int showProcRetVal = showProc.waitFor();
-                if (showProcRetVal != 0) {
-                    throw new RuntimeException("could not execute: '" + String.join(" ", showCommand) + "', return value: " + showProcRetVal);
-                }
-
-                handleMode(mode, absoluteNewFile);
-                Status st = git.status().call();
-                if (!st.isClean()) {
-                    gitAddAll();
-                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, newFile));
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        ps().println(String.format("[%5d] Finished processing files.", node.getRevision().get().getNumber()));
-    }
+//    private void createDirectoryFromHistory(Node node, String nodePath) {
+//        final int revNum = node.getRevision().get().getNumber();
+//        String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
+//        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
+//        if (copyFromRev == null || copyFromPathRaw == null) {
+//            throw new RuntimeException("A revision is missing a path");
+//        }
+//
+//        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
+//        final String sourceBranch = copyFromPath.first;
+//        final String sourcePath = copyFromPath.second;
+//
+//        Integer copyFromRevision = Integer.valueOf(node.get(NodeHeader.COPY_FROM_REV));
+//
+//        Tuple2<Integer, String> copyFromGitSha = findGitSha(sourceBranch, copyFromRevision);
+//
+//        try {
+//            ps().println(String.format("[%5d] Restoring directory '%s' from: %s:%s at %s",
+//                    revNum, nodePath, copyFromPath, copyFromRev, copyFromGitSha));
+//
+//            String[] gitCommand = {"/usr/bin/git", "ls-tree", "-r", copyFromGitSha._2, sourcePath};
+//            ps().println(String.format("[%5d] Executing '%s'", revNum, String.join(" ", gitCommand)));
+//            Process gitLsTree = new ProcessBuilder(gitCommand)
+//                    .directory(this.gitDir)
+//                    .start();
+//
+//            List<List<String>> result = new BufferedReader(new InputStreamReader(gitLsTree.getInputStream()))
+//                    .lines()
+//                    .map(l -> l.split("\t"))
+//                    .map(l ->
+//                            Stream.concat(
+//                                    Arrays.stream(l[0].split(" ")),
+//                                    Arrays.stream(new String[] { l[1] })
+//                            ).collect(Collectors.toList())
+//                    )
+//                    .collect(Collectors.toList());
+//
+//            ps().println(String.format("[%5d] Found %d files.", revNum, result.size()));
+//            Iterator<List<String>> resultIter = result.listIterator();
+//
+//            final Revision revision = node.getRevision().get();
+//            final PersonIdent ident = identities.from(revision);
+//            for (int i = 0; i < result.size(); i++) {
+//                ps().println(String.format("[%5d] Processing file %d of %d.", revNum, i + 1, result.size()));
+//                List<String> fileInfo = resultIter.next();
+//                String mode = fileInfo.get(0);
+//                String blobSha = fileInfo.get(2);
+//                String originalFile = fileInfo.get(3);
+//                String newFile = nodePath + File.separator + originalFile.substring(sourcePath.length() + 1);
+//                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + newFile);
+//
+//                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, newFile));
+//
+//
+//                if (!absoluteNewFile.getParentFile().exists() && !absoluteNewFile.getParentFile().mkdirs()) {
+//                    throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
+//                }
+//
+//                if (!absoluteNewFile.exists() && !absoluteNewFile.createNewFile()) {
+//                    throw new RuntimeException("could not create file: " + absoluteNewFile.getAbsolutePath());
+//                }
+//
+//                String[] showCommand = {"/usr/bin/git", "show", blobSha};
+//                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", showCommand)));
+//                Process showProc = new ProcessBuilder(showCommand)
+//                        .redirectOutput(absoluteNewFile)
+//                        .directory(this.gitDir)
+//                        .start();
+//                int showProcRetVal = showProc.waitFor();
+//                if (showProcRetVal != 0) {
+//                    throw new RuntimeException("could not execute: '" + String.join(" ", showCommand) + "', return value: " + showProcRetVal);
+//                }
+//
+//                handleMode(mode, absoluteNewFile);
+//                Status st = git.status().call();
+//                if (!st.isClean()) {
+//                    gitAddAll();
+//                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, newFile));
+//                }
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        ps().println(String.format("[%5d] Finished processing files.", node.getRevision().get().getNumber()));
+//    }
 
     private void handleMode(String mode, File file) {
         switch(mode) {
@@ -506,35 +525,35 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void addNewFile(Node node, String nodePath) {
-        if (node.getHeaders().get(NodeHeader.COPY_FROM_REV) != null) {
-            addNewFileFromHistory(node, nodePath);
-            return;
-        }
-        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
-
-        File newFile = new File(absolutePath);
-        if (!newFile.getParentFile().exists() && !newFile.getParentFile().mkdirs()) {
-            throw new RuntimeException("Could not create directory: " + newFile.getParentFile());
-        };
-
-        try(FileOutputStream fos = new FileOutputStream(newFile)){
-            fos.write(node.getByteContent());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        setExecutable(node, newFile);
-
-        final Revision revision = node.getRevision().get();
-        final PersonIdent ident = identities.from(revision);
-        try {
-            gitAddAll();
-            quickCommit(ident, "add new file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private void addNewFile(Node node, String nodePath) {
+//        if (node.getHeaders().get(NodeHeader.COPY_FROM_REV) != null) {
+//            addNewFileFromHistory(node, nodePath);
+//            return;
+//        }
+//        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
+//
+//        File newFile = new File(absolutePath);
+//        if (!newFile.getParentFile().exists() && !newFile.getParentFile().mkdirs()) {
+//            throw new RuntimeException("Could not create directory: " + newFile.getParentFile());
+//        };
+//
+//        try(FileOutputStream fos = new FileOutputStream(newFile)){
+//            fos.write(node.getByteContent());
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        setExecutable(node, newFile);
+//
+//        final Revision revision = node.getRevision().get();
+//        final PersonIdent ident = identities.from(revision);
+//        try {
+//            gitAddAll();
+//            quickCommit(ident, "add new file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
+//        } catch (GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void setExecutable(Node node, File file) {
         if (node.getProperties().get("svn:executable") != null) {
@@ -558,99 +577,88 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         return commit;
     }
 
-    private void addNewFileFromHistory(Node node, String nodePath) {
-        final int revNum = node.getRevision().get().getNumber();
-        String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
-        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
-
-        if (copyFromRev == null || copyFromPathRaw == null) {
-            throw new RuntimeException("A revision is missing a path");
-        }
-
-        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
-        final String sourceBranch = copyFromPath.first;
-        final String sourcePath = copyFromPath.second;
-
-        int copyFromRevision = Integer.parseInt(node.get(NodeHeader.COPY_FROM_REV));
-        Tuple2<Integer, String> copyFromGitSha = findGitSha(copyFromPath.first, copyFromRevision);
-
-        try {
-            ps().println(String.format("[%5d] Restoring file %s@%s from %s",
-                    node.getRevision().get().getNumber(), copyFromPath, copyFromRev, copyFromGitSha));
-
-            String[] gitCommand = {"/usr/bin/git", "ls-tree", "-r", copyFromGitSha._2, copyFromPath.second};
-            ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", gitCommand)));
-
-            Process gitLsTree = new ProcessBuilder(gitCommand)
-                    .directory(this.gitDir)
-                    .start();
-
-            List<List<String>> result = new BufferedReader(new InputStreamReader(gitLsTree.getInputStream()))
-                    .lines()
-                    .map(l -> l.split("\t"))
-                    .map(l ->
-                            Stream.concat(
-                                    Arrays.stream(l[0].split(" ")),
-                                    Arrays.stream(new String[] { l[1] })
-                            ).collect(Collectors.toList())
-                    )
-                    .collect(Collectors.toList());
-
-            if (result.size() > 1) {
-                throw new RuntimeException("found more than one file when running: " + String.join(" ", gitCommand));
-            }
-
-            final Revision revision = node.getRevision().get();
-            final PersonIdent ident = identities.from(revision);
-
-            for (List<String> fileInfo : result) {
-                String mode = fileInfo.get(0);
-                String blobSha = fileInfo.get(2);
-                String originalFile = fileInfo.get(3);
-
-                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + nodePath);
-                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, nodePath));
-
-                if (!absoluteNewFile.getParentFile().exists() && !absoluteNewFile.getParentFile().mkdirs()) {
-                    throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
-                }
-
-                if (!absoluteNewFile.createNewFile()) {
-                    throw new RuntimeException("could not create file: " + absoluteNewFile.getAbsolutePath());
-                }
-
-                String[] showCommand = {"/usr/bin/git", "show", blobSha};
-                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", showCommand)));
-                Process showProc = new ProcessBuilder(showCommand)
-                        .redirectOutput(absoluteNewFile)
-                        .directory(this.gitDir)
-                        .start();
-                int showProcRetVal = showProc.waitFor();
-                if (showProcRetVal != 0) {
-                    throw new RuntimeException("could not execute: '" + String.join(" ", showCommand) + "', return value: " + showProcRetVal);
-                }
-
-                handleMode(mode, absoluteNewFile);
-                Status st = git.status().call();
-                if (!st.isClean()) {
-                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, nodePath));
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Pair<String, String> removeBranchPrefix(final String nodePath) {
-        // remove branch path
-        Matcher m = isInBranchPattern.matcher(nodePath);
-        if (m.matches()) {
-            String branch = m.group(1);
-            String path = m.group(2);
-            return Pair.of(branch, path);
-        }
-        return Pair.of(this.mainBranch, nodePath);
-    }
+//    private void addNewFileFromHistory(Node node, String nodePath) {
+//        final int revNum = node.getRevision().get().getNumber();
+//        String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
+//        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
+//
+//        if (copyFromRev == null || copyFromPathRaw == null) {
+//            throw new RuntimeException("A revision is missing a path");
+//        }
+//
+//        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
+//        final String sourceBranch = copyFromPath.first;
+//        final String sourcePath = copyFromPath.second;
+//
+//        int copyFromRevision = Integer.parseInt(node.get(NodeHeader.COPY_FROM_REV));
+//        Tuple2<Integer, String> copyFromGitSha = findGitSha(copyFromPath.first, copyFromRevision);
+//
+//        try {
+//            ps().println(String.format("[%5d] Restoring file %s@%s from %s",
+//                    node.getRevision().get().getNumber(), copyFromPath, copyFromRev, copyFromGitSha));
+//
+//            String[] gitCommand = {"/usr/bin/git", "ls-tree", "-r", copyFromGitSha._2, copyFromPath.second};
+//            ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", gitCommand)));
+//
+//            Process gitLsTree = new ProcessBuilder(gitCommand)
+//                    .directory(this.gitDir)
+//                    .start();
+//
+//            List<List<String>> result = new BufferedReader(new InputStreamReader(gitLsTree.getInputStream()))
+//                    .lines()
+//                    .map(l -> l.split("\t"))
+//                    .map(l ->
+//                            Stream.concat(
+//                                    Arrays.stream(l[0].split(" ")),
+//                                    Arrays.stream(new String[] { l[1] })
+//                            ).collect(Collectors.toList())
+//                    )
+//                    .collect(Collectors.toList());
+//
+//            if (result.size() > 1) {
+//                throw new RuntimeException("found more than one file when running: " + String.join(" ", gitCommand));
+//            }
+//
+//            final Revision revision = node.getRevision().get();
+//            final PersonIdent ident = identities.from(revision);
+//
+//            for (List<String> fileInfo : result) {
+//                String mode = fileInfo.get(0);
+//                String blobSha = fileInfo.get(2);
+//                String originalFile = fileInfo.get(3);
+//
+//                File absoluteNewFile = new File(gitDir.getAbsolutePath() + File.separator + nodePath);
+//                ps().println(String.format("[%5d] copying bytes from %s@%s to %s", revNum, originalFile, sourceBranch, nodePath));
+//
+//                if (!absoluteNewFile.getParentFile().exists() && !absoluteNewFile.getParentFile().mkdirs()) {
+//                    throw new RuntimeException("could not create directory: " + absoluteNewFile.getParentFile().getAbsolutePath());
+//                }
+//
+//                if (!absoluteNewFile.createNewFile()) {
+//                    throw new RuntimeException("could not create file: " + absoluteNewFile.getAbsolutePath());
+//                }
+//
+//                String[] showCommand = {"/usr/bin/git", "show", blobSha};
+//                ps().println(String.format("[%5d] Executing '%s'", node.getRevision().get().getNumber(), String.join(" ", showCommand)));
+//                Process showProc = new ProcessBuilder(showCommand)
+//                        .redirectOutput(absoluteNewFile)
+//                        .directory(this.gitDir)
+//                        .start();
+//                int showProcRetVal = showProc.waitFor();
+//                if (showProcRetVal != 0) {
+//                    throw new RuntimeException("could not execute: '" + String.join(" ", showCommand) + "', return value: " + showProcRetVal);
+//                }
+//
+//                handleMode(mode, absoluteNewFile);
+//                Status st = git.status().call();
+//                if (!st.isClean()) {
+//                    quickCommit(ident, String.format("copied data from [%s@%s] to [%s]", originalFile, sourceBranch, nodePath));
+//                }
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void changeExistingFile(Node node, String nodePath) {
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;

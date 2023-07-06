@@ -1,7 +1,7 @@
 package com.github.cstroe.svndumpgui.internal.writer.git;
 
 public enum ChangeType {
-    MAIN,
+    TRUNK,
     BRANCH,
     BRANCH_CREATE,
     TAG,
