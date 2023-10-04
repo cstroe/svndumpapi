@@ -71,6 +71,8 @@ public class GitWriterNoBranchingTest {
                 commitList.add(c);
             }
 
+            final String currentBranch = repo.getRepository().getBranch();
+
             assertEquals(5, commitList.size());
             assertEquals("Changed file a third time.\nSVN revision: 4", commitList.get(0).getFullMessage());
             assertEquals("Changed file again.\nSVN revision: 3", commitList.get(1).getFullMessage());
@@ -82,6 +84,7 @@ public class GitWriterNoBranchingTest {
             List<String> fileContent_r1 = IoUtils.readAllLines(Files.newInputStream(outputFile.toPath()));
             assertEquals(1, fileContent_r1.size());
             assertEquals("this is a test file", fileContent_r1.get(0));
+            repo.checkout().setName(currentBranch).call(); // reset back to HEAD
         }
     }
 }
