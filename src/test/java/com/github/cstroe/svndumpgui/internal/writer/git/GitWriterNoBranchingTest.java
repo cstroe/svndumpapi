@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class GitWriterNoBranchingTest {
     private final AuthorIdentities identities = new AuthorIdentities(Tuple2.of("Default User", "default@user.com"))
@@ -36,6 +37,12 @@ public class GitWriterNoBranchingTest {
         new GitWriterNoBranching(tempFile.getAbsolutePath(), identities);
     }
 
+    @Test(expected = RuntimeException.class)
+    public void checkExists() throws IOException, GitAPIException {
+        File tempFile = Files.createTempFile("test-snvdumpadmin-", ".test").toFile();
+        new GitWriterNoBranching(tempFile.getAbsolutePath(), identities);
+    }
+
 
     @Test
     public void multipleChange() throws IOException, GitAPIException, ParseException {
@@ -45,6 +52,7 @@ public class GitWriterNoBranchingTest {
                 .getResourceAsStream(dumpFilePath);
 
         File tempDir = Files.createTempDirectory("test-svndumpadmin-").toFile();
+        assertTrue(tempDir.exists() && tempDir.isDirectory());
         System.out.println(tempDir.getAbsolutePath());
         GitWriterNoBranching gitWriter = new GitWriterNoBranching(tempDir.getAbsolutePath(), identities);
 
@@ -69,6 +77,11 @@ public class GitWriterNoBranchingTest {
             assertEquals("Changed file.\nSVN revision: 2", commitList.get(2).getFullMessage());
             assertEquals("Initial commit.\nSVN revision: 1", commitList.get(3).getFullMessage());
             assertEquals("Initial commit.\nSVN revision: 0", commitList.get(4).getFullMessage());
-        };
+
+            repo.checkout().setName(commitList.get(3).getName()).call(); // checkout revision 1
+            List<String> fileContent_r1 = IoUtils.readAllLines(Files.newInputStream(outputFile.toPath()));
+            assertEquals(1, fileContent_r1.size());
+            assertEquals("this is a test file", fileContent_r1.get(0));
+        }
     }
 }

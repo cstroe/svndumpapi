@@ -9,18 +9,15 @@ import com.github.cstroe.svndumpgui.internal.writer.AbstractRepositoryWriter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +38,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     private Map<String, List<Tuple2<Integer, String>>> branchToRevisionToSha = new HashMap<>(9182);
 
     public GitWriterNoBranching(String gitDir, AuthorIdentities identities) throws IOException, GitAPIException {
-        this(gitDir, "master", identities);
+        this(gitDir, "main", identities);
     }
 
     public GitWriterNoBranching(String gitDir, String mainBranch, AuthorIdentities identities) throws IOException, GitAPIException {
@@ -56,11 +53,12 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         this.nodeSeparator = new NodeSeparatorImpl(mainBranch);
         this.nodeBatcher = new NodeBatcherImpl();
 
-        if (!this.gitDir.exists()) {
+        if (!(this.gitDir.exists() && this.gitDir.isDirectory())) {
             throw new RuntimeException("Directory does not exist: " + this.gitDir.getAbsolutePath());
         }
 
         this.git = Git.init()
+                .setInitialBranch(this.mainBranch)
                 .setDirectory(this.gitDir)
                 .call();
     }
@@ -208,14 +206,19 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
 
         // process each node in the batch
+        boolean changed = false;
         for (Triplet<String, String, Node> node : batch) {
             if (node.getValue2().isDir()) {
                 createDirectoryFromHistory(node.getValue2(), node.getValue1());
+            } else if (node.getValue2().isFile()) {
+                addNewFile(node.getValue2(), node.getValue1());
+                changed = true;
+            } else {
+                throw new RuntimeException("not implemented");
             }
         }
-        // commit to temp branch
         // merge temp branch to trunk
-        throw new RuntimeException("not implemented");
+        doCommit(revision, this.mainBranch, workingBranch, changed);
     }
 
 //    private void processBatch(Revision revision, String currentBatchBranch, String currentBatchTag, List<Triplet<String, String, Node>> currentBatch) {
@@ -398,14 +401,14 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 //        }
 //    }
 
-    private void deleteTag(Node node, String path, String tagName) {
-        try {
-            git.tagDelete().setTags(tagName).call();
-            ps().println(String.format("[%5d] Deleted tag: %s", node.getRevision().get().getNumber(), tagName));
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private void deleteTag(Node node, String path, String tagName) {
+//        try {
+//            git.tagDelete().setTags(tagName).call();
+//            ps().println(String.format("[%5d] Deleted tag: %s", node.getRevision().get().getNumber(), tagName));
+//        } catch (GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
 //    private void createBranch(Node node) {
 //        Matcher branchMatcher = branchPattern.matcher(node.getPath().get());
@@ -570,35 +573,36 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-//    private void addNewFile(Node node, String nodePath) {
-//        if (node.getHeaders().get(NodeHeader.COPY_FROM_REV) != null) {
-//            addNewFileFromHistory(node, nodePath);
-//            return;
-//        }
-//        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
-//
-//        File newFile = new File(absolutePath);
-//        if (!newFile.getParentFile().exists() && !newFile.getParentFile().mkdirs()) {
-//            throw new RuntimeException("Could not create directory: " + newFile.getParentFile());
-//        };
-//
-//        try(FileOutputStream fos = new FileOutputStream(newFile)){
-//            fos.write(node.getByteContent());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        setExecutable(node, newFile);
-//
-//        final Revision revision = node.getRevision().get();
-//        final PersonIdent ident = identities.from(revision);
-//        try {
-//            gitAddAll();
-//            quickCommit(ident, "add new file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
-//        } catch (GitAPIException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+    private void addNewFile(Node node, String nodePath) {
+        if (node.getHeaders().get(NodeHeader.COPY_FROM_REV) != null) {
+            //addNewFileFromHistory(node, nodePath);
+            throw new RuntimeException("not implemented");
+            //return;
+        }
+        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
+
+        File newFile = new File(absolutePath);
+        if (!newFile.getParentFile().exists() && !newFile.getParentFile().mkdirs()) {
+            throw new RuntimeException("Could not create directory: " + newFile.getParentFile());
+        };
+
+        try(FileOutputStream fos = new FileOutputStream(newFile)){
+            fos.write(node.getByteContent());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        setExecutable(node, newFile);
+
+        final Revision revision = node.getRevision().get();
+        final PersonIdent ident = identities.from(revision);
+        try {
+            gitAddAll();
+            quickCommit(ident, "add new file [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private void setExecutable(Node node, File file) {
         if (node.getProperties().get("svn:executable") != null) {
@@ -730,46 +734,46 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-    private void deleteNode(Node node, String nodePath) {
-        try {
-            Status status = git.status().call();
-            if (status.getAdded().contains(nodePath)) {
-                git.reset().addPath(nodePath).call();
-            }
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-
-        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
-
-        File toDelete = new File(absolutePath);
-        if (!toDelete.exists()) {
-            ps().println(String.format("[%5d] Cannot delete non-existent file: %s",
-                    node.getRevision().get().getNumber(), nodePath));
-            return;
-        }
-
-        if (toDelete.isDirectory()) {
-            boolean deleted = deleteDirectory(toDelete);
-            if (!deleted) {
-                throw new RuntimeException("Did not delete directory: " + absolutePath);
-            }
-        } else {
-            boolean deleted = new File(absolutePath).delete();
-            if (!deleted) {
-                throw new RuntimeException("Did not delete file: " + absolutePath);
-            }
-        }
-
-        final Revision revision = node.getRevision().get();
-        final PersonIdent ident = identities.from(revision);
-        try {
-            gitAddAll();
-            quickCommit(ident, "deleted [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private void deleteNode(Node node, String nodePath) {
+//        try {
+//            Status status = git.status().call();
+//            if (status.getAdded().contains(nodePath)) {
+//                git.reset().addPath(nodePath).call();
+//            }
+//        } catch (GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
+//
+//        File toDelete = new File(absolutePath);
+//        if (!toDelete.exists()) {
+//            ps().println(String.format("[%5d] Cannot delete non-existent file: %s",
+//                    node.getRevision().get().getNumber(), nodePath));
+//            return;
+//        }
+//
+//        if (toDelete.isDirectory()) {
+//            boolean deleted = deleteDirectory(toDelete);
+//            if (!deleted) {
+//                throw new RuntimeException("Did not delete directory: " + absolutePath);
+//            }
+//        } else {
+//            boolean deleted = new File(absolutePath).delete();
+//            if (!deleted) {
+//                throw new RuntimeException("Did not delete file: " + absolutePath);
+//            }
+//        }
+//
+//        final Revision revision = node.getRevision().get();
+//        final PersonIdent ident = identities.from(revision);
+//        try {
+//            gitAddAll();
+//            quickCommit(ident, "deleted [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
+//        } catch (GitAPIException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void gitAddAll() {
         try {
@@ -785,15 +789,15 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     }
 
     // from https://www.baeldung.com/java-delete-directory
-    boolean deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return directoryToBeDeleted.delete();
-    }
+//    boolean deleteDirectory(File directoryToBeDeleted) {
+//        File[] allContents = directoryToBeDeleted.listFiles();
+//        if (allContents != null) {
+//            for (File file : allContents) {
+//                deleteDirectory(file);
+//            }
+//        }
+//        return directoryToBeDeleted.delete();
+//    }
 
     private void doCommit(Revision revision, String parentBranch, String workingBranch, boolean changed) {
         if (!changed) {
