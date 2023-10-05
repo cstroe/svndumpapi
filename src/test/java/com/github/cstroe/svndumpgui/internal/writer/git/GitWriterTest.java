@@ -11,4 +11,6 @@ public class GitWriterTest {
         assertEquals("maindir/some/file", GitWriter.cleanPath("maindir/trunk/some/file"));
         assertEquals("maindir/some/file", GitWriter.cleanPath("maindir/branches/b2/some/file"));
     }
+
+
 }

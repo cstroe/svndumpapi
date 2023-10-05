@@ -46,7 +46,7 @@ public class GitWriterNoBranchingTest {
 
     @Test
     public void multipleChange() throws IOException, GitAPIException, ParseException {
-        String dumpFilePath = "dumps/add_and_multiple_change.dump";
+        final String dumpFilePath = "dumps/add_and_multiple_change.dump";
 
         final InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(dumpFilePath);
@@ -85,6 +85,44 @@ public class GitWriterNoBranchingTest {
             assertEquals(1, fileContent_r1.size());
             assertEquals("this is a test file", fileContent_r1.get(0));
             repo.checkout().setName(currentBranch).call(); // reset back to HEAD
+        }
+    }
+
+    @Test
+    public void addCopyChange() throws IOException, GitAPIException, ParseException {
+        final String dumpFilePath = "dumps/add_and_copychange.dump";
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(dumpFilePath);
+
+
+        File tempDir = Files.createTempDirectory("test-svndumpadmin-").toFile();
+        assertTrue(tempDir.exists() && tempDir.isDirectory());
+        System.out.println(tempDir.getAbsolutePath());
+        GitWriterNoBranching gitWriter = new GitWriterNoBranching(tempDir.getAbsolutePath(), identities);
+
+        SvnDumpParser parser = new SvnDumpParser(new SvnDumpCharStream(is));
+        parser.Start(gitWriter);
+
+        File outputFile = new File(tempDir.getAbsoluteFile() + File.separator + "README.txt");
+        List<String> fileContent = IoUtils.readAllLines(Files.newInputStream(outputFile.toPath()));
+        assertEquals(1, fileContent.size());
+        assertEquals("This is a test file!", fileContent.get(0));
+
+        try(Git repo = Git.open(tempDir)) {
+            Iterable<RevCommit> commits = repo.log().call();
+            List<RevCommit> commitList = new ArrayList<>();
+            for(RevCommit c : commits) {
+                commitList.add(c);
+            }
+
+            assertEquals(6, commitList.size());
+            assertEquals("Copied readme from r3.\nSVN revision: 5", commitList.get(0).getFullMessage());
+            assertEquals("Deleting file.\nSVN revision: 4", commitList.get(1).getFullMessage());
+            assertEquals("Copied readme from r1.\nSVN revision: 3", commitList.get(2).getFullMessage());
+            assertEquals("Deleting file.\nSVN revision: 2", commitList.get(3).getFullMessage());
+            assertEquals("Added readme.\nSVN revision: 1", commitList.get(4).getFullMessage());
+            assertEquals("Initial commit.\nSVN revision: 0", commitList.get(5).getFullMessage());
         }
     }
 }

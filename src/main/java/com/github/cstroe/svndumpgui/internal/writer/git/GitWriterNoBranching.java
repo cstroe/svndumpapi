@@ -213,6 +213,9 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
             } else if (node.getValue2().isFile()) {
                 addNewFile(node.getValue2(), node.getValue1());
                 changed = true;
+            } else if (node.getValue2().isDelete()) {
+                deleteNode(node.getValue2(), node.getValue1());
+                changed = true;
             } else {
                 throw new RuntimeException("not implemented");
             }
@@ -575,9 +578,8 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 
     private void addNewFile(Node node, String nodePath) {
         if (node.getHeaders().get(NodeHeader.COPY_FROM_REV) != null) {
-            //addNewFileFromHistory(node, nodePath);
-            throw new RuntimeException("not implemented");
-            //return;
+            addNewFileFromHistory(node, nodePath);
+            return;
         }
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
 
@@ -626,19 +628,21 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         return commit;
     }
 
-//    private void addNewFileFromHistory(Node node, String nodePath) {
-//        final int revNum = node.getRevision().get().getNumber();
-//        String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
-//        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
-//
-//        if (copyFromRev == null || copyFromPathRaw == null) {
-//            throw new RuntimeException("A revision is missing a path");
-//        }
-//
+    private void addNewFileFromHistory(Node node, String nodePath) {
+        final int revNum = node.getRevision().get().getNumber();
+        String copyFromRev = node.getHeaders().get(NodeHeader.COPY_FROM_REV);
+        String copyFromPathRaw = node.getHeaders().get(NodeHeader.COPY_FROM_PATH);
+
+        if (copyFromRev == null || copyFromPathRaw == null) {
+            throw new RuntimeException("A revision is missing a path");
+        }
+
+
+
 //        Pair<String, String> copyFromPath = removeBranchPrefix(copyFromPathRaw);
 //        final String sourceBranch = copyFromPath.first;
 //        final String sourcePath = copyFromPath.second;
-//
+
 //        int copyFromRevision = Integer.parseInt(node.get(NodeHeader.COPY_FROM_REV));
 //        Tuple2<Integer, String> copyFromGitSha = findGitSha(copyFromPath.first, copyFromRevision);
 //
@@ -707,7 +711,7 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
 //        } catch (Exception e) {
 //            throw new RuntimeException(e);
 //        }
-//    }
+    }
 
     private void changeExistingFile(Node node, String nodePath) {
         String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
@@ -734,46 +738,46 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
         }
     }
 
-//    private void deleteNode(Node node, String nodePath) {
-//        try {
-//            Status status = git.status().call();
-//            if (status.getAdded().contains(nodePath)) {
-//                git.reset().addPath(nodePath).call();
-//            }
-//        } catch (GitAPIException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
-//
-//        File toDelete = new File(absolutePath);
-//        if (!toDelete.exists()) {
-//            ps().println(String.format("[%5d] Cannot delete non-existent file: %s",
-//                    node.getRevision().get().getNumber(), nodePath));
-//            return;
-//        }
-//
-//        if (toDelete.isDirectory()) {
-//            boolean deleted = deleteDirectory(toDelete);
-//            if (!deleted) {
-//                throw new RuntimeException("Did not delete directory: " + absolutePath);
-//            }
-//        } else {
-//            boolean deleted = new File(absolutePath).delete();
-//            if (!deleted) {
-//                throw new RuntimeException("Did not delete file: " + absolutePath);
-//            }
-//        }
-//
-//        final Revision revision = node.getRevision().get();
-//        final PersonIdent ident = identities.from(revision);
-//        try {
-//            gitAddAll();
-//            quickCommit(ident, "deleted [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
-//        } catch (GitAPIException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+    private void deleteNode(Node node, String nodePath) {
+        try {
+            Status status = git.status().call();
+            if (status.getAdded().contains(nodePath)) {
+                git.reset().addPath(nodePath).call();
+            }
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+
+        String absolutePath = gitDir.getAbsolutePath() + File.separator + nodePath;
+
+        File toDelete = new File(absolutePath);
+        if (!toDelete.exists()) {
+            ps().println(String.format("[%5d] Cannot delete non-existent file: %s",
+                    node.getRevision().get().getNumber(), nodePath));
+            return;
+        }
+
+        if (toDelete.isDirectory()) {
+            boolean deleted = deleteDirectory(toDelete);
+            if (!deleted) {
+                throw new RuntimeException("Did not delete directory: " + absolutePath);
+            }
+        } else {
+            boolean deleted = new File(absolutePath).delete();
+            if (!deleted) {
+                throw new RuntimeException("Did not delete file: " + absolutePath);
+            }
+        }
+
+        final Revision revision = node.getRevision().get();
+        final PersonIdent ident = identities.from(revision);
+        try {
+            gitAddAll();
+            quickCommit(ident, "deleted [" + nodePath + "] (SVN revision " + revision.getNumber() + ")");
+        } catch (GitAPIException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private void gitAddAll() {
         try {
@@ -789,15 +793,15 @@ public class GitWriterNoBranching extends AbstractRepositoryWriter {
     }
 
     // from https://www.baeldung.com/java-delete-directory
-//    boolean deleteDirectory(File directoryToBeDeleted) {
-//        File[] allContents = directoryToBeDeleted.listFiles();
-//        if (allContents != null) {
-//            for (File file : allContents) {
-//                deleteDirectory(file);
-//            }
-//        }
-//        return directoryToBeDeleted.delete();
-//    }
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
 
     private void doCommit(Revision revision, String parentBranch, String workingBranch, boolean changed) {
         if (!changed) {
