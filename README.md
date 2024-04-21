@@ -7,6 +7,13 @@
 
 An API for reading, editing, and writing SVN dump files.
 
+## What does this do?
+
+You can use this library to **modify the history of existing Subversion repositories**.  Some use cases are:
+* removing large binary files from the Subversion revision history
+* adding a revision `0` so that you can upgrade old repositories to work with a newer version of Subversion tools
+* convert the Subversion repositories to other version control systems, like git (no support for this out-of-the-box, but you can process all the Subversion history and execute corresponding `git` commands)
+
 ## Background
 
 SVN dump files are created via the `svnadmin dump` or `svnrdump dump` commands, and contain all the 
