@@ -20,7 +20,7 @@ svnrdump dump https://svn.code.sf.net/p/barbecue/code > barbecue.dump
 
 This will create a file named `barbecue.dump` which follows the SVN dump file format.
 The SVN dump file format is a "serialized description of the actions required to
-(re)build a version history" (see [original docs](https://svn.apache.org/repos/asf/subversion/trunk/notes/dump-load-format.txt).
+(re)build a version history" (see [original docs](https://svn.apache.org/repos/asf/subversion/trunk/notes/dump-load-format.txt)).
 
 An SVN dump file contains a list of revisions 
 (see [`Revision`](src/main/java/com/github/cstroe/svndumpgui/api/Revision.java)), and each
