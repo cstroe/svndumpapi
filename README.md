@@ -9,8 +9,20 @@ An API for reading, editing, and writing SVN dump files.
 
 ## Background
 
-SVN dump files are created via the `svnadmin dump` command, and contain all the 
-history of an SVN repository.  An SVN dump file contains a list of revisions 
+SVN dump files are created via the `svnadmin dump` or `svnrdump dump` commands, and contain all the 
+history of an SVN repository.
+
+Example command for dumping a random Sourceforce project:
+
+```
+svnrdump dump https://svn.code.sf.net/p/barbecue/code > barbecue.dump
+```
+
+This will create a file named `barbecue.dump` which follows the SVN dump file format.
+The SVN dump file format is a "serialized description of the actions required to
+(re)build a version history" (see [original docs](https://svn.apache.org/repos/asf/subversion/trunk/notes/dump-load-format.txt).
+
+An SVN dump file contains a list of revisions 
 (see [`Revision`](src/main/java/com/github/cstroe/svndumpgui/api/Revision.java)), and each
 revision contains a list of nodes (see [`Node`](src/main/java/com/github/cstroe/svndumpgui/api/Node.java)).
 
